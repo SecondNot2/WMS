@@ -1,0 +1,94 @@
+"use client";
+
+import React from "react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+
+const data = [
+  { name: "Điện tử", value: 400, color: "#2d7dd2" },
+  { name: "Điện lạnh", value: 200, color: "#ef4444" },
+  { name: "Gia dụng", value: 300, color: "#22c55e" },
+  { name: "Thực phẩm", value: 300, color: "#f59e0b" },
+  { name: "Khác", value: 200, color: "#64748b" },
+];
+
+export function InventoryDonutChart() {
+  const total = data.reduce((acc, item) => acc + item.value, 0);
+
+  return (
+    <div className="bg-white p-4 rounded-xl border border-border-ui shadow-sm h-full flex flex-col">
+      <h3 className="text-sm font-semibold text-text-primary mb-2">
+        Tồn kho theo danh mục
+      </h3>
+
+      <div className="flex flex-row items-center justify-center space-x-2 flex-1 min-h-40">
+        {/* Chart area */}
+        <div className="w-60 h-60 relative shrink-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                innerRadius={80}
+                outerRadius={105}
+                paddingAngle={3}
+                dataKey="value"
+              >
+                {data.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.color}
+                    stroke="none"
+                  />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  borderRadius: "8px",
+                  border: "1px solid #e2e8f0",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                  fontSize: "11px",
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">
+              TỔNG
+            </span>
+            <span className="text-xl font-bold text-text-primary">{total}</span>
+          </div>
+        </div>
+
+        {/* Legend area */}
+        <div className="flex-1 max-w-40 space-y-5">
+          {data.map((item) => (
+            <div
+              key={item.name}
+              className="flex items-center justify-between group cursor-pointer"
+            >
+              <div className="flex items-center min-w-0">
+                <div
+                  className="w-2 h-2 rounded-full mr-2.5 shrink-0 transition-transform group-hover:scale-125"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="text-[11px] text-text-secondary group-hover:text-text-primary transition-colors truncate">
+                  {item.name}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2 shrink-0">
+                <span className="text-[11px] font-bold text-text-primary">
+                  {item.value}
+                </span>
+                <span className="text-[9px] font-medium text-text-secondary bg-background-app px-1.5 py-0.5 rounded-md min-w-8 text-center">
+                  {Math.round((item.value / total) * 100)}%
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

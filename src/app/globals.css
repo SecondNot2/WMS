@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1a3a5c;
+  --color-accent: #2d7dd2;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #8b5cf6;
+  --color-background-app: #f4f6f9;
+  --color-card-white: #ffffff;
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-border-ui: #e2e8f0;
+}
+
+:root {
+  --background: #f4f6f9;
+  --foreground: #1e293b;
+}
+
+html {
+  font-size: 14px; /* Reduced from 16px to scale down ~90% */
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, a {
+  cursor: pointer;
+}
+
+@layer base {
+  * {
+    @apply border-border-ui;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

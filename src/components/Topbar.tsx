@@ -2,12 +2,11 @@ import React from "react";
 import { Menu, Search, Bell, ChevronDown } from "lucide-react";
 import { useLayoutStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { Breadcrumb } from "./Breadcrumb";
 
-interface TopbarProps {
-  title: string;
-}
+interface TopbarProps {}
 
-export function Topbar({ title }: TopbarProps) {
+export function Topbar({}: TopbarProps) {
   const { sidebarCollapsed, toggleSidebar } = useLayoutStore();
 
   return (
@@ -22,7 +21,7 @@ export function Topbar({ title }: TopbarProps) {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <h1 className="text-[20px] font-semibold text-text-primary">{title}</h1>
+        <Breadcrumb />
       </div>
 
       <div className="flex items-center space-x-6">

@@ -6,9 +6,23 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 
+type IssueStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+interface OutboundIssue extends Record<string, unknown> {
+  id: string;
+  code: string;
+  recipient: string;
+  purpose: string;
+  totalAmount: number;
+  itemCount: number;
+  createdBy: string;
+  createdAt: string;
+  status: IssueStatus;
+}
+
 export function OutboundTable() {
   // TODO: Replace with useQuery -> GET /goods-issues
-  const mockIssues = [
+  const mockIssues: OutboundIssue[] = [
     {
       id: "1",
       code: "PXK-2024-0042",
@@ -44,7 +58,7 @@ export function OutboundTable() {
     },
   ];
 
-  const STATUS_STYLES = {
+  const STATUS_STYLES: Record<IssueStatus, { label: string; cls: string }> = {
     PENDING: { label: "Chờ duyệt", cls: "bg-warning/10 text-warning" },
     APPROVED: { label: "Đã duyệt", cls: "bg-success/10 text-success" },
     REJECTED: { label: "Từ chối", cls: "bg-danger/10 text-danger" },
@@ -54,8 +68,8 @@ export function OutboundTable() {
     {
       header: "Mã phiếu",
       accessor: "code",
-      render: (val: unknown, row: any) => (
-        <Link 
+      render: (val: unknown, row: OutboundIssue) => (
+        <Link
           href={`/outbound/${row.id}`}
           className="text-accent font-bold hover:underline"
         >
@@ -66,26 +80,37 @@ export function OutboundTable() {
     {
       header: "Đơn vị nhận",
       accessor: "recipient",
-      render: (val: unknown) => <span className="font-medium text-text-primary">{val as string}</span>
+      render: (val: unknown) => (
+        <span className="font-medium text-text-primary">{val as string}</span>
+      ),
     },
     {
       header: "Lý do xuất",
       accessor: "purpose",
-      render: (val: unknown) => <span className="text-text-secondary line-clamp-1 max-w-50">{val as string}</span>
+      render: (val: unknown) => (
+        <span className="text-text-secondary line-clamp-1 max-w-50">
+          {val as string}
+        </span>
+      ),
     },
     {
       header: "Tổng tiền",
       accessor: "totalAmount",
       render: (val: unknown) => (
         <span className="font-bold text-text-primary">
-          {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(val as number)}
+          {new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }).format(val as number)}
         </span>
       ),
     },
     {
       header: "Số lượng SP",
       accessor: "itemCount",
-      render: (val: unknown) => <span className="text-text-secondary">{val as number} mặt hàng</span>
+      render: (val: unknown) => (
+        <span className="text-text-secondary">{val as number} mặt hàng</span>
+      ),
     },
     {
       header: "Ngày lập",
@@ -98,10 +123,12 @@ export function OutboundTable() {
         const status = val as keyof typeof STATUS_STYLES;
         const style = STATUS_STYLES[status];
         return (
-          <span className={cn(
-            "px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider",
-            style.cls
-          )}>
+          <span
+            className={cn(
+              "px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider",
+              style.cls,
+            )}
+          >
             {style.label}
           </span>
         );
@@ -110,9 +137,9 @@ export function OutboundTable() {
     {
       header: "",
       accessor: "id",
-      render: (val: unknown, row: any) => (
+      render: (val: unknown, row: OutboundIssue) => (
         <div className="flex justify-end gap-2">
-          <Link 
+          <Link
             href={`/outbound/${val as string}`}
             className="p-1.5 hover:bg-background-app rounded text-text-secondary hover:text-accent transition-colors"
           >
@@ -120,7 +147,7 @@ export function OutboundTable() {
           </Link>
           {row.status === "PENDING" && (
             <>
-              <Link 
+              <Link
                 href={`/outbound/${val as string}/edit`}
                 className="p-1.5 hover:bg-background-app rounded text-text-secondary hover:text-warning transition-colors"
               >
@@ -136,11 +163,5 @@ export function OutboundTable() {
     },
   ];
 
-  return (
-    <DashboardTable 
-      title=""
-      columns={columns}
-      data={mockIssues}
-    />
-  );
+  return <DashboardTable title="" columns={columns} data={mockIssues} />;
 }

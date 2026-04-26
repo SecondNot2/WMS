@@ -4,11 +4,24 @@ import React from "react";
 import { DashboardTable } from "@/components/DashboardTable";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { MoreVertical, Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
+
+type ReceiptStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+interface InboundReceipt extends Record<string, unknown> {
+  id: string;
+  code: string;
+  supplier: string;
+  totalAmount: number;
+  itemCount: number;
+  createdBy: string;
+  createdAt: string;
+  status: ReceiptStatus;
+}
 
 export function InboundTable() {
   // TODO: Replace with useQuery -> GET /goods-receipts
-  const mockReceipts = [
+  const mockReceipts: InboundReceipt[] = [
     {
       id: "1",
       code: "PNK-2024-0056",
@@ -61,7 +74,7 @@ export function InboundTable() {
     },
   ];
 
-  const STATUS_STYLES = {
+  const STATUS_STYLES: Record<ReceiptStatus, { label: string; cls: string }> = {
     PENDING: { label: "Chờ duyệt", cls: "bg-warning/10 text-warning" },
     APPROVED: { label: "Đã duyệt", cls: "bg-success/10 text-success" },
     REJECTED: { label: "Từ chối", cls: "bg-danger/10 text-danger" },
@@ -71,8 +84,8 @@ export function InboundTable() {
     {
       header: "Mã phiếu",
       accessor: "code",
-      render: (val: unknown, row: any) => (
-        <Link 
+      render: (val: unknown, row: InboundReceipt) => (
+        <Link
           href={`/inbound/${row.id}`}
           className="text-accent font-bold hover:underline"
         >
@@ -83,21 +96,28 @@ export function InboundTable() {
     {
       header: "Nhà cung cấp",
       accessor: "supplier",
-      render: (val: unknown) => <span className="font-medium text-text-primary">{val as string}</span>
+      render: (val: unknown) => (
+        <span className="font-medium text-text-primary">{val as string}</span>
+      ),
     },
     {
       header: "Tổng tiền",
       accessor: "totalAmount",
       render: (val: unknown) => (
         <span className="font-bold text-text-primary">
-          {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(val as number)}
+          {new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }).format(val as number)}
         </span>
       ),
     },
     {
       header: "Số lượng SP",
       accessor: "itemCount",
-      render: (val: unknown) => <span className="text-text-secondary">{val as number} hàng hóa</span>
+      render: (val: unknown) => (
+        <span className="text-text-secondary">{val as number} hàng hóa</span>
+      ),
     },
     {
       header: "Người lập",
@@ -114,10 +134,12 @@ export function InboundTable() {
         const status = val as keyof typeof STATUS_STYLES;
         const style = STATUS_STYLES[status];
         return (
-          <span className={cn(
-            "px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider",
-            style.cls
-          )}>
+          <span
+            className={cn(
+              "px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider",
+              style.cls,
+            )}
+          >
             {style.label}
           </span>
         );
@@ -126,9 +148,9 @@ export function InboundTable() {
     {
       header: "",
       accessor: "id",
-      render: (val: unknown, row: any) => (
+      render: (val: unknown, row: InboundReceipt) => (
         <div className="flex justify-end gap-2">
-          <Link 
+          <Link
             href={`/inbound/${val as string}`}
             className="p-1.5 hover:bg-background-app rounded text-text-secondary hover:text-accent transition-colors"
           >
@@ -136,7 +158,7 @@ export function InboundTable() {
           </Link>
           {row.status === "PENDING" && (
             <>
-              <Link 
+              <Link
                 href={`/inbound/${val as string}/edit`}
                 className="p-1.5 hover:bg-background-app rounded text-text-secondary hover:text-warning transition-colors"
               >
@@ -152,11 +174,5 @@ export function InboundTable() {
     },
   ];
 
-  return (
-    <DashboardTable 
-      title=""
-      columns={columns}
-      data={mockReceipts}
-    />
-  );
+  return <DashboardTable title="" columns={columns} data={mockReceipts} />;
 }

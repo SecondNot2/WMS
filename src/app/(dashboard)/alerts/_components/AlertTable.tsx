@@ -3,21 +3,34 @@
 import React from "react";
 import { DashboardTable } from "@/components/DashboardTable";
 import { cn } from "@/lib/utils";
-import { 
-  AlertCircle, 
-  AlertTriangle, 
-  Info, 
-  Package, 
-  FileText, 
+import {
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  Package,
+  FileText,
   Settings,
   ExternalLink,
-  Trash2
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 
+type AlertType = "STOCK" | "WORKFLOW" | "SYSTEM";
+type AlertSeverity = "CRITICAL" | "WARNING" | "INFO";
+
+interface AlertRow extends Record<string, unknown> {
+  id: string;
+  type: AlertType;
+  severity: AlertSeverity;
+  message: string;
+  targetId: string | null;
+  targetCode: string | null;
+  createdAt: string;
+  isRead: boolean;
+}
+
 export function AlertTable() {
-  // TODO: Replace with useQuery -> GET /alerts
-  const mockAlerts = [
+  const mockAlerts: AlertRow[] = [
     {
       id: "1",
       type: "STOCK",
@@ -76,21 +89,40 @@ export function AlertTable() {
     {
       header: "Nội dung",
       accessor: "message",
-      render: (val: unknown, row: any) => {
+      render: (val: unknown, row: AlertRow) => {
         const config = TYPE_CONFIG[row.type as keyof typeof TYPE_CONFIG];
         const Icon = config.icon;
-        
+
         return (
-          <div className={cn("flex items-start gap-3", row.isRead ? "opacity-60" : "opacity-100")}>
-            <div className={cn("mt-0.5 p-2 rounded-lg bg-background-app", config.cls)}>
+          <div
+            className={cn(
+              "flex items-start gap-3",
+              row.isRead ? "opacity-60" : "opacity-100",
+            )}
+          >
+            <div
+              className={cn(
+                "mt-0.5 p-2 rounded-lg bg-background-app",
+                config.cls,
+              )}
+            >
               <Icon className="w-4 h-4" />
             </div>
             <div className="flex flex-col gap-1">
-              <p className={cn("text-sm leading-relaxed", !row.isRead ? "font-bold text-text-primary" : "font-medium text-text-secondary")}>
+              <p
+                className={cn(
+                  "text-sm leading-relaxed",
+                  !row.isRead
+                    ? "font-bold text-text-primary"
+                    : "font-medium text-text-secondary",
+                )}
+              >
                 {val as string}
               </p>
               {row.targetCode && (
-                <span className="text-[11px] font-mono font-bold text-text-secondary uppercase">Mã liên quan: {row.targetCode}</span>
+                <span className="text-[11px] font-mono font-bold text-text-secondary uppercase">
+                  Mã liên quan: {row.targetCode}
+                </span>
               )}
             </div>
           </div>
@@ -101,27 +133,37 @@ export function AlertTable() {
       header: "Mức độ",
       accessor: "severity",
       render: (val: unknown) => (
-        <span className={cn(
-          "px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
-          SEVERITY_STYLES[val as keyof typeof SEVERITY_STYLES]
-        )}>
+        <span
+          className={cn(
+            "px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
+            SEVERITY_STYLES[val as keyof typeof SEVERITY_STYLES],
+          )}
+        >
           {val as string}
         </span>
-      )
+      ),
     },
     {
       header: "Thời gian",
       accessor: "createdAt",
-      render: (val: unknown) => <span className="text-xs text-text-secondary font-medium">{val as string}</span>
+      render: (val: unknown) => (
+        <span className="text-xs text-text-secondary font-medium">
+          {val as string}
+        </span>
+      ),
     },
     {
       header: "",
       accessor: "id",
-      render: (val: unknown, row: any) => (
+      render: (val: unknown, row: AlertRow) => (
         <div className="flex justify-end gap-2">
           {row.targetId && (
-            <Link 
-              href={row.type === "STOCK" ? `/products/${row.targetId}` : `/inbound/${row.targetId}`}
+            <Link
+              href={
+                row.type === "STOCK"
+                  ? `/products/${row.targetId}`
+                  : `/inbound/${row.targetId}`
+              }
               className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-background-app rounded-lg text-xs font-bold text-accent transition-all"
             >
               Xử lý <ExternalLink className="w-3 h-3" />
@@ -135,11 +177,5 @@ export function AlertTable() {
     },
   ];
 
-  return (
-    <DashboardTable 
-      title=""
-      columns={columns}
-      data={mockAlerts}
-    />
-  );
+  return <DashboardTable title="" columns={columns} data={mockAlerts} />;
 }

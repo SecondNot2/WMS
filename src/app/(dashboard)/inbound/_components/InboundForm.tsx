@@ -4,16 +4,16 @@ import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { 
-  Plus, 
-  Trash2, 
-  Save, 
-  X, 
-  Search, 
-  Package, 
-  User, 
+import {
+  Plus,
+  Trash2,
+  Save,
+  X,
+  Search,
+  Package,
+  User,
   ChevronLeft,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -36,13 +36,13 @@ const inboundSchema = z.object({
 type InboundFormValues = z.infer<typeof inboundSchema>;
 
 interface InboundFormProps {
-  initialData?: any;
+  initialData?: Partial<InboundFormValues>;
   isEdit?: boolean;
 }
 
 export function InboundForm({ initialData, isEdit }: InboundFormProps) {
   const router = useRouter();
-  
+
   // Mock data for selectors
   const suppliers = [
     { id: "1", name: "Công ty TNHH An Phát" },
@@ -51,10 +51,34 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
   ];
 
   const products = [
-    { id: "p1", sku: "SP001", name: "Chuột không dây Logitech M331", unit: "Cái", costPrice: 450000 },
-    { id: "p2", sku: "SP002", name: "Bàn phím cơ Keychron K2", unit: "Cái", costPrice: 1200000 },
-    { id: "p3", sku: "SP003", name: "Lót chuột Razer Gigantus V2", unit: "Cái", costPrice: 350000 },
-    { id: "p4", sku: "SP004", name: "Tai nghe Sony WH-1000XM4", unit: "Cái", costPrice: 4500000 },
+    {
+      id: "p1",
+      sku: "SP001",
+      name: "Chuột không dây Logitech M331",
+      unit: "Cái",
+      costPrice: 450000,
+    },
+    {
+      id: "p2",
+      sku: "SP002",
+      name: "Bàn phím cơ Keychron K2",
+      unit: "Cái",
+      costPrice: 1200000,
+    },
+    {
+      id: "p3",
+      sku: "SP003",
+      name: "Lót chuột Razer Gigantus V2",
+      unit: "Cái",
+      costPrice: 350000,
+    },
+    {
+      id: "p4",
+      sku: "SP004",
+      name: "Tai nghe Sony WH-1000XM4",
+      unit: "Cái",
+      costPrice: 4500000,
+    },
   ];
 
   const {
@@ -68,7 +92,16 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
     defaultValues: initialData || {
       supplierId: "",
       note: "",
-      items: [{ productId: "", sku: "", name: "", unit: "", quantity: 1, unitPrice: 0 }],
+      items: [
+        {
+          productId: "",
+          sku: "",
+          name: "",
+          unit: "",
+          quantity: 1,
+          unitPrice: 0,
+        },
+      ],
     },
   });
 
@@ -82,12 +115,13 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
     name: "items",
   });
 
-  const totalAmount = watchItems?.reduce((sum, item) => {
-    return sum + (item.quantity * item.unitPrice || 0);
-  }, 0) || 0;
+  const totalAmount =
+    watchItems?.reduce((sum, item) => {
+      return sum + (item.quantity * item.unitPrice || 0);
+    }, 0) || 0;
 
   const onProductChange = (index: number, productId: string) => {
-    const product = products.find(p => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     if (product) {
       setValue(`items.${index}.sku`, product.sku);
       setValue(`items.${index}.name`, product.name);
@@ -107,7 +141,7 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={() => router.back()}
             className="p-2 hover:bg-background-app rounded-full transition-colors text-text-secondary"
           >
@@ -134,7 +168,7 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
                   <User className="w-5 h-5 text-accent" />
                   Thông tin nguồn hàng
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-text-primary">
@@ -144,19 +178,29 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
                       {...register("supplierId")}
                       className={cn(
                         "w-full px-4 py-2.5 text-sm bg-background-app/50 border rounded-lg outline-none focus:border-accent transition-all",
-                        errors.supplierId ? "border-danger" : "border-border-ui"
+                        errors.supplierId
+                          ? "border-danger"
+                          : "border-border-ui",
                       )}
                     >
                       <option value="">Chọn nhà cung cấp</option>
-                      {suppliers.map(s => (
-                        <option key={s.id} value={s.id}>{s.name}</option>
+                      {suppliers.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
                       ))}
                     </select>
-                    {errors.supplierId && <p className="text-xs text-danger mt-1">{errors.supplierId.message}</p>}
+                    {errors.supplierId && (
+                      <p className="text-xs text-danger mt-1">
+                        {errors.supplierId.message}
+                      </p>
+                    )}
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-text-primary">Ghi chú</label>
+                    <label className="text-sm font-medium text-text-primary">
+                      Ghi chú
+                    </label>
                     <input
                       {...register("note")}
                       placeholder="Nhập ghi chú thêm nếu có..."
@@ -177,7 +221,16 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
                   </h3>
                   <button
                     type="button"
-                    onClick={() => append({ productId: "", sku: "", name: "", unit: "", quantity: 1, unitPrice: 0 })}
+                    onClick={() =>
+                      append({
+                        productId: "",
+                        sku: "",
+                        name: "",
+                        unit: "",
+                        quantity: 1,
+                        unitPrice: 0,
+                      })
+                    }
                     className="flex items-center gap-2 px-4 py-2 bg-white border border-accent text-accent rounded-lg font-bold text-xs hover:bg-accent/5 transition-all"
                   >
                     <Plus className="w-4 h-4" /> Thêm dòng
@@ -188,49 +241,76 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
                   <table className="w-full text-left min-w-200">
                     <thead className="bg-[#f8fafc] border-b border-border-ui">
                       <tr>
-                        <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-12">STT</th>
-                        <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">Sản phẩm</th>
-                        <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-32">Số lượng</th>
-                        <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-40">Đơn giá nhập</th>
-                        <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-40 text-right">Thành tiền</th>
+                        <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-12">
+                          STT
+                        </th>
+                        <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">
+                          Sản phẩm
+                        </th>
+                        <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-32">
+                          Số lượng
+                        </th>
+                        <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-40">
+                          Đơn giá nhập
+                        </th>
+                        <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-40 text-right">
+                          Thành tiền
+                        </th>
                         <th className="px-6 py-4 w-12"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-ui">
                       {fields.map((field, index) => (
                         <tr key={field.id} className="group">
-                          <td className="px-6 py-4 text-sm text-text-secondary">{index + 1}</td>
+                          <td className="px-6 py-4 text-sm text-text-secondary">
+                            {index + 1}
+                          </td>
                           <td className="px-6 py-4">
                             <select
                               {...register(`items.${index}.productId` as const)}
-                              onChange={(e) => onProductChange(index, e.target.value)}
+                              onChange={(e) =>
+                                onProductChange(index, e.target.value)
+                              }
                               className={cn(
                                 "w-full px-3 py-2 text-sm bg-white border rounded-lg outline-none focus:border-accent transition-all",
-                                errors.items?.[index]?.productId ? "border-danger" : "border-border-ui"
+                                errors.items?.[index]?.productId
+                                  ? "border-danger"
+                                  : "border-border-ui",
                               )}
                             >
                               <option value="">Tìm sản phẩm...</option>
-                              {products.map(p => (
-                                <option key={p.id} value={p.id}>{p.sku} - {p.name}</option>
+                              {products.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                  {p.sku} - {p.name}
+                                </option>
                               ))}
                             </select>
                           </td>
                           <td className="px-6 py-4">
                             <input
                               type="number"
-                              {...register(`items.${index}.quantity` as const, { valueAsNumber: true })}
+                              {...register(`items.${index}.quantity` as const, {
+                                valueAsNumber: true,
+                              })}
                               className="w-full px-3 py-2 text-sm bg-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-center"
                             />
                           </td>
                           <td className="px-6 py-4">
                             <input
                               type="number"
-                              {...register(`items.${index}.unitPrice` as const, { valueAsNumber: true })}
+                              {...register(
+                                `items.${index}.unitPrice` as const,
+                                { valueAsNumber: true },
+                              )}
                               className="w-full px-3 py-2 text-sm bg-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-right font-medium"
                             />
                           </td>
                           <td className="px-6 py-4 text-sm font-bold text-text-primary text-right">
-                            {new Intl.NumberFormat("vi-VN").format((watchItems?.[index]?.quantity || 0) * (watchItems?.[index]?.unitPrice || 0))} đ
+                            {new Intl.NumberFormat("vi-VN").format(
+                              (watchItems?.[index]?.quantity || 0) *
+                                (watchItems?.[index]?.unitPrice || 0),
+                            )}{" "}
+                            đ
                           </td>
                           <td className="px-6 py-4">
                             <button
@@ -247,7 +327,8 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
                   </table>
                   {errors.items?.root && (
                     <div className="p-4 bg-danger/5 border-t border-danger/20 flex items-center gap-2 text-danger text-sm">
-                      <AlertCircle className="w-4 h-4" /> {errors.items.root.message}
+                      <AlertCircle className="w-4 h-4" />{" "}
+                      {errors.items.root.message}
                     </div>
                   )}
                 </div>
@@ -262,25 +343,39 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
                 <span className="w-1 h-3 bg-accent rounded-full" />
                 Tổng hợp phiếu nhập
               </h3>
-              
+
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-text-secondary font-medium">Số lượng mặt hàng:</span>
-                  <span className="text-text-primary font-bold">{fields.length}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-text-secondary font-medium">Tổng số lượng SP:</span>
+                  <span className="text-text-secondary font-medium">
+                    Số lượng mặt hàng:
+                  </span>
                   <span className="text-text-primary font-bold">
-                    {watchItems?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0}
+                    {fields.length}
                   </span>
                 </div>
-                
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-text-secondary font-medium">
+                    Tổng số lượng SP:
+                  </span>
+                  <span className="text-text-primary font-bold">
+                    {watchItems?.reduce(
+                      (sum, item) => sum + (item.quantity || 0),
+                      0,
+                    ) || 0}
+                  </span>
+                </div>
+
                 <hr className="border-border-ui/50 my-2" />
-                
+
                 <div className="space-y-1">
-                  <p className="text-xs text-text-secondary uppercase font-bold tracking-tighter">Tổng giá trị phiếu</p>
+                  <p className="text-xs text-text-secondary uppercase font-bold tracking-tighter">
+                    Tổng giá trị phiếu
+                  </p>
                   <p className="text-2xl font-black text-accent tracking-tighter">
-                    {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalAmount)}
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(totalAmount)}
                   </p>
                 </div>
 
@@ -303,7 +398,9 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
 
               <div className="mt-6 p-4 bg-info/5 rounded-lg border border-info/10">
                 <p className="text-[11px] text-info leading-relaxed">
-                  <strong>Lưu ý:</strong> Sau khi lưu, phiếu sẽ ở trạng thái <strong>Chờ duyệt</strong>. Tồn kho chỉ được cập nhật sau khi quản trị viên phê duyệt phiếu này.
+                  <strong>Lưu ý:</strong> Sau khi lưu, phiếu sẽ ở trạng thái{" "}
+                  <strong>Chờ duyệt</strong>. Tồn kho chỉ được cập nhật sau khi
+                  quản trị viên phê duyệt phiếu này.
                 </p>
               </div>
             </div>

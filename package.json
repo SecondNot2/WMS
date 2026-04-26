@@ -1,36 +1,21 @@
 {
-  "name": "wms-frontend",
+  "name": "wms",
   "version": "0.1.0",
-  "description": "Warehouse Management System (WMS) Frontend built with Next.js and Tailwind CSS",
   "private": true,
+  "description": "Warehouse Management System monorepo (web + api)",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:web": "pnpm --filter @wms/web dev",
+    "dev:api": "pnpm --filter @wms/api dev",
+    "build": "pnpm --recursive build",
+    "build:web": "pnpm --filter @wms/web build",
+    "build:api": "pnpm --filter @wms/api build",
+    "type-check": "pnpm --recursive type-check",
+    "lint": "pnpm --recursive lint"
   },
-  "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
-    "@tanstack/react-query": "^5.100.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^1.11.0",
-    "next": "16.2.4",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "react-hook-form": "^7.73.1",
-    "recharts": "^3.8.1",
-    "tailwind-merge": "^3.5.0",
-    "zod": "^4.3.6",
-    "zustand": "^5.0.12"
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
   },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.4",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+  "packageManager": "pnpm@10.33.0"
 }

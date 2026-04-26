@@ -1,5 +1,5 @@
 # Dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -9,11 +9,15 @@
 !.yarn/versions
 
 # Next.js / Build
-/.next/
-/out/
-/build
-/coverage
+.next/
+out/
+build/
+dist/
+coverage/
 *.tsbuildinfo
+
+# Prisma
+apps/api/prisma/migrations/dev.db*
 
 # IDEs & System
 .vscode
@@ -35,3 +39,4 @@ AGENTS.md
 .agents
 docs/
 .windsurf/
+.windsurfrules

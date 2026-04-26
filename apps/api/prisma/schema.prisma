@@ -1,0 +1,16 @@
+// WMS Prisma schema — placeholder.
+// TODO: copy schema chi tiết từ docs/DATABASE_SCHEMA.md (chạy /build-db).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Placeholder model — sẽ thay thế bằng schema đầy đủ ở /build-db.
+model Placeholder {
+  id String @id @default(cuid())
+}

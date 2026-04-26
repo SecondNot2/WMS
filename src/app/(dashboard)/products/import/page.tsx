@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { ImportWizard } from "../_components/ImportWizard";
+import { ImportWizard } from "@/components/ImportWizard";
 
 export default function ProductImportPage() {
   return (
@@ -19,7 +19,7 @@ export default function ProductImportPage() {
       </div>
 
       <div>
-        <ImportWizard />
+        <ImportWizard moduleName="Sản phẩm" />
       </div>
     </div>
   );

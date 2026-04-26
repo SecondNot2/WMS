@@ -14,7 +14,19 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function ImportWizard() {
+interface ImportWizardProps {
+  moduleName: string;
+  templateUrl?: string;
+  onComplete?: () => void;
+  maxRows?: number;
+}
+
+export function ImportWizard({
+  moduleName,
+  templateUrl = "#",
+  onComplete,
+  maxRows = 5000,
+}: ImportWizardProps) {
   const [step, setStep] = useState(1);
   const [file, setFile] = useState<File | null>(null);
 
@@ -26,19 +38,6 @@ export function ImportWizard() {
 
   return (
     <div className="bg-card-white rounded-2xl border border-border-ui shadow-sm overflow-hidden w-full transition-all duration-500">
-      {/* Header */}
-      <div className="px-8 py-5 border-b border-border-ui flex items-center justify-between bg-white">
-        <div>
-          <h3 className="text-lg font-bold text-text-primary">
-            Quy trình nhập dữ liệu
-          </h3>
-          <p className="text-xs text-text-secondary">
-            Vui lòng thực hiện theo các bước dưới đây để đảm bảo dữ liệu chính
-            xác
-          </p>
-        </div>
-      </div>
-
       {/* Stepper */}
       <div className="px-12 py-8 bg-background-app/20 border-b border-border-ui">
         <div className="flex items-center justify-between relative max-w-4xl mx-auto">
@@ -111,8 +110,11 @@ export function ImportWizard() {
                 <AlertCircle className="w-5 h-5 shrink-0" />
                 <p className="text-[12px] leading-relaxed">
                   Hệ thống hỗ trợ nhập tối đa{" "}
-                  <span className="font-bold">5.000 dòng</span> dữ liệu mỗi lần.
-                  Các dòng trùng lặp mã SKU sẽ được bỏ qua hoặc ghi đè tùy chọn.
+                  <span className="font-bold">
+                    {maxRows.toLocaleString()} dòng
+                  </span>{" "}
+                  dữ liệu mỗi lần. Các dòng trùng lặp sẽ được xử lý theo quy
+                  định của hệ thống.
                 </p>
               </div>
             </div>
@@ -129,7 +131,7 @@ export function ImportWizard() {
                     "Sử dụng đúng file mẫu do hệ thống cung cấp.",
                     "Không thay đổi tên cột hoặc thứ tự các cột.",
                     "Các trường đánh dấu sao (*) là bắt buộc.",
-                    "Đảm bảo mã SKU là duy nhất cho mỗi sản phẩm.",
+                    "Đảm bảo dữ liệu không bị để trống các trường khóa chính.",
                   ].map((text, i) => (
                     <li key={i} className="flex items-start gap-3">
                       <div className="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center text-[10px] font-bold text-accent shrink-0 mt-0.5">
@@ -147,15 +149,18 @@ export function ImportWizard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-bold text-text-primary">
-                      File mẫu nhập liệu
+                      File mẫu nhập liệu {moduleName}
                     </p>
                     <p className="text-[10px] text-text-secondary">
                       Version 2.0 (Cập nhật 20/05/2024)
                     </p>
                   </div>
-                  <button className="p-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors shadow-lg shadow-accent/20">
+                  <a
+                    href={templateUrl}
+                    className="p-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors shadow-lg shadow-accent/20"
+                  >
                     <Download className="w-4 h-4" />
-                  </button>
+                  </a>
                 </div>
               </div>
 
@@ -228,8 +233,8 @@ export function ImportWizard() {
                   <thead className="bg-white sticky top-0 border-b border-border-ui">
                     <tr className="text-[11px] font-bold text-text-secondary uppercase">
                       <th className="px-6 py-3 w-20 text-center">Dòng</th>
-                      <th className="px-6 py-3">Mã SKU</th>
-                      <th className="px-6 py-3">Tên sản phẩm</th>
+                      <th className="px-6 py-3">Mã định danh</th>
+                      <th className="px-6 py-3">Tên hiển thị</th>
                       <th className="px-6 py-3">Trạng thái</th>
                       <th className="px-6 py-3">Ghi chú lỗi</th>
                     </tr>
@@ -247,10 +252,10 @@ export function ImportWizard() {
                           {i}
                         </td>
                         <td className="px-6 py-4 font-mono text-xs">
-                          SP-000{i}
+                          ID-000{i}
                         </td>
                         <td className="px-6 py-4 text-text-primary font-medium">
-                          Sản phẩm mẫu số {i}
+                          Dữ liệu mẫu số {i}
                         </td>
                         <td className="px-6 py-4">
                           {i === 2 ? (
@@ -264,7 +269,7 @@ export function ImportWizard() {
                           )}
                         </td>
                         <td className="px-6 py-4 text-xs text-text-secondary">
-                          {i === 2 ? "Mã SKU đã tồn tại trong hệ thống" : "-"}
+                          {i === 2 ? "Mã đã tồn tại trong hệ thống" : "-"}
                         </td>
                       </tr>
                     ))}
@@ -284,7 +289,7 @@ export function ImportWizard() {
                 onClick={() => setStep(3)}
                 className="px-12 py-3 bg-accent text-white font-bold rounded-xl shadow-xl shadow-accent/20 flex items-center gap-2 hover:scale-105 transition-all"
               >
-                Xác nhận nhập 148 sản phẩm <ArrowRight className="w-5 h-5" />
+                Xác nhận nhập dữ liệu <ArrowRight className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -304,9 +309,7 @@ export function ImportWizard() {
                 Thành công rực rỡ!
               </h4>
               <p className="text-lg text-text-secondary">
-                Hệ thống đã ghi nhận thêm{" "}
-                <span className="text-success font-black">148</span> sản phẩm
-                mới.
+                Hệ thống đã ghi nhận thêm các dữ liệu {moduleName} mới.
               </p>
             </div>
 
@@ -332,12 +335,12 @@ export function ImportWizard() {
               >
                 Nhập thêm tệp khác
               </button>
-              <Link
-                href="/products"
+              <button
+                onClick={onComplete}
                 className="px-12 py-3 bg-accent text-white font-bold rounded-xl shadow-xl shadow-accent/20 transition-all hover:scale-105 flex items-center justify-center"
               >
                 Về danh sách
-              </Link>
+              </button>
             </div>
           </div>
         )}

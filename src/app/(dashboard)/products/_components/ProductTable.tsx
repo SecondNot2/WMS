@@ -8,8 +8,6 @@ import {
   Pencil,
   Trash2,
   MoreHorizontal,
-  ChevronLeft,
-  ChevronRight,
   Package,
   CheckCircle,
   XCircle,
@@ -17,6 +15,7 @@ import {
   Printer,
   Copy,
 } from "lucide-react";
+import { Pagination } from "@/components/Pagination";
 
 interface Product {
   id: string;
@@ -170,6 +169,8 @@ const statusLabels = {
 
 export function ProductTable() {
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(10);
   const products = mockProducts; // In real app, this would be filtered list
 
   const toggleSelectAll = () => {
@@ -377,38 +378,15 @@ export function ProductTable() {
       </div>
 
       {/* Pagination */}
-      <div className="px-4 py-3 border-t border-border-ui bg-background-app/20 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-[12px] text-text-secondary">Hiển thị</span>
-          <select className="bg-white border border-border-ui rounded px-2 py-1 text-[12px] outline-none">
-            <option>10 dòng</option>
-            <option>20 dòng</option>
-            <option>50 dòng</option>
-          </select>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <button className="p-1 rounded hover:bg-border-ui text-text-secondary disabled:opacity-50">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          {[1, 2, 3, 4, 5, "...", 20].map((page, i) => (
-            <button
-              key={i}
-              className={cn(
-                "w-7 h-7 rounded text-[12px] font-medium transition-colors",
-                page === 1
-                  ? "bg-accent text-white"
-                  : "hover:bg-border-ui text-text-secondary",
-              )}
-            >
-              {page}
-            </button>
-          ))}
-          <button className="p-1 rounded hover:bg-border-ui text-text-secondary">
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      {/* Pagination */}
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={20}
+        pageSize={pageSize}
+        totalItems={200}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={setPageSize}
+      />
       </div>
 
       {/* Floating Bulk Action Bar */}

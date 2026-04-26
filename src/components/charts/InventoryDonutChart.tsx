@@ -15,7 +15,7 @@ export function InventoryDonutChart() {
   const total = data.reduce((acc, item) => acc + item.value, 0);
 
   return (
-    <div className="bg-white p-4 rounded-xl border border-border-ui shadow-sm h-full flex flex-col">
+    <div className="bg-card-white p-4 rounded-xl border border-border-ui shadow-sm h-full flex flex-col">
       <h3 className="text-sm font-semibold text-text-primary mb-2">
         Tồn kho theo danh mục
       </h3>

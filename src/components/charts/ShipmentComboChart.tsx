@@ -24,7 +24,7 @@ const data = [
 
 export function ShipmentComboChart() {
   return (
-    <div className="bg-white p-4 rounded-xl border border-border-ui shadow-sm h-full flex flex-col">
+    <div className="bg-card-white p-4 rounded-xl border border-border-ui shadow-sm h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-sm font-semibold text-text-primary">
           Biểu đồ nhập / xuất kho

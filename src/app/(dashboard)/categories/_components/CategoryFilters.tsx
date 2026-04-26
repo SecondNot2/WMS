@@ -1,29 +1,33 @@
 "use client";
 
 import React from "react";
-import { Search, Filter } from "lucide-react";
+import { Search, RotateCcw } from "lucide-react";
 
 export function CategoryFilters() {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 mb-5">
-      <div className="relative flex-1">
+    <div className="flex flex-wrap items-center gap-3 bg-card-white p-4 rounded-xl border border-border-ui shadow-sm">
+      <div className="relative flex-1 min-w-60">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
         <input
-          type="text"
           placeholder="Tìm kiếm theo mã, tên danh mục..."
-          className="w-full pl-9 pr-4 py-2 text-sm border border-border-ui rounded-lg bg-background-app focus:outline-none focus:border-accent transition-colors"
+          className="w-full pl-9 pr-4 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors"
         />
       </div>
-      
-      <div className="flex items-center gap-3">
-        <select className="border border-border-ui rounded-lg bg-background-app text-sm px-3 py-2 focus:outline-none focus:border-accent min-w-37.5">
-          <option value="">Tất cả trạng thái</option>
-          <option value="ACTIVE">Hoạt động</option>
-          <option value="INACTIVE">Tạm dừng</option>
-        </select>
-        
-        <button className="flex items-center gap-2 px-3 py-2 border border-border-ui rounded-lg text-sm font-medium text-text-primary hover:bg-background-app transition-colors">
-          <Filter className="w-4 h-4" /> Bộ lọc khác
+
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+            Trạng thái
+          </label>
+          <select className="text-sm bg-background-app/50 border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary min-w-40 focus:border-accent">
+            <option value="">Tất cả</option>
+            <option value="ACTIVE">Hoạt động</option>
+            <option value="INACTIVE">Tạm dừng</option>
+          </select>
+        </div>
+
+        <button className="mt-5 flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary hover:text-accent hover:bg-accent/5 rounded-lg transition-all">
+          <RotateCcw className="w-4 h-4" /> Xóa lọc
         </button>
       </div>
     </div>

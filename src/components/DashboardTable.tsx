@@ -14,6 +14,7 @@ interface DashboardTableProps<T = Record<string, unknown>> {
   columns: Column<T>[];
   data: T[];
   emptyMessage?: string;
+  showFooter?: boolean;
 }
 
 export function DashboardTable<T extends Record<string, unknown>>({
@@ -21,6 +22,7 @@ export function DashboardTable<T extends Record<string, unknown>>({
   columns,
   data,
   emptyMessage = "Không có dữ liệu",
+  showFooter = true,
 }: DashboardTableProps<T>) {
   return (
     <div className="bg-card-white rounded-xl border border-border-ui shadow-sm overflow-hidden h-full flex flex-col">
@@ -75,11 +77,13 @@ export function DashboardTable<T extends Record<string, unknown>>({
           </tbody>
         </table>
       </div>
-      <div className="p-3 border-t border-border-ui flex justify-end">
-        <button className="text-[11px] font-bold text-accent hover:underline flex items-center">
-          Xem tất cả <span className="ml-1">→</span>
-        </button>
-      </div>
+      {showFooter && (
+        <div className="p-3 border-t border-border-ui flex justify-end">
+          <button className="text-[11px] font-bold text-accent hover:underline flex items-center">
+            Xem tất cả <span className="ml-1">→</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

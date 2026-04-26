@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, Filter, History, User, Package, Clock, Box, Tag, Download, Truck, Building } from "lucide-react";
+import { Search, Clock, Box, Tag, Download, Truck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Global activity log mock data
@@ -68,11 +68,10 @@ const actionStyles = {
 
 export default function GlobalActivityLogPage() {
   return (
-    <div className="p-5 w-full space-y-6">
+    <div className="p-5 space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-text-primary flex items-center gap-2">
-          <History className="w-6 h-6 text-accent" />
+        <h1 className="text-xl font-bold text-text-primary">
           Nhật ký hoạt động hệ thống
         </h1>
         <p className="text-xs text-text-secondary mt-1">
@@ -90,7 +89,7 @@ export default function GlobalActivityLogPage() {
               className="w-full pl-10 pr-4 py-2 text-sm bg-background-app border border-border-ui rounded-lg outline-none focus:border-accent transition-colors"
             />
           </div>
-          
+
           <select className="text-sm bg-background-app border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary font-medium">
             <option value="">Tất cả module</option>
             <option value="products">Sản phẩm</option>
@@ -108,8 +107,10 @@ export default function GlobalActivityLogPage() {
           </select>
 
           <div className="flex items-center gap-2 px-3 py-2 bg-background-app border border-border-ui rounded-lg">
-             <Clock className="w-4 h-4 text-text-secondary" />
-             <span className="text-sm text-text-primary font-medium">7 ngày qua</span>
+            <Clock className="w-4 h-4 text-text-secondary" />
+            <span className="text-sm text-text-primary font-medium">
+              7 ngày qua
+            </span>
           </div>
         </div>
       </div>
@@ -118,15 +119,20 @@ export default function GlobalActivityLogPage() {
       <div className="bg-card-white rounded-xl border border-border-ui shadow-sm overflow-hidden">
         <div className="divide-y divide-border-ui">
           {mockGlobalLogs.map((log) => (
-            <div key={log.id} className="p-5 hover:bg-background-app/20 transition-colors flex items-start gap-4">
+            <div
+              key={log.id}
+              className="p-5 hover:bg-background-app/20 transition-colors flex items-start gap-4"
+            >
               <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
                 <log.moduleIcon className="w-5 h-5 text-accent" />
               </div>
-              
+
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-text-primary">{log.user}</span>
+                    <span className="text-sm font-bold text-text-primary">
+                      {log.user}
+                    </span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-background-app text-text-secondary border border-border-ui uppercase tracking-wider font-bold">
                       {log.module}
                     </span>
@@ -135,12 +141,14 @@ export default function GlobalActivityLogPage() {
                     <Clock className="w-3.5 h-3.5" /> {log.time}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
-                  <span className={cn(
-                    "px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-tight",
-                    actionStyles[log.type as keyof typeof actionStyles]
-                  )}>
+                  <span
+                    className={cn(
+                      "px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-tight",
+                      actionStyles[log.type as keyof typeof actionStyles],
+                    )}
+                  >
                     {log.action}
                   </span>
                   <p className="text-sm text-text-primary font-medium truncate">
@@ -151,7 +159,7 @@ export default function GlobalActivityLogPage() {
             </div>
           ))}
         </div>
-        
+
         {/* Load more */}
         <div className="p-4 bg-background-app/30 border-t border-border-ui text-center">
           <button className="text-xs font-bold text-accent hover:underline">

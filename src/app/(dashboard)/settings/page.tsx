@@ -42,7 +42,7 @@ export default function SettingsPage() {
             Cấu hình thông tin kho, cảnh báo, bảo mật và tích hợp dữ liệu
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-bold px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20">
+        <button className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20">
           <Save className="w-4 h-4" /> Lưu cấu hình
         </button>
       </div>
@@ -326,11 +326,8 @@ export default function SettingsPage() {
           )}
 
           <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-5 flex items-center justify-end gap-3">
-            <button className="px-4 py-2 border border-border-ui rounded-lg text-sm font-bold text-text-primary hover:bg-background-app transition-colors">
+            <button className="px-4 py-2 border border-border-ui rounded-lg text-sm font-medium text-text-primary hover:bg-background-app transition-colors">
               Khôi phục mặc định
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg text-sm font-bold shadow-lg shadow-accent/20 transition-colors">
-              <Save className="w-4 h-4" /> Lưu thay đổi
             </button>
           </div>
         </main>

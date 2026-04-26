@@ -1,50 +1,57 @@
 "use client";
 
 import React from "react";
-import { Calendar, Filter, Download } from "lucide-react";
+import { Calendar, Download } from "lucide-react";
 
 export function ReportFilters() {
   return (
-    <div className="flex flex-col lg:flex-row gap-4 mb-6">
-      <div className="flex flex-wrap items-center gap-3 flex-1">
-        <div className="relative group">
-          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary group-focus-within:text-accent transition-colors" />
-          <input 
-            type="text" 
-            placeholder="Từ ngày"
-            className="pl-9 pr-4 py-2.5 border border-border-ui rounded-lg bg-background-app text-sm focus:outline-none focus:border-accent min-w-40 shadow-sm cursor-pointer hover:bg-white transition-all"
+    <div className="flex flex-wrap items-center gap-3 bg-card-white p-4 rounded-xl border border-border-ui shadow-sm">
+      <div className="flex flex-col gap-1">
+        <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+          Từ ngày
+        </label>
+        <div className="relative">
+          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+          <input
+            type="text"
+            placeholder="Chọn ngày"
+            className="pl-9 pr-3 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors min-w-40"
             onFocus={(e) => (e.target.type = "date")}
             onBlur={(e) => (e.target.type = "text")}
           />
         </div>
-        
-        <div className="relative group">
-          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary group-focus-within:text-accent transition-colors" />
-          <input 
-            type="text" 
-            placeholder="Đến ngày"
-            className="pl-9 pr-4 py-2.5 border border-border-ui rounded-lg bg-background-app text-sm focus:outline-none focus:border-accent min-w-40 shadow-sm cursor-pointer hover:bg-white transition-all"
-            onFocus={(e) => (e.target.type = "date")}
-            onBlur={(e) => (e.target.type = "text")}
-          />
-        </div>
+      </div>
 
-        <select className="border border-border-ui rounded-lg bg-background-app text-sm px-3 py-2.5 focus:outline-none focus:border-accent min-w-40 shadow-sm cursor-pointer hover:bg-white transition-colors">
-          <option value="">Tất cả danh mục</option>
+      <div className="flex flex-col gap-1">
+        <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+          Đến ngày
+        </label>
+        <div className="relative">
+          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+          <input
+            type="text"
+            placeholder="Chọn ngày"
+            className="pl-9 pr-3 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors min-w-40"
+            onFocus={(e) => (e.target.type = "date")}
+            onBlur={(e) => (e.target.type = "text")}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+          Danh mục
+        </label>
+        <select className="text-sm bg-background-app/50 border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary min-w-40 focus:border-accent">
+          <option value="">Tất cả</option>
           <option value="1">Điện tử</option>
           <option value="2">Điện lạnh</option>
         </select>
-        
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-background-app border border-border-ui rounded-lg text-sm font-bold text-text-primary hover:bg-white transition-all shadow-sm">
-          <Filter className="w-4 h-4" /> Lọc báo cáo
-        </button>
       </div>
 
-      <div className="flex items-center gap-2">
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-accent hover:bg-accent/90 text-white rounded-lg text-sm font-bold shadow-md shadow-accent/20 transition-all">
-          <Download className="w-4 h-4" /> Xuất Excel (.xlsx)
-        </button>
-      </div>
+      <button className="mt-5 ml-auto flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20">
+        <Download className="w-4 h-4" /> Xuất Excel
+      </button>
     </div>
   );
 }

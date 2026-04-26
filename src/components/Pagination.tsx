@@ -30,9 +30,25 @@ export function Pagination({
       if (currentPage <= 4) {
         pages.push(1, 2, 3, 4, 5, "...", totalPages);
       } else if (currentPage >= totalPages - 3) {
-        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+        pages.push(
+          1,
+          "...",
+          totalPages - 4,
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages,
+        );
       } else {
-        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+        pages.push(
+          1,
+          "...",
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          "...",
+          totalPages,
+        );
       }
     }
     return pages;
@@ -43,10 +59,10 @@ export function Pagination({
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <span className="text-[12px] text-text-secondary">Hiển thị</span>
-          <select 
+          <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="bg-white border border-border-ui rounded px-2 py-1 text-[12px] outline-none focus:border-accent transition-colors cursor-pointer"
+            className="bg-card-white border border-border-ui rounded px-2 py-1 text-[12px] outline-none focus:border-accent transition-colors cursor-pointer"
           >
             {[10, 20, 50, 100].map((size) => (
               <option key={size} value={size}>
@@ -56,12 +72,14 @@ export function Pagination({
           </select>
         </div>
         <span className="text-[12px] text-text-secondary hidden sm:inline">
-          Tổng số <span className="font-semibold text-text-primary">{totalItems}</span> bản ghi
+          Tổng số{" "}
+          <span className="font-semibold text-text-primary">{totalItems}</span>{" "}
+          bản ghi
         </span>
       </div>
 
       <div className="flex items-center gap-1">
-        <button 
+        <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="p-1 rounded hover:bg-border-ui text-text-secondary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
@@ -69,7 +87,7 @@ export function Pagination({
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-        
+
         <div className="flex items-center gap-1">
           {getPageNumbers().map((page, i) => (
             <React.Fragment key={i}>
@@ -82,7 +100,7 @@ export function Pagination({
                     "w-7 h-7 rounded text-[12px] font-medium transition-all",
                     currentPage === page
                       ? "bg-accent text-white shadow-sm"
-                      : "hover:bg-border-ui text-text-secondary"
+                      : "hover:bg-border-ui text-text-secondary",
                   )}
                 >
                   {page}
@@ -92,7 +110,7 @@ export function Pagination({
           ))}
         </div>
 
-        <button 
+        <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className="p-1 rounded hover:bg-border-ui text-text-secondary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"

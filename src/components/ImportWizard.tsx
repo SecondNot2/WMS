@@ -59,7 +59,7 @@ export function ImportWizard({
                     ? "bg-accent border-accent text-white shadow-lg shadow-accent/30 scale-110"
                     : step > s.id
                       ? "bg-success border-success text-white"
-                      : "bg-white border-border-ui text-text-secondary",
+                      : "bg-card-white border-border-ui text-text-secondary",
                 )}
               >
                 {step > s.id ? (
@@ -101,12 +101,12 @@ export function ImportWizard({
                 <p className="text-sm text-text-secondary mt-1">
                   Kéo thả file .xlsx hoặc .xls vào đây
                 </p>
-                <button className="mt-6 px-6 py-2 bg-white border border-border-ui text-sm font-bold text-text-primary rounded-xl shadow-sm group-hover:border-accent group-hover:text-accent transition-colors">
+                <button className="mt-6 px-6 py-2 bg-card-white border border-border-ui text-sm font-bold text-text-primary rounded-xl shadow-sm group-hover:border-accent group-hover:text-accent transition-colors">
                   Duyệt file từ máy tính
                 </button>
               </div>
 
-              <div className="flex items-center gap-4 p-4 bg-blue-50 border border-blue-100 rounded-2xl text-blue-700">
+              <div className="flex items-center gap-4 p-4 bg-info/5 border border-info/20 rounded-2xl text-info">
                 <AlertCircle className="w-5 h-5 shrink-0" />
                 <p className="text-[12px] leading-relaxed">
                   Hệ thống hỗ trợ nhập tối đa{" "}
@@ -214,23 +214,23 @@ export function ImportWizard({
               ))}
             </div>
 
-            <div className="bg-white border border-border-ui rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-card-white border border-border-ui rounded-2xl overflow-hidden shadow-sm">
               <div className="px-6 py-4 border-b border-border-ui bg-background-app/30 flex items-center justify-between">
                 <h4 className="text-sm font-bold text-text-primary">
                   Chi tiết các dòng dữ liệu
                 </h4>
                 <div className="flex gap-2">
-                  <span className="px-3 py-1 bg-white border border-border-ui rounded-full text-[10px] font-bold text-text-secondary flex items-center gap-1.5">
+                  <span className="px-3 py-1 bg-card-white border border-border-ui rounded-full text-[10px] font-bold text-text-secondary flex items-center gap-1.5">
                     <CheckCircle2 className="w-3 h-3 text-success" /> Hợp lệ
                   </span>
-                  <span className="px-3 py-1 bg-white border border-border-ui rounded-full text-[10px] font-bold text-text-secondary flex items-center gap-1.5">
+                  <span className="px-3 py-1 bg-card-white border border-border-ui rounded-full text-[10px] font-bold text-text-secondary flex items-center gap-1.5">
                     <AlertCircle className="w-3 h-3 text-danger" /> Lỗi
                   </span>
                 </div>
               </div>
               <div className="max-h-80 overflow-y-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-white sticky top-0 border-b border-border-ui">
+                  <thead className="bg-card-white sticky top-0 border-b border-border-ui">
                     <tr className="text-[11px] font-bold text-text-secondary uppercase">
                       <th className="px-6 py-3 w-20 text-center">Dòng</th>
                       <th className="px-6 py-3">Mã định danh</th>
@@ -281,7 +281,7 @@ export function ImportWizard({
             <div className="flex items-center justify-end gap-4 pt-4">
               <button
                 onClick={() => setStep(1)}
-                className="px-8 py-3 bg-white border border-border-ui text-text-primary font-bold rounded-xl hover:bg-background-app transition-all"
+                className="px-8 py-3 bg-card-white border border-border-ui text-text-primary font-bold rounded-xl hover:bg-background-app transition-all"
               >
                 Hủy và tải lại
               </button>
@@ -331,7 +331,7 @@ export function ImportWizard({
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => setStep(1)}
-                className="px-8 py-3 bg-white border border-border-ui text-text-primary font-bold rounded-xl hover:bg-background-app transition-all"
+                className="px-8 py-3 bg-card-white border border-border-ui text-text-primary font-bold rounded-xl hover:bg-background-app transition-all"
               >
                 Nhập thêm tệp khác
               </button>

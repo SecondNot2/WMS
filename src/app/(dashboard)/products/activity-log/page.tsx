@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, Filter, Download, History, Package, User, Clock } from "lucide-react";
+import { Search, Filter, Download, Package, User, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // TODO: swap with useQuery → GET /products/activity-log
@@ -74,19 +74,18 @@ const typeStyles = {
 
 export default function ProductActivityLogPage() {
   return (
-    <div className="p-5 w-full space-y-6">
+    <div className="p-5 space-y-5">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-text-primary flex items-center gap-2">
-            <History className="w-6 h-6 text-accent" />
+          <h1 className="text-xl font-bold text-text-primary">
             Nhật ký hoạt động sản phẩm
           </h1>
           <p className="text-xs text-text-secondary mt-1">
             Theo dõi mọi thay đổi liên quan đến sản phẩm trong hệ thống
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm self-start md:self-auto">
+        <button className="flex items-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm self-start sm:self-auto">
           <Download className="w-4 h-4" /> Xuất nhật ký
         </button>
       </div>
@@ -101,7 +100,7 @@ export default function ProductActivityLogPage() {
               className="w-full pl-10 pr-4 py-2 text-sm bg-background-app border border-border-ui rounded-lg outline-none focus:border-accent transition-colors"
             />
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-text-secondary" />
             <select className="text-sm bg-background-app border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary font-medium">
@@ -132,19 +131,36 @@ export default function ProductActivityLogPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-background-app/50 border-b border-border-ui">
-                <th className="px-5 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">Thời gian</th>
-                <th className="px-5 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">Người thực hiện</th>
-                <th className="px-5 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">Hành động</th>
-                <th className="px-5 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">Sản phẩm</th>
-                <th className="px-5 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">Chi tiết thay đổi</th>
+                <th className="px-5 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">
+                  Thời gian
+                </th>
+                <th className="px-5 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">
+                  Người thực hiện
+                </th>
+                <th className="px-5 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">
+                  Hành động
+                </th>
+                <th className="px-5 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">
+                  Sản phẩm
+                </th>
+                <th className="px-5 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">
+                  Chi tiết thay đổi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-ui">
               {mockLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-background-app/20 transition-colors group">
+                <tr
+                  key={log.id}
+                  className="hover:bg-background-app/20 transition-colors group"
+                >
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <p className="text-xs font-bold text-text-primary">{log.time.split(" ")[0]}</p>
-                    <p className="text-[10px] text-text-secondary mt-0.5">{log.time.split(" ")[1]}</p>
+                    <p className="text-xs font-bold text-text-primary">
+                      {log.time.split(" ")[0]}
+                    </p>
+                    <p className="text-[10px] text-text-secondary mt-0.5">
+                      {log.time.split(" ")[1]}
+                    </p>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
@@ -152,16 +168,22 @@ export default function ProductActivityLogPage() {
                         <User className="w-4 h-4 text-accent" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-text-primary">{log.user}</p>
-                        <p className="text-[10px] text-text-secondary">{log.role}</p>
+                        <p className="text-xs font-bold text-text-primary">
+                          {log.user}
+                        </p>
+                        <p className="text-[10px] text-text-secondary">
+                          {log.role}
+                        </p>
                       </div>
                     </div>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <span className={cn(
-                      "px-2.5 py-1 rounded-full text-[10px] font-bold border",
-                      typeStyles[log.type as keyof typeof typeStyles]
-                    )}>
+                    <span
+                      className={cn(
+                        "px-2.5 py-1 rounded-full text-[10px] font-bold border",
+                        typeStyles[log.type as keyof typeof typeStyles],
+                      )}
+                    >
                       {log.action}
                     </span>
                   </td>
@@ -171,8 +193,12 @@ export default function ProductActivityLogPage() {
                         <Package className="w-4 h-4 text-text-secondary" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-text-primary line-clamp-1">{log.product}</p>
-                        <p className="text-[10px] text-text-secondary font-mono">{log.sku}</p>
+                        <p className="text-xs font-bold text-text-primary line-clamp-1">
+                          {log.product}
+                        </p>
+                        <p className="text-[10px] text-text-secondary font-mono">
+                          {log.sku}
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -190,11 +216,20 @@ export default function ProductActivityLogPage() {
         {/* Pagination Placeholder */}
         <div className="px-5 py-4 border-t border-border-ui flex items-center justify-between bg-background-app/10">
           <p className="text-[11px] text-text-secondary font-medium">
-            Hiển thị <span className="text-text-primary font-bold">1 - 5</span> trong <span className="text-text-primary font-bold">1,240</span> nhật ký
+            Hiển thị <span className="text-text-primary font-bold">1 - 5</span>{" "}
+            trong <span className="text-text-primary font-bold">1,240</span>{" "}
+            nhật ký
           </p>
           <div className="flex items-center gap-2">
-            <button className="px-3 py-1 bg-white border border-border-ui rounded text-[11px] font-bold text-text-secondary hover:bg-background-app disabled:opacity-50 transition-colors" disabled>Trước</button>
-            <button className="px-3 py-1 bg-white border border-border-ui rounded text-[11px] font-bold text-text-secondary hover:bg-background-app transition-colors">Sau</button>
+            <button
+              className="px-3 py-1 bg-card-white border border-border-ui rounded text-[11px] font-bold text-text-secondary hover:bg-background-app disabled:opacity-50 transition-colors"
+              disabled
+            >
+              Trước
+            </button>
+            <button className="px-3 py-1 bg-card-white border border-border-ui rounded text-[11px] font-bold text-text-secondary hover:bg-background-app transition-colors">
+              Sau
+            </button>
           </div>
         </div>
       </div>

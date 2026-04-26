@@ -3,13 +3,7 @@
 import React from "react";
 import { AlertBanner } from "@/components/AlertBanner";
 import { StatsCard } from "@/components/StatsCard";
-import {
-  Box,
-  Database,
-  FileCheck,
-  FileUp,
-  Coins,
-} from "lucide-react";
+import { Box, Database, FileCheck, FileUp, Coins } from "lucide-react";
 import { InventoryDonutChart } from "@/components/charts/InventoryDonutChart";
 import { ShipmentComboChart } from "@/components/charts/ShipmentComboChart";
 import { InventoryAlerts } from "@/components/InventoryAlerts";
@@ -30,7 +24,9 @@ const inboundColumns = [
   {
     header: "Trạng thái",
     accessor: "status",
-    render: (val: unknown) => <StatusBadge status={val as "pending" | "approved" | "rejected"} />,
+    render: (val: unknown) => (
+      <StatusBadge status={val as "pending" | "approved" | "rejected"} />
+    ),
   },
 ];
 
@@ -47,7 +43,9 @@ const outboundColumns = [
   {
     header: "Trạng thái",
     accessor: "status",
-    render: (val: unknown) => <StatusBadge status={val as "pending" | "approved" | "rejected"} />,
+    render: (val: unknown) => (
+      <StatusBadge status={val as "pending" | "approved" | "rejected"} />
+    ),
   },
 ];
 
@@ -133,35 +131,35 @@ export default function Home() {
           label="Tổng số sản phẩm"
           value="1,284"
           icon={Box}
-          iconBg="bg-[#dbeafe] text-[#1e40af]"
+          iconBg="bg-accent/10 text-accent"
           trend={{ value: "12%", isUp: true }}
         />
         <StatsCard
           label="Tổng tồn kho"
           value="42,500"
           icon={Database}
-          iconBg="bg-[#dcfce7] text-[#15803d]"
+          iconBg="bg-success/10 text-success"
           trend={{ value: "5%", isUp: true }}
         />
         <StatsCard
           label="Phiếu nhập (tháng)"
           value="156"
           icon={FileCheck}
-          iconBg="bg-[#bbf7d0] text-[#166534]"
+          iconBg="bg-success/15 text-success"
           trend={{ value: "8%", isUp: true }}
         />
         <StatsCard
           label="Phiếu xuất (tháng)"
           value="142"
           icon={FileUp}
-          iconBg="bg-[#fed7aa] text-[#9a3412]"
+          iconBg="bg-warning/10 text-warning"
           trend={{ value: "3%", isUp: false }}
         />
         <StatsCard
           label="Giá trị tồn kho"
           value="2.4B"
           icon={Coins}
-          iconBg="bg-[#ede9fe] text-[#6b21a8]"
+          iconBg="bg-info/10 text-info"
         />
       </div>
 

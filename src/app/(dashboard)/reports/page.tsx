@@ -43,13 +43,13 @@ const reportModules = [
 
 export default function ReportsPage() {
   return (
-    <div className="p-6 w-full space-y-6">
+    <div className="p-5 space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-text-primary mt-2">
+        <h1 className="text-xl font-bold text-text-primary">
           Trung tâm Báo cáo
         </h1>
-        <p className="text-sm text-text-secondary">
+        <p className="text-xs text-text-secondary mt-1">
           Chọn loại báo cáo bạn muốn xem hoặc kết xuất dữ liệu
         </p>
       </div>

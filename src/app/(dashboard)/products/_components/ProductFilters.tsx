@@ -5,7 +5,7 @@ import { Search, RotateCcw } from "lucide-react";
 
 export function ProductFilters() {
   return (
-    <div className="flex flex-wrap items-center gap-3 bg-white p-4 rounded-xl border border-border-ui shadow-sm">
+    <div className="flex flex-wrap items-center gap-3 bg-card-white p-4 rounded-xl border border-border-ui shadow-sm">
       <div className="relative flex-1 min-w-60">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
         <input
@@ -16,7 +16,9 @@ export function ProductFilters() {
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">Danh mục</label>
+          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+            Danh mục
+          </label>
           <select className="text-sm bg-background-app/50 border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary min-w-35 focus:border-accent">
             <option>Tất cả</option>
             <option>Thiết bị ngoại vi</option>
@@ -27,7 +29,9 @@ export function ProductFilters() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">Trạng thái</label>
+          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+            Trạng thái
+          </label>
           <select className="text-sm bg-background-app/50 border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary min-w-35 focus:border-accent">
             <option>Tất cả</option>
             <option>Còn hàng</option>
@@ -37,7 +41,9 @@ export function ProductFilters() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">Đơn vị</label>
+          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+            Đơn vị
+          </label>
           <select className="text-sm bg-background-app/50 border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary min-w-30 focus:border-accent">
             <option>Tất cả</option>
             <option>Cái</option>

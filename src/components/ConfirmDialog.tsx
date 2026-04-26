@@ -47,19 +47,24 @@ export function ConfirmDialog({
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-primary/40 backdrop-blur-sm animate-in fade-in duration-300"
         onClick={onClose}
       />
-      
+
       {/* Dialog */}
-      <div className="relative bg-white rounded-3xl shadow-2xl border border-border-ui w-full max-w-md overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+      <div className="relative bg-card-white rounded-3xl shadow-2xl border border-border-ui w-full max-w-md overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
         <div className="p-8">
           <div className="flex justify-between items-start mb-6">
-            <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center", style.icon)}>
+            <div
+              className={cn(
+                "w-14 h-14 rounded-2xl flex items-center justify-center",
+                style.icon,
+              )}
+            >
               <AlertCircle className="w-8 h-8" />
             </div>
-            <button 
+            <button
               onClick={onClose}
               className="p-2 hover:bg-background-app rounded-full transition-colors text-text-secondary"
             >
@@ -79,7 +84,7 @@ export function ConfirmDialog({
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="flex-1 py-3 bg-white border border-border-ui text-sm font-bold text-text-primary rounded-xl hover:bg-background-app transition-colors"
+              className="flex-1 py-3 bg-card-white border border-border-ui text-sm font-bold text-text-primary rounded-xl hover:bg-background-app transition-colors"
             >
               {cancelLabel}
             </button>
@@ -90,7 +95,7 @@ export function ConfirmDialog({
               }}
               className={cn(
                 "flex-1 py-3 text-white text-sm font-bold rounded-xl shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0",
-                style.button
+                style.button,
               )}
             >
               {confirmLabel}

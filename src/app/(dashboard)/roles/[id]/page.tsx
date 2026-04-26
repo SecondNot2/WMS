@@ -1,5 +1,8 @@
 "use client";
 
+import React from "react";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { useParams } from "next/navigation";
 import { RoleDetailView } from "../_components/RoleDetailView";
 
@@ -8,8 +11,28 @@ export default function RoleIdPage() {
   const id = params.id as string;
 
   return (
-    <div className="p-6 w-full">
-      <RoleDetailView id={id} />
+    <div className="p-5 w-full space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <Link
+          href="/roles"
+          className="p-2 hover:bg-background-app rounded-full transition-colors text-text-secondary"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </Link>
+        <div>
+          <h1 className="text-xl font-bold text-text-primary">
+            Chi tiết vai trò
+          </h1>
+          <p className="text-xs text-text-secondary">
+            Phân quyền theo module và lịch sử thay đổi
+          </p>
+        </div>
+      </div>
+
+      <div className="pl-9">
+        <RoleDetailView id={id} />
+      </div>
     </div>
   );
 }

@@ -79,13 +79,13 @@ export function ProductDetailView({ id }: ProductDetailViewProps) {
                 >
                   <Pencil className="w-4 h-4" /> Chỉnh sửa
                 </Link>
-                <button className="px-4 py-2 bg-white border border-border-ui text-text-primary hover:bg-background-app rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2">
+                <button className="px-4 py-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2">
                   <Printer className="w-4 h-4" /> In mã vạch
                 </button>
-                <button className="px-4 py-2 bg-white border border-border-ui text-text-primary hover:bg-background-app rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2">
+                <button className="px-4 py-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2">
                   <Copy className="w-4 h-4" /> Sao chép
                 </button>
-                <button className="p-2 bg-white border border-border-ui text-text-secondary hover:text-danger hover:border-danger rounded-lg transition-all">
+                <button className="p-2 bg-card-white border border-border-ui text-text-secondary hover:text-danger hover:border-danger rounded-lg transition-all">
                   <Settings className="w-5 h-5" />
                 </button>
               </div>

@@ -12,47 +12,53 @@ interface BannerProps {
 export function AlertBanner({ type, count }: BannerProps) {
   const configs = {
     inventory: {
-      bg: "bg-[#fef2f2]",
-      border: "border-red-100",
+      bg: "bg-danger/5",
+      border: "border-danger/20",
       icon: <AlertTriangle className="w-4 h-4 text-danger" />,
       text: `Hàng sắp hết: ${count}`,
       linkText: "Xem ngay",
-      linkColor: "text-danger"
+      linkColor: "text-danger",
     },
     inbound: {
-      bg: "bg-[#fffbeb]",
-      border: "border-orange-100",
+      bg: "bg-warning/5",
+      border: "border-warning/20",
       icon: <Clock className="w-4 h-4 text-warning" />,
       text: `Nhập kho chờ: ${count}`,
       linkText: "Duyệt",
-      linkColor: "text-warning"
+      linkColor: "text-warning",
     },
     outbound: {
-      bg: "bg-[#eff6ff]",
-      border: "border-blue-100",
+      bg: "bg-accent/5",
+      border: "border-accent/20",
       icon: <Clock className="w-4 h-4 text-accent" />,
       text: `Xuất kho chờ: ${count}`,
       linkText: "Duyệt",
-      linkColor: "text-accent"
-    }
+      linkColor: "text-accent",
+    },
   };
 
   const config = configs[type];
 
   return (
-    <div className={cn(
-      "flex items-center justify-between px-3 py-2.5 rounded-lg border shadow-sm transition-all hover:shadow-md cursor-pointer group",
-      config.bg,
-      config.border
-    )}>
+    <div
+      className={cn(
+        "flex items-center justify-between px-3 py-2.5 rounded-lg border shadow-sm transition-all hover:shadow-md cursor-pointer group",
+        config.bg,
+        config.border,
+      )}
+    >
       <div className="flex items-center space-x-2.5">
         <div className="shrink-0">{config.icon}</div>
-        <span className="text-[12px] font-semibold text-text-primary">{config.text}</span>
+        <span className="text-[12px] font-semibold text-text-primary">
+          {config.text}
+        </span>
       </div>
-      <button className={cn(
-        "text-[11px] font-bold flex items-center hover:underline opacity-80 group-hover:opacity-100",
-        config.linkColor
-      )}>
+      <button
+        className={cn(
+          "text-[11px] font-bold flex items-center hover:underline opacity-80 group-hover:opacity-100",
+          config.linkColor,
+        )}
+      >
         {config.linkText}
       </button>
     </div>

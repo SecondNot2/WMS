@@ -1,25 +1,25 @@
 "use client";
 
 import React from "react";
-import { 
+import {
   LayoutGrid,
-  Box, 
-  Tag, 
-  Download, 
-  Upload, 
-  Activity, 
-  Bell, 
-  BarChart, 
-  FileText, 
-  Truck, 
-  Building, 
-  Users, 
-  Shield, 
-  Clock, 
+  Box,
+  Tag,
+  Download,
+  Upload,
+  Activity,
+  Bell,
+  BarChart,
+  FileText,
+  Truck,
+  Building,
+  Users,
+  Shield,
+  Clock,
   Settings,
   ChevronRight,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -29,9 +29,7 @@ import { useLayoutStore } from "@/lib/store";
 const menuGroups = [
   {
     label: "TỔNG QUAN",
-    items: [
-      { name: "Tổng quan", icon: LayoutGrid, href: "/" },
-    ],
+    items: [{ name: "Tổng quan", icon: LayoutGrid, href: "/" }],
   },
   {
     label: "QUẢN LÝ KHO",
@@ -74,17 +72,21 @@ export function Sidebar() {
   const { sidebarCollapsed, toggleSidebar } = useLayoutStore();
 
   return (
-    <aside className={cn(
-      "fixed left-0 top-0 h-screen bg-primary text-[#a8c4db] flex flex-col z-50 transition-all duration-300",
-      sidebarCollapsed ? "w-18" : "w-60"
-    )}>
+    <aside
+      className={cn(
+        "fixed left-0 top-0 h-screen bg-primary text-white/70 flex flex-col z-50 transition-all duration-300",
+        sidebarCollapsed ? "w-18" : "w-60",
+      )}
+    >
       <div className="h-16 flex items-center px-4 border-b border-white/10 justify-between">
         {!sidebarCollapsed && (
           <div className="flex items-center">
             <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center mr-3">
               <Box className="text-white w-5 h-5" />
             </div>
-            <span className="text-white font-bold text-sm tracking-wider uppercase truncate">WMS System</span>
+            <span className="text-white font-bold text-sm tracking-wider uppercase truncate">
+              WMS System
+            </span>
           </div>
         )}
         {sidebarCollapsed && (
@@ -93,9 +95,9 @@ export function Sidebar() {
           </div>
         )}
         {!sidebarCollapsed && (
-          <button 
+          <button
             onClick={toggleSidebar}
-            className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-[#7fa8c9] hover:text-white"
+            className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-white/60 hover:text-white"
           >
             <PanelLeftClose className="w-5 h-5" />
           </button>
@@ -106,7 +108,7 @@ export function Sidebar() {
         {menuGroups.map((group) => (
           <div key={group.label}>
             {!sidebarCollapsed && (
-              <h3 className="px-3 text-[10px] font-semibold text-[#7fa8c9] tracking-[1.5px] mb-2 uppercase">
+              <h3 className="px-3 text-[10px] font-semibold text-white/50 tracking-[1.5px] mb-2 uppercase">
                 {group.label}
               </h3>
             )}
@@ -120,19 +122,27 @@ export function Sidebar() {
                     className={cn(
                       "flex items-center rounded-lg text-sm font-medium transition-all group cursor-pointer",
                       sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2",
-                      isActive 
-                        ? "bg-accent text-white" 
-                        : "hover:bg-white/5 hover:text-white"
+                      isActive
+                        ? "bg-accent text-white"
+                        : "hover:bg-white/5 hover:text-white",
                     )}
                     title={sidebarCollapsed ? item.name : ""}
                   >
-                    <item.icon className={cn(
-                      "w-4.5 h-4.5 transition-colors",
-                      !sidebarCollapsed && "mr-3",
-                      isActive ? "text-white" : "text-[#7fa8c9] group-hover:text-white"
-                    )} />
-                    {!sidebarCollapsed && <span className="flex-1 truncate">{item.name}</span>}
-                    {isActive && !sidebarCollapsed && <ChevronRight className="w-4 h-4 opacity-50" />}
+                    <item.icon
+                      className={cn(
+                        "w-4.5 h-4.5 transition-colors",
+                        !sidebarCollapsed && "mr-3",
+                        isActive
+                          ? "text-white"
+                          : "text-white/60 group-hover:text-white",
+                      )}
+                    />
+                    {!sidebarCollapsed && (
+                      <span className="flex-1 truncate">{item.name}</span>
+                    )}
+                    {isActive && !sidebarCollapsed && (
+                      <ChevronRight className="w-4 h-4 opacity-50" />
+                    )}
                   </Link>
                 );
               })}
@@ -142,25 +152,34 @@ export function Sidebar() {
       </div>
 
       <div className="p-3 border-t border-white/10 bg-primary/50">
-        <div className={cn("flex items-center", sidebarCollapsed ? "justify-center" : "px-1")}>
+        <div
+          className={cn(
+            "flex items-center",
+            sidebarCollapsed ? "justify-center" : "px-1",
+          )}
+        >
           <div className="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center border border-accent/30 overflow-hidden cursor-pointer">
-             <img 
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
+            <img
+              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
               alt="Avatar"
               className="w-full h-full object-cover"
             />
           </div>
           {!sidebarCollapsed && (
             <div className="ml-3 overflow-hidden">
-              <p className="text-sm font-semibold text-white truncate">Nguyễn Văn A</p>
-              <p className="text-[11px] text-[#7fa8c9] truncate">Quản trị viên</p>
+              <p className="text-sm font-semibold text-white truncate">
+                Nguyễn Văn A
+              </p>
+              <p className="text-[11px] text-white/60 truncate">
+                Quản trị viên
+              </p>
             </div>
           )}
         </div>
         {sidebarCollapsed && (
-          <button 
+          <button
             onClick={toggleSidebar}
-            className="w-full mt-4 flex justify-center p-2 hover:bg-white/10 rounded-md transition-colors text-[#7fa8c9]"
+            className="w-full mt-4 flex justify-center p-2 hover:bg-white/10 rounded-md transition-colors text-white/60"
           >
             <PanelLeftOpen className="w-5 h-5" />
           </button>

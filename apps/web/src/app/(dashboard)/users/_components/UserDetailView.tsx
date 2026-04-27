@@ -2,47 +2,96 @@
 
 import React from "react";
 import Link from "next/link";
-import { Clock, Lock, Mail, Pencil, Shield, UserRound } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  Clock,
+  Lock,
+  Mail,
+  Pencil,
+  Shield,
+  Trash2,
+  Unlock,
+  UserRound,
+} from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { getApiErrorMessage } from "@/lib/api/client";
+import {
+  useDeleteUser,
+  useToggleUserActive,
+  useUser,
+} from "@/lib/hooks/use-users";
+import { useAuthStore } from "@/lib/store";
 
 interface UserDetailViewProps {
   id: string;
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  ADMIN: "Quản trị viên",
+  WAREHOUSE_STAFF: "Thủ kho",
+  ACCOUNTANT: "Kế toán",
+};
+
+const formatDateTime = (iso?: string) => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("vi-VN");
+};
+
 export function UserDetailView({ id }: UserDetailViewProps) {
-  const [isLockOpen, setIsLockOpen] = React.useState(false);
-  const user = {
-    id,
-    name: "Nguyễn Văn A",
-    email: "admin@wms.com",
-    role: "Quản trị viên",
-    isActive: true,
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-    createdAt: "10/01/2024 08:00",
-    lastLogin: "Hôm nay, 08:30",
+  const router = useRouter();
+  const meId = useAuthStore((s) => s.user?.id);
+  const { data: user, isLoading, isError, error } = useUser(id);
+  const toggleMutation = useToggleUserActive();
+  const deleteMutation = useDeleteUser();
+
+  const [isToggleOpen, setIsToggleOpen] = React.useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+
+  if (isLoading) {
+    return (
+      <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-10 text-center text-sm text-text-secondary">
+        Đang tải...
+      </div>
+    );
+  }
+
+  if (isError || !user) {
+    return (
+      <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-10 text-center">
+        <p className="text-danger font-medium text-sm">
+          {getApiErrorMessage(error, "Không thể tải người dùng")}
+        </p>
+      </div>
+    );
+  }
+
+  const isMe = user.id === meId;
+  const avatar =
+    user.avatar ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`;
+  const roleLabel = ROLE_LABELS[user.role.name] ?? user.role.name;
+
+  const onConfirmToggle = async () => {
+    try {
+      await toggleMutation.mutateAsync({ id, isActive: !user.isActive });
+      setIsToggleOpen(false);
+    } catch (e) {
+      alert(getApiErrorMessage(e, "Không thể cập nhật trạng thái"));
+    }
   };
 
-  const activities = [
-    {
-      action: "Duyệt phiếu nhập",
-      target: "PNK-2024-0056",
-      time: "17/05/2024 09:30",
-    },
-    {
-      action: "Cập nhật sản phẩm",
-      target: "SP000456",
-      time: "16/05/2024 14:22",
-    },
-    {
-      action: "Tạo người dùng",
-      target: "Trần Thị B",
-      time: "15/05/2024 10:10",
-    },
-  ];
+  const onConfirmDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(id);
+      router.push("/users");
+    } catch (e) {
+      alert(getApiErrorMessage(e, "Không thể xóa người dùng"));
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* Action Bar */}
       <div className="flex justify-end gap-3">
         <Link
           href={`/users/${id}/edit`}
@@ -51,10 +100,21 @@ export function UserDetailView({ id }: UserDetailViewProps) {
           <Pencil className="w-4 h-4" /> Chỉnh sửa
         </Link>
         <button
-          onClick={() => setIsLockOpen(true)}
-          className="flex items-center gap-2 bg-card-white border border-danger/20 text-danger hover:bg-danger/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm"
+          type="button"
+          disabled={isMe}
+          onClick={() => setIsToggleOpen(true)}
+          className="flex items-center gap-2 bg-card-white border border-warning/20 text-warning hover:bg-warning/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          <Lock className="w-4 h-4" /> Khóa tài khoản
+          {user.isActive ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+          {user.isActive ? "Khóa tài khoản" : "Mở khóa"}
+        </button>
+        <button
+          type="button"
+          disabled={isMe}
+          onClick={() => setIsDeleteOpen(true)}
+          className="flex items-center gap-2 bg-card-white border border-danger/20 text-danger hover:bg-danger/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <Trash2 className="w-4 h-4" /> Xóa
         </button>
       </div>
 
@@ -62,7 +122,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
         <div className="xl:col-span-4 space-y-6">
           <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-6 text-center">
             <img
-              src={user.avatar}
+              src={avatar}
               alt={user.name}
               className="w-24 h-24 rounded-full border border-border-ui bg-background-app mx-auto"
             />
@@ -70,12 +130,18 @@ export function UserDetailView({ id }: UserDetailViewProps) {
               {user.name}
             </h2>
             <p className="text-sm text-text-secondary">{user.email}</p>
-            <div className="mt-4 flex justify-center gap-2">
+            <div className="mt-4 flex justify-center gap-2 flex-wrap">
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-info/10 text-info">
-                {user.role}
+                {roleLabel}
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success/10 text-success">
-                Đang hoạt động
+              <span
+                className={
+                  user.isActive
+                    ? "px-2 py-0.5 rounded-full text-[10px] font-bold bg-success/10 text-success"
+                    : "px-2 py-0.5 rounded-full text-[10px] font-bold bg-danger/10 text-danger"
+                }
+              >
+                {user.isActive ? "Đang hoạt động" : "Đã khóa"}
               </span>
             </div>
           </div>
@@ -99,7 +165,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
                   Vai trò
                 </p>
                 <p className="text-sm font-semibold text-text-primary">
-                  {user.role}
+                  {roleLabel}
                 </p>
               </div>
             </div>
@@ -110,7 +176,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
                   Ngày tạo
                 </p>
                 <p className="text-sm font-semibold text-text-primary">
-                  {user.createdAt}
+                  {formatDateTime(user.createdAt)}
                 </p>
               </div>
             </div>
@@ -118,10 +184,10 @@ export function UserDetailView({ id }: UserDetailViewProps) {
               <Clock className="w-5 h-5 text-warning" />
               <div>
                 <p className="text-xs text-text-secondary uppercase font-bold">
-                  Đăng nhập gần nhất
+                  Cập nhật gần nhất
                 </p>
                 <p className="text-sm font-semibold text-text-primary">
-                  {user.lastLogin}
+                  {formatDateTime(user.updatedAt)}
                 </p>
               </div>
             </div>
@@ -133,38 +199,37 @@ export function UserDetailView({ id }: UserDetailViewProps) {
             <h3 className="text-base font-bold text-text-primary">
               Hoạt động gần đây
             </h3>
+            <p className="text-xs text-text-secondary mt-1">
+              Chưa có dữ liệu (Activity Log module sẽ build sau)
+            </p>
           </div>
-          <div className="divide-y divide-border-ui">
-            {activities.map((activity) => (
-              <div
-                key={`${activity.action}-${activity.time}`}
-                className="p-5 flex items-start gap-3 hover:bg-background-app/50 transition-colors"
-              >
-                <div className="w-9 h-9 rounded-full bg-accent/10 text-accent flex items-center justify-center">
-                  <Clock className="w-4 h-4" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-text-primary">
-                    {activity.action}{" "}
-                    <span className="text-accent">{activity.target}</span>
-                  </p>
-                  <p className="text-xs text-text-secondary mt-1">
-                    {activity.time}
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div className="p-10 text-center text-sm text-text-secondary">
+            Chưa có hoạt động nào.
           </div>
         </div>
       </div>
 
       <ConfirmDialog
-        isOpen={isLockOpen}
-        onClose={() => setIsLockOpen(false)}
-        onConfirm={() => console.log("Lock user", id)}
-        title="Khóa tài khoản"
-        message="Người dùng sẽ không thể đăng nhập cho đến khi được mở khóa."
-        confirmLabel="Khóa tài khoản"
+        isOpen={isToggleOpen}
+        onClose={() => setIsToggleOpen(false)}
+        onConfirm={onConfirmToggle}
+        title={user.isActive ? "Khóa tài khoản" : "Mở khóa tài khoản"}
+        message={
+          user.isActive
+            ? "Người dùng sẽ không thể đăng nhập cho đến khi được mở khóa."
+            : "Người dùng sẽ có thể đăng nhập và thao tác theo quyền được gán."
+        }
+        confirmLabel={user.isActive ? "Khóa tài khoản" : "Mở khóa"}
+        variant={user.isActive ? "danger" : "info"}
+      />
+
+      <ConfirmDialog
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        onConfirm={onConfirmDelete}
+        title="Xóa người dùng"
+        message={`Hành động này không thể hoàn tác. Bạn có chắc muốn xóa "${user.name}"?`}
+        confirmLabel="Xóa"
         variant="danger"
       />
     </div>

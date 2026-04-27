@@ -5,20 +5,16 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { useParams } from "next/navigation";
 import { RoleForm } from "../../_components/RoleForm";
+import { useRole } from "@/lib/hooks/use-roles";
+import { getApiErrorMessage } from "@/lib/api/client";
 
 export default function EditRolePage() {
   const params = useParams();
   const id = params.id as string;
-
-  const mockData = {
-    name: "ADMIN",
-    label: "Quản trị viên",
-    description: `Toàn quyền hệ thống, duyệt phiếu và quản lý người dùng. Role ID: ${id}`,
-  };
+  const { data: role, isLoading, isError, error } = useRole(id);
 
   return (
     <div className="p-5 w-full space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <Link
           href={`/roles/${id}`}
@@ -37,7 +33,17 @@ export default function EditRolePage() {
       </div>
 
       <div className="pl-9">
-        <RoleForm initialData={mockData} isEdit />
+        {isLoading && (
+          <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-10 text-center text-sm text-text-secondary">
+            Đang tải...
+          </div>
+        )}
+        {isError && (
+          <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-10 text-center text-sm text-danger">
+            {getApiErrorMessage(error, "Không thể tải vai trò")}
+          </div>
+        )}
+        {role && <RoleForm initialData={role} />}
       </div>
     </div>
   );

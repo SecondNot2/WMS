@@ -5,22 +5,16 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { useParams } from "next/navigation";
 import { UserForm } from "../../_components/UserForm";
+import { useUser } from "@/lib/hooks/use-users";
+import { getApiErrorMessage } from "@/lib/api/client";
 
 export default function EditUserPage() {
   const params = useParams();
   const id = params.id as string;
-
-  const mockData = {
-    name: "Nguyễn Văn A",
-    email: "admin@wms.com",
-    role: "ADMIN" as const,
-    password: "",
-    isActive: true,
-  };
+  const { data: user, isLoading, isError, error } = useUser(id);
 
   return (
     <div className="p-5 w-full space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <Link
           href={`/users/${id}`}
@@ -39,10 +33,17 @@ export default function EditUserPage() {
       </div>
 
       <div className="pl-9">
-        <UserForm
-          initialData={{ ...mockData, name: `${mockData.name} #${id}` }}
-          isEdit
-        />
+        {isLoading && (
+          <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-10 text-center text-sm text-text-secondary">
+            Đang tải...
+          </div>
+        )}
+        {isError && (
+          <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-10 text-center text-sm text-danger">
+            {getApiErrorMessage(error, "Không thể tải người dùng")}
+          </div>
+        )}
+        {user && <UserForm initialData={user} />}
       </div>
     </div>
   );

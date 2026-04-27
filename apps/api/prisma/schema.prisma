@@ -1,16 +1,282 @@
-// WMS Prisma schema — placeholder.
-// TODO: copy schema chi tiết từ docs/DATABASE_SCHEMA.md (chạy /build-db).
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-// Placeholder model — sẽ thay thế bằng schema đầy đủ ở /build-db.
-model Placeholder {
-  id String @id @default(cuid())
+// ─────────────────────────────────────────
+// ROLE & USER
+// ─────────────────────────────────────────
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  permissions Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  avatar    String?
+  roleId    String
+  role      Role     @relation(fields: [roleId], references: [id])
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  goodsReceipts GoodsReceipt[] @relation("ReceiptCreatedBy")
+  goodsIssues   GoodsIssue[]   @relation("IssueCreatedBy")
+  activityLogs  ActivityLog[]
+
+  @@index([roleId])
+  @@index([isActive])
+  @@map("users")
+}
+
+// ─────────────────────────────────────────
+// CATEGORY & PRODUCT
+// ─────────────────────────────────────────
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products Product[]
+
+  @@index([isActive])
+  @@map("categories")
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  sku          String   @unique
+  name         String
+  description  String?
+  image        String?
+  unit         String
+  categoryId   String
+  category     Category @relation(fields: [categoryId], references: [id])
+  minStock     Int      @default(0)
+  currentStock Int      @default(0)
+  costPrice    Decimal? @db.Decimal(15, 2)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  goodsReceiptItems GoodsReceiptItem[]
+  goodsIssueItems   GoodsIssueItem[]
+  stockHistories    StockHistory[]
+
+  @@index([categoryId])
+  @@index([currentStock])
+  @@index([isActive, categoryId])
+  @@index([sku])
+  @@map("products")
+}
+
+// ─────────────────────────────────────────
+// SUPPLIER
+// ─────────────────────────────────────────
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  taxCode   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  goodsReceipts GoodsReceipt[]
+
+  @@index([isActive])
+  @@map("suppliers")
+}
+
+// ─────────────────────────────────────────
+// RECIPIENT
+// ─────────────────────────────────────────
+
+model Recipient {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  goodsIssues GoodsIssue[]
+
+  @@index([isActive])
+  @@map("recipients")
+}
+
+// ─────────────────────────────────────────
+// GOODS RECEIPT — Phiếu nhập kho
+// ─────────────────────────────────────────
+
+model GoodsReceipt {
+  id             String             @id @default(cuid())
+  code           String             @unique
+  supplierId     String
+  supplier       Supplier           @relation(fields: [supplierId], references: [id])
+  createdById    String
+  createdBy      User               @relation("ReceiptCreatedBy", fields: [createdById], references: [id])
+  status         GoodsReceiptStatus @default(PENDING)
+  note           String?
+  totalAmount    Decimal            @default(0) @db.Decimal(15, 2)
+  approvedById   String?
+  rejectedReason String?
+  receivedAt     DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  items GoodsReceiptItem[]
+
+  @@index([status, createdAt])
+  @@index([supplierId, createdAt])
+  @@index([createdById])
+  @@map("goods_receipts")
+}
+
+model GoodsReceiptItem {
+  id             String       @id @default(cuid())
+  goodsReceiptId String
+  goodsReceipt   GoodsReceipt @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id])
+  quantity       Int
+  unitPrice      Decimal      @db.Decimal(15, 2)
+  totalPrice     Decimal      @db.Decimal(15, 2)
+
+  @@index([goodsReceiptId])
+  @@index([productId])
+  @@map("goods_receipt_items")
+}
+
+enum GoodsReceiptStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ─────────────────────────────────────────
+// GOODS ISSUE — Phiếu xuất kho
+// ─────────────────────────────────────────
+
+model GoodsIssue {
+  id             String           @id @default(cuid())
+  code           String           @unique
+  recipientId    String
+  recipient      Recipient        @relation(fields: [recipientId], references: [id])
+  createdById    String
+  createdBy      User             @relation("IssueCreatedBy", fields: [createdById], references: [id])
+  status         GoodsIssueStatus @default(PENDING)
+  purpose        String?
+  note           String?
+  totalAmount    Decimal          @default(0) @db.Decimal(15, 2)
+  approvedById   String?
+  rejectedReason String?
+  issuedAt       DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  items GoodsIssueItem[]
+
+  @@index([status, createdAt])
+  @@index([recipientId, createdAt])
+  @@index([createdById])
+  @@map("goods_issues")
+}
+
+model GoodsIssueItem {
+  id           String     @id @default(cuid())
+  goodsIssueId String
+  goodsIssue   GoodsIssue @relation(fields: [goodsIssueId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product    @relation(fields: [productId], references: [id])
+  quantity     Int
+  unitPrice    Decimal    @db.Decimal(15, 2)
+  totalPrice   Decimal    @db.Decimal(15, 2)
+
+  @@index([goodsIssueId])
+  @@index([productId])
+  @@map("goods_issue_items")
+}
+
+enum GoodsIssueStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ─────────────────────────────────────────
+// STOCK HISTORY
+// ─────────────────────────────────────────
+
+model StockHistory {
+  id          String    @id @default(cuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+  type        StockType
+  quantity    Int
+  stockBefore Int
+  stockAfter  Int
+  refId       String?
+  refCode     String?
+  note        String?
+  createdById String?
+  createdAt   DateTime  @default(now())
+
+  @@index([productId, createdAt])
+  @@index([type, createdAt])
+  @@index([refId])
+  @@map("stock_histories")
+}
+
+enum StockType {
+  IN
+  OUT
+  ADJUST
+}
+
+// ─────────────────────────────────────────
+// ACTIVITY LOG
+// ─────────────────────────────────────────
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  action     String
+  targetType String?
+  targetId   String?
+  targetCode String?
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@index([targetType, targetId])
+  @@map("activity_logs")
 }

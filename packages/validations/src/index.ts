@@ -130,6 +130,53 @@ export const updateRoleSchema = z.object({
 export type UpdateRoleSchemaInput = z.infer<typeof updateRoleSchema>;
 
 // ─────────────────────────────────────────
+// CATEGORIES
+// ─────────────────────────────────────────
+
+const nullableDescription = z
+  .string()
+  .trim()
+  .max(1000)
+  .optional()
+  .nullable()
+  .or(z.literal("").transform(() => null));
+
+export const createCategorySchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Vui lòng nhập tên danh mục")
+    .max(100, "Tên danh mục tối đa 100 ký tự"),
+  description: nullableDescription,
+});
+export type CreateCategorySchemaInput = z.infer<typeof createCategorySchema>;
+
+export const updateCategorySchema = createCategorySchema
+  .partial()
+  .extend({ isActive: z.boolean().optional() });
+export type UpdateCategorySchemaInput = z.infer<typeof updateCategorySchema>;
+
+export const getCategoriesQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  search: z.string().trim().optional(),
+  isActive: z
+    .union([z.boolean(), z.enum(["true", "false"])])
+    .transform((v) => (typeof v === "boolean" ? v : v === "true"))
+    .optional(),
+});
+export type GetCategoriesQuerySchemaInput = z.infer<
+  typeof getCategoriesQuerySchema
+>;
+
+export const categoryIdParamsSchema = z.object({
+  id: z.string().trim().min(1, "Thiếu mã danh mục"),
+});
+export type CategoryIdParamsSchemaInput = z.infer<
+  typeof categoryIdParamsSchema
+>;
+
+// ─────────────────────────────────────────
 // PRODUCTS
 // ─────────────────────────────────────────
 

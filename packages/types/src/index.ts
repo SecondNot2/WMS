@@ -114,6 +114,54 @@ export interface UpdateRoleInput {
 }
 
 // ─────────────────────────────────────────
+// CATEGORIES
+// ─────────────────────────────────────────
+
+export interface Category {
+  id: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  productCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CategoryProductSummary {
+  id: string;
+  sku: string;
+  name: string;
+  unit: string;
+  currentStock: number;
+}
+
+export interface CategoryDetail extends Category {
+  products: CategoryProductSummary[];
+}
+
+export interface CreateCategoryInput {
+  name: string;
+  description?: string | null;
+}
+
+export interface UpdateCategoryInput extends Partial<CreateCategoryInput> {
+  isActive?: boolean;
+}
+
+export interface GetCategoriesQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+}
+
+export interface ImportCategoriesResult {
+  imported: number;
+  skipped: number;
+  errors: { row: number; reason: string }[];
+}
+
+// ─────────────────────────────────────────
 // PRODUCTS
 // ─────────────────────────────────────────
 

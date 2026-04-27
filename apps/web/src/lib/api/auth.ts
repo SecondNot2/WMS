@@ -6,15 +6,30 @@ import type {
   RefreshResponse,
 } from "@wms/types";
 
+export interface UpdateProfileInput {
+  name?: string;
+  email?: string;
+  avatar?: string | null;
+}
+
+export interface ChangePasswordInput {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export const authApi = {
   login: (email: string, password: string) =>
     apiClient
-      .post<ApiSuccessResponse<LoginResponse>>("/auth/login", { email, password })
+      .post<
+        ApiSuccessResponse<LoginResponse>
+      >("/auth/login", { email, password })
       .then((r) => r.data.data),
 
   refresh: (refreshToken: string) =>
     apiClient
-      .post<ApiSuccessResponse<RefreshResponse>>("/auth/refresh", { refreshToken })
+      .post<
+        ApiSuccessResponse<RefreshResponse>
+      >("/auth/refresh", { refreshToken })
       .then((r) => r.data.data),
 
   logout: () =>
@@ -27,11 +42,15 @@ export const authApi = {
       .get<ApiSuccessResponse<AuthUser>>("/auth/me")
       .then((r) => r.data.data),
 
-  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+  changePassword: (data: ChangePasswordInput) =>
     apiClient
-      .patch<ApiSuccessResponse<{ message: string }>>(
-        "/auth/change-password",
-        data
-      )
+      .patch<
+        ApiSuccessResponse<{ message: string }>
+      >("/auth/change-password", data)
+      .then((r) => r.data.data),
+
+  updateProfile: (data: UpdateProfileInput) =>
+    apiClient
+      .patch<ApiSuccessResponse<AuthUser>>("/auth/profile", data)
       .then((r) => r.data.data),
 };

@@ -40,6 +40,20 @@ export const changePasswordSchema = z
   });
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 
+export const updateProfileSchema = z.object({
+  name: z.string().trim().min(1, "Vui lòng nhập họ tên").max(100).optional(),
+  email: z.string().trim().toLowerCase().email("Email không hợp lệ").optional(),
+  avatar: z
+    .string()
+    .trim()
+    .max(500)
+    .url("Avatar phải là URL hợp lệ")
+    .nullable()
+    .optional()
+    .or(z.literal("").transform(() => null)),
+});
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
 // ─────────────────────────────────────────
 // USERS
 // ─────────────────────────────────────────

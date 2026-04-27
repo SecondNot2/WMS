@@ -8,6 +8,7 @@ import { logger } from "./lib/logger";
 import authRoutes from "./routes/auth.routes";
 import usersRoutes from "./routes/users.routes";
 import rolesRoutes from "./routes/roles.routes";
+import productsRoutes from "./routes/products.routes";
 
 const app = express();
 
@@ -35,7 +36,7 @@ app.get("/health", (_req, res) => {
 app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 app.use("/roles", rolesRoutes);
-// app.use('/products', productRoutes)
+app.use("/products", productsRoutes);
 
 // 404 handler
 app.use((req, res) => {

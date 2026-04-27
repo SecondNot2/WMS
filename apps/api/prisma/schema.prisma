@@ -66,7 +66,10 @@ model Category {
 model Product {
   id           String   @id @default(cuid())
   sku          String   @unique
+  barcode      String?  @unique
   name         String
+  brand        String?
+  model        String?
   description  String?
   image        String?
   unit         String
@@ -75,6 +78,9 @@ model Product {
   minStock     Int      @default(0)
   currentStock Int      @default(0)
   costPrice    Decimal? @db.Decimal(15, 2)
+  salePrice    Decimal? @db.Decimal(15, 2)
+  taxRate      Decimal? @db.Decimal(5, 2)
+  location     String?
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -87,6 +93,7 @@ model Product {
   @@index([currentStock])
   @@index([isActive, categoryId])
   @@index([sku])
+  @@index([barcode])
   @@map("products")
 }
 

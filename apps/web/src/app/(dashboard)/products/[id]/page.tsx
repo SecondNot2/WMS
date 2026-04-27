@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { ProductDetailView } from "../_components/ProductDetailView";
+import { ProductDetailViewConnected } from "../_components/ProductDetailViewConnected";
 import { useParams } from "next/navigation";
 
 export default function ProductIdPage() {
@@ -14,7 +14,7 @@ export default function ProductIdPage() {
     <div className="p-5 w-full space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link 
+        <Link
           href="/products"
           className="p-2 hover:bg-background-app rounded-full transition-colors text-text-secondary"
         >
@@ -31,7 +31,7 @@ export default function ProductIdPage() {
       </div>
 
       <div className="pl-9">
-        <ProductDetailView id={id} />
+        <ProductDetailViewConnected id={id} />
       </div>
     </div>
   );

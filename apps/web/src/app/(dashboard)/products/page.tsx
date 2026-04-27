@@ -3,12 +3,43 @@
 import React from "react";
 import Link from "next/link";
 import { Plus, Download, FileUp } from "lucide-react";
-import { ProductTable } from "./_components/ProductTable";
-import { ProductFilters } from "./_components/ProductFilters";
+import { ProductTableConnected } from "./_components/ProductTableConnected";
+import {
+  ProductFilters,
+  defaultProductFiltersValue,
+  type ProductFiltersValue,
+} from "./_components/ProductFilters";
 import { ProductStatsSidebar } from "./_components/ProductStatsSidebar";
-import { RecentProductChanges } from "./_components/RecentProductChanges";
+import type { GetProductsQuery } from "@wms/types";
+
+function toQueryFilters(value: ProductFiltersValue, debouncedSearch: string) {
+  const filters: Pick<GetProductsQuery, "search" | "lowStock" | "isActive"> =
+    {};
+  const trimmed = debouncedSearch.trim();
+  if (trimmed.length > 0) filters.search = trimmed;
+  if (value.stock === "lowStock") filters.lowStock = true;
+  if (value.stock === "inactive") filters.isActive = false;
+  return filters;
+}
 
 export default function ProductsPage() {
+  const [filters, setFilters] = React.useState<ProductFiltersValue>(
+    defaultProductFiltersValue,
+  );
+  const [debouncedSearch, setDebouncedSearch] = React.useState(filters.search);
+
+  React.useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearch(filters.search);
+    }, 300);
+    return () => window.clearTimeout(timeout);
+  }, [filters.search]);
+
+  const queryFilters = React.useMemo(
+    () => toQueryFilters(filters, debouncedSearch),
+    [filters, debouncedSearch],
+  );
+
   return (
     <div className="p-5 space-y-5">
       {/* Page Header */}
@@ -43,8 +74,8 @@ export default function ProductsPage() {
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
         {/* Main Content Area */}
         <div className="xl:col-span-10 space-y-5">
-          <ProductFilters />
-          <ProductTable />
+          <ProductFilters value={filters} onChange={setFilters} />
+          <ProductTableConnected filters={queryFilters} />
         </div>
 
         {/* Sidebar Area */}
@@ -52,9 +83,6 @@ export default function ProductsPage() {
           <ProductStatsSidebar className="h-full" />
         </div>
       </div>
-
-      {/* Full Width Section */}
-      <RecentProductChanges />
     </div>
   );
 }

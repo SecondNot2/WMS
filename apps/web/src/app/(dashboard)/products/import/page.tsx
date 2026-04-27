@@ -1,9 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { ImportWizard } from "@/components/ImportWizard";
+import { ProductImportWizardConnected } from "../_components/ProductImportWizardConnected";
 
 export default function ProductImportPage() {
   return (
@@ -19,7 +17,7 @@ export default function ProductImportPage() {
       </div>
 
       <div>
-        <ImportWizard moduleName="Sản phẩm" />
+        <ProductImportWizardConnected />
       </div>
     </div>
   );

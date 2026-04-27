@@ -3,14 +3,14 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { ProductForm } from "../_components/ProductForm";
+import { ProductFormConnected } from "../_components/ProductFormConnected";
 
 export default function NewProductPage() {
   return (
     <div className="p-5 w-full space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link 
+        <Link
           href="/products"
           className="p-2 hover:bg-background-app rounded-full transition-colors text-text-secondary"
         >
@@ -27,7 +27,7 @@ export default function NewProductPage() {
       </div>
 
       <div className="pl-9">
-        <ProductForm />
+        <ProductFormConnected />
       </div>
     </div>
   );

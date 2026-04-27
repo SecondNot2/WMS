@@ -2,12 +2,45 @@
 
 import React from "react";
 import Link from "next/link";
-import { Plus, Tag, FileUp } from "lucide-react";
-import { StatsCard } from "@/components/StatsCard";
-import { CategoryTable } from "./_components/CategoryTable";
-import { CategoryFilters } from "./_components/CategoryFilters";
+import { Plus, FileUp } from "lucide-react";
+import { CategoryTableConnected } from "./_components/CategoryTableConnected";
+import {
+  CategoryFiltersConnected,
+  defaultCategoryFiltersValue,
+  type CategoryFiltersValue,
+} from "./_components/CategoryFiltersConnected";
+import type { GetCategoriesQuery } from "@wms/types";
+
+function toQueryFilters(
+  value: CategoryFiltersValue,
+  debouncedSearch: string,
+): Pick<GetCategoriesQuery, "search" | "isActive"> {
+  const filters: Pick<GetCategoriesQuery, "search" | "isActive"> = {};
+  const trimmed = debouncedSearch.trim();
+  if (trimmed.length > 0) filters.search = trimmed;
+  if (value.status === "active") filters.isActive = true;
+  if (value.status === "inactive") filters.isActive = false;
+  return filters;
+}
 
 export default function CategoriesPage() {
+  const [filters, setFilters] = React.useState<CategoryFiltersValue>(
+    defaultCategoryFiltersValue,
+  );
+  const [debouncedSearch, setDebouncedSearch] = React.useState(filters.search);
+
+  React.useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearch(filters.search);
+    }, 300);
+    return () => window.clearTimeout(timeout);
+  }, [filters.search]);
+
+  const queryFilters = React.useMemo(
+    () => toQueryFilters(filters, debouncedSearch),
+    [filters, debouncedSearch],
+  );
+
   return (
     <div className="p-5 space-y-5">
       {/* Page Header */}
@@ -35,41 +68,10 @@ export default function CategoriesPage() {
           </Link>
         </div>
       </div>
-      {/* Stats row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          label="Tổng danh mục"
-          value="24"
-          icon={Tag}
-          iconBg="bg-accent/10 text-accent"
-          trend={{ value: "2", isUp: true }}
-        />
-        <StatsCard
-          label="Đang hoạt động"
-          value="20"
-          icon={Tag}
-          iconBg="bg-success/10 text-success"
-        />
-        <StatsCard
-          label="Tạm dừng"
-          value="4"
-          icon={Tag}
-          iconBg="bg-warning/10 text-warning"
-        />
-        <StatsCard
-          label="Tổng sản phẩm"
-          value="1,248"
-          icon={Tag}
-          iconBg="bg-info/10 text-info"
-        />
-      </div>
 
-      <div className="bg-card-white rounded-xl border border-border-ui shadow-sm">
-        {/* Filters + Table */}
-        <div className="p-5">
-          <CategoryFilters />
-          <CategoryTable />
-        </div>
+      <div className="space-y-5">
+        <CategoryFiltersConnected value={filters} onChange={setFilters} />
+        <CategoryTableConnected filters={queryFilters} />
       </div>
     </div>
   );

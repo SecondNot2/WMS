@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { CategoryForm } from "@/app/(dashboard)/categories/_components/CategoryForm";
+import { CategoryFormConnected } from "@/app/(dashboard)/categories/_components/CategoryFormConnected";
 
 export default function NewCategoryPage() {
   return (
@@ -27,7 +27,7 @@ export default function NewCategoryPage() {
       </div>
 
       <div className="pl-9">
-        <CategoryForm />
+        <CategoryFormConnected />
       </div>
     </div>
   );

@@ -3,14 +3,14 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { ImportWizard } from "@/components/ImportWizard";
+import { CategoryImportWizardConnected } from "@/app/(dashboard)/categories/_components/CategoryImportWizardConnected";
 
 export default function CategoryImportPage() {
   return (
     <div className="p-5 w-full space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link 
+        <Link
           href="/categories"
           className="p-2 hover:bg-background-app rounded-full transition-colors text-text-secondary"
         >
@@ -27,10 +27,7 @@ export default function CategoryImportPage() {
       </div>
 
       <div>
-        <ImportWizard 
-          moduleName="Danh mục" 
-          onComplete={() => window.location.href = "/categories"}
-        />
+        <CategoryImportWizardConnected />
       </div>
     </div>
   );

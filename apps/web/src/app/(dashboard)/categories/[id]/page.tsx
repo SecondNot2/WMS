@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { CategoryDetailView } from "@/app/(dashboard)/categories/_components/CategoryDetailView";
+import { CategoryDetailViewConnected } from "@/app/(dashboard)/categories/_components/CategoryDetailViewConnected";
 import { useParams } from "next/navigation";
 
 export default function CategoryIdPage() {
@@ -31,7 +31,7 @@ export default function CategoryIdPage() {
       </div>
 
       <div className="pl-9">
-        <CategoryDetailView id={id} />
+        <CategoryDetailViewConnected id={id} />
       </div>
     </div>
   );

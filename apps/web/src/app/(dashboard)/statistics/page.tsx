@@ -10,6 +10,7 @@ import {
   DollarSign,
   BarChart3,
   Download,
+  Loader2,
 } from "lucide-react";
 import { StatsFilters } from "./_components/StatsFilters";
 import {
@@ -20,6 +21,9 @@ import {
 import { EfficiencyMetrics } from "./_components/EfficiencyMetrics";
 import { useEfficiency, usePerformance } from "@/lib/hooks/use-statistics";
 import type { StatisticsRange } from "@wms/types";
+import { statisticsApi } from "@/lib/api/statistics";
+import { getApiErrorMessage } from "@/lib/api/client";
+import { useToast } from "@/components/Toast";
 
 function formatCompact(value: number): string {
   if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2)}B`;
@@ -36,6 +40,8 @@ function formatTrend(value: number): string {
 export default function StatisticsPage() {
   const [range, setRange] = React.useState<StatisticsRange>("30d");
   const [categoryId, setCategoryId] = React.useState<string>("");
+  const [exporting, setExporting] = React.useState(false);
+  const toast = useToast();
 
   const query = React.useMemo(
     () => ({ range, ...(categoryId ? { categoryId } : {}) }),
@@ -44,6 +50,27 @@ export default function StatisticsPage() {
 
   const performanceQuery = usePerformance(query);
   const efficiencyQuery = useEfficiency(query);
+
+  const handleExport = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const blob = await statisticsApi.exportExcel(query);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `statistics-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success("Đã xuất báo cáo tổng hợp");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Không thể xuất báo cáo tổng hợp"));
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const summary = performanceQuery.data?.summary;
   const isLoadingPerf = performanceQuery.isLoading;
@@ -60,8 +87,17 @@ export default function StatisticsPage() {
             gian thực
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm">
-          <Download className="w-4 h-4" /> Xuất báo cáo tổng hợp
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="flex items-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-60"
+        >
+          {exporting ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4" />
+          )}
+          {exporting ? "Đang xuất..." : "Xuất báo cáo tổng hợp"}
         </button>
       </div>
 

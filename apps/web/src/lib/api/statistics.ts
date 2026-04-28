@@ -20,4 +20,9 @@ export const statisticsApi = {
         params,
       })
       .then((r) => r.data.data),
+
+  exportExcel: (params?: GetStatisticsQuery) =>
+    apiClient
+      .get<Blob>("/statistics/export", { params, responseType: "blob" })
+      .then((r) => r.data),
 };

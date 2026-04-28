@@ -19,6 +19,13 @@ router.get(
 );
 
 router.get(
+  "/export",
+  authorize([...allRoles]),
+  validate(getStatisticsQuerySchema, "query"),
+  ctrl.exportExcel,
+);
+
+router.get(
   "/performance",
   authorize([...allRoles]),
   validate(getStatisticsQuerySchema, "query"),

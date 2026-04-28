@@ -3,35 +3,35 @@
 import React from "react";
 import { StatsCard } from "@/components/StatsCard";
 import { Download, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { useInboundStats } from "@/lib/hooks/use-inbound";
 
 export function InboundStats() {
-  // TODO: Replace with useQuery -> GET /dashboard/stats
+  const { data, isLoading } = useInboundStats();
+
+  const fmt = (n?: number) => (isLoading ? "…" : String(n ?? 0));
+
   const statsData = [
     {
       label: "Phiếu nhập tháng này",
-      value: "156",
-      trend: { value: "12.5%", isUp: true },
+      value: fmt(data?.thisMonth),
       icon: Download,
       iconBg: "bg-accent/10 text-accent",
     },
     {
       label: "Đang chờ duyệt",
-      value: "24",
-      trend: { value: "2", isUp: true },
+      value: fmt(data?.pending),
       icon: Clock,
       iconBg: "bg-warning/10 text-warning",
     },
     {
       label: "Đã duyệt hôm nay",
-      value: "12",
-      trend: { value: "5", isUp: true },
+      value: fmt(data?.approvedToday),
       icon: CheckCircle2,
       iconBg: "bg-success/10 text-success",
     },
     {
-      label: "Bị từ chối",
-      value: "3",
-      trend: { value: "1", isUp: false },
+      label: "Bị từ chối tháng này",
+      value: fmt(data?.rejected),
       icon: XCircle,
       iconBg: "bg-danger/10 text-danger",
     },

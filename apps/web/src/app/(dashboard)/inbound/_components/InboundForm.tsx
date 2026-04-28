@@ -7,14 +7,19 @@ import * as z from "zod";
 import { Plus, Trash2, Save, Package, User, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useSuppliers } from "@/lib/hooks/use-suppliers";
+import { useProducts } from "@/lib/hooks/use-products";
+import { useCreateInbound, useUpdateInbound } from "@/lib/hooks/use-inbound";
+import { getApiErrorMessage } from "@/lib/api/client";
+import { useToast } from "@/components/Toast";
 
 const inboundItemSchema = z.object({
   productId: z.string().min(1, "Chọn sản phẩm"),
-  sku: z.string(),
-  name: z.string(),
-  unit: z.string(),
-  quantity: z.number().min(1, "Tối thiểu 1"),
-  unitPrice: z.number().min(0, "Giá không âm"),
+  quantity: z
+    .number({ error: "Số lượng không hợp lệ" })
+    .int()
+    .min(1, "Tối thiểu 1"),
+  unitPrice: z.number({ error: "Đơn giá không hợp lệ" }).min(0, "Giá không âm"),
 });
 
 const inboundSchema = z.object({
@@ -23,75 +28,42 @@ const inboundSchema = z.object({
   items: z.array(inboundItemSchema).min(1, "Cần ít nhất 1 sản phẩm"),
 });
 
-type InboundFormValues = z.infer<typeof inboundSchema>;
+export type InboundFormValues = z.infer<typeof inboundSchema>;
 
 interface InboundFormProps {
   initialData?: Partial<InboundFormValues>;
   isEdit?: boolean;
+  inboundId?: string;
 }
 
-export function InboundForm({ initialData, isEdit }: InboundFormProps) {
+export function InboundForm({
+  initialData,
+  isEdit,
+  inboundId,
+}: InboundFormProps) {
   const router = useRouter();
 
-  // Mock data for selectors
-  const suppliers = [
-    { id: "1", name: "Công ty TNHH An Phát" },
-    { id: "2", name: "Hợp tác xã Công nghệ" },
-    { id: "3", name: "Tổng kho Logistics" },
-  ];
+  const { data: suppliersData } = useSuppliers({ limit: 100 });
+  const suppliers = suppliersData?.data ?? [];
 
-  const products = [
-    {
-      id: "p1",
-      sku: "SP001",
-      name: "Chuột không dây Logitech M331",
-      unit: "Cái",
-      costPrice: 450000,
-    },
-    {
-      id: "p2",
-      sku: "SP002",
-      name: "Bàn phím cơ Keychron K2",
-      unit: "Cái",
-      costPrice: 1200000,
-    },
-    {
-      id: "p3",
-      sku: "SP003",
-      name: "Lót chuột Razer Gigantus V2",
-      unit: "Cái",
-      costPrice: 350000,
-    },
-    {
-      id: "p4",
-      sku: "SP004",
-      name: "Tai nghe Sony WH-1000XM4",
-      unit: "Cái",
-      costPrice: 4500000,
-    },
-  ];
+  const { data: productsData } = useProducts({ limit: 200, isActive: true });
+  const products = productsData?.data ?? [];
+
+  const createMutation = useCreateInbound();
+  const updateMutation = useUpdateInbound(inboundId ?? "");
+  const toast = useToast();
 
   const {
     register,
     handleSubmit,
     control,
-    setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<InboundFormValues>({
     resolver: zodResolver(inboundSchema),
-    defaultValues: initialData || {
+    defaultValues: initialData ?? {
       supplierId: "",
       note: "",
-      items: [
-        {
-          productId: "",
-          sku: "",
-          name: "",
-          unit: "",
-          quantity: 1,
-          unitPrice: 0,
-        },
-      ],
+      items: [{ productId: "", quantity: 1, unitPrice: 0 }],
     },
   });
 
@@ -100,31 +72,47 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
     name: "items",
   });
 
-  const watchItems = useWatch({
-    control,
-    name: "items",
-  });
+  const watchItems = useWatch({ control, name: "items" });
 
   const totalAmount =
-    watchItems?.reduce((sum, item) => {
-      return sum + (item.quantity * item.unitPrice || 0);
-    }, 0) || 0;
+    watchItems?.reduce(
+      (sum, item) => sum + (item.quantity * item.unitPrice || 0),
+      0,
+    ) || 0;
 
-  const onProductChange = (index: number, productId: string) => {
-    const product = products.find((p) => p.id === productId);
-    if (product) {
-      setValue(`items.${index}.sku`, product.sku);
-      setValue(`items.${index}.name`, product.name);
-      setValue(`items.${index}.unit`, product.unit);
-      setValue(`items.${index}.unitPrice`, product.costPrice);
+  const onSubmit = async (data: InboundFormValues) => {
+    const payload = {
+      supplierId: data.supplierId,
+      note: data.note?.trim() ? data.note.trim() : null,
+      items: data.items.map((item) => ({
+        productId: item.productId,
+        quantity: Number(item.quantity),
+        unitPrice: Number(item.unitPrice),
+      })),
+    };
+
+    try {
+      if (isEdit && inboundId) {
+        await updateMutation.mutateAsync(payload);
+        toast.success("Đã cập nhật phiếu nhập");
+        router.push(`/inbound/${inboundId}`);
+      } else {
+        const created = await createMutation.mutateAsync(payload);
+        toast.success(`Đã tạo phiếu ${created.code}`);
+        router.push(`/inbound/${created.id}`);
+      }
+    } catch (err) {
+      toast.error(
+        getApiErrorMessage(
+          err,
+          isEdit ? "Không thể cập nhật phiếu" : "Không thể tạo phiếu",
+        ),
+      );
     }
   };
 
-  const onSubmit = (data: InboundFormValues) => {
-    console.log("Submit Inbound Data:", data);
-    // TODO: POST /goods-receipts
-    router.push("/inbound");
-  };
+  const isPending =
+    isSubmitting || createMutation.isPending || updateMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pb-20">
@@ -189,14 +177,7 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
                 <button
                   type="button"
                   onClick={() =>
-                    append({
-                      productId: "",
-                      sku: "",
-                      name: "",
-                      unit: "",
-                      quantity: 1,
-                      unitPrice: 0,
-                    })
+                    append({ productId: "", quantity: 1, unitPrice: 0 })
                   }
                   className="flex items-center gap-2 px-4 py-2 bg-card-white border border-accent text-accent rounded-lg font-medium text-xs hover:bg-accent/5 transition-all"
                 >
@@ -235,9 +216,6 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
                         <td className="px-6 py-4">
                           <select
                             {...register(`items.${index}.productId` as const)}
-                            onChange={(e) =>
-                              onProductChange(index, e.target.value)
-                            }
                             className={cn(
                               "w-full px-3 py-2 text-sm bg-card-white border rounded-lg outline-none focus:border-accent transition-all",
                               errors.items?.[index]?.productId
@@ -256,6 +234,7 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
                         <td className="px-6 py-4">
                           <input
                             type="number"
+                            min={1}
                             {...register(`items.${index}.quantity` as const, {
                               valueAsNumber: true,
                             })}
@@ -265,6 +244,8 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
                         <td className="px-6 py-4">
                           <input
                             type="number"
+                            min={0}
+                            step="0.01"
                             {...register(`items.${index}.unitPrice` as const, {
                               valueAsNumber: true,
                             })}
@@ -282,7 +263,8 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
                           <button
                             type="button"
                             onClick={() => remove(index)}
-                            className="p-2 text-text-secondary hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
+                            disabled={fields.length === 1}
+                            className="p-2 text-text-secondary hover:text-danger transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-30"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -349,15 +331,18 @@ export function InboundForm({ initialData, isEdit }: InboundFormProps) {
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="w-full py-2.5 border border-border-ui rounded-lg text-sm font-bold text-text-secondary hover:bg-background-app transition-all"
+                  disabled={isPending}
+                  className="w-full py-2.5 border border-border-ui rounded-lg text-sm font-bold text-text-secondary hover:bg-background-app transition-all disabled:opacity-50"
                 >
                   Hủy bỏ
                 </button>
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-accent hover:bg-accent/90 text-white rounded-lg font-bold text-sm shadow-md shadow-accent/20 transition-all flex items-center justify-center gap-2"
+                  disabled={isPending}
+                  className="w-full py-2.5 bg-accent hover:bg-accent/90 text-white rounded-lg font-bold text-sm shadow-md shadow-accent/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  <Save className="w-4 h-4" /> Lưu phiếu
+                  <Save className="w-4 h-4" />
+                  {isPending ? "Đang lưu..." : "Lưu phiếu"}
                 </button>
               </div>
             </div>

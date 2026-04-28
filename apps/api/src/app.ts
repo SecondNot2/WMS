@@ -16,7 +16,9 @@ import suppliersRoutes from "./routes/suppliers.routes";
 import recipientsRoutes from "./routes/recipients.routes";
 import inboundRoutes from "./routes/inbound.routes";
 import outboundRoutes from "./routes/outbound.routes";
+import inventoryRoutes from "./routes/inventory.routes";
 import alertsRoutes from "./routes/alerts.routes";
+import reportsRoutes from "./routes/reports.routes";
 import statisticsRoutes from "./routes/statistics.routes";
 import activityLogRoutes from "./routes/activityLog.routes";
 
@@ -52,7 +54,9 @@ app.use("/suppliers", suppliersRoutes);
 app.use("/recipients", recipientsRoutes);
 app.use("/inbound", inboundRoutes);
 app.use("/outbound", outboundRoutes);
+app.use("/inventory", inventoryRoutes);
 app.use("/alerts", alertsRoutes);
+app.use("/reports", reportsRoutes);
 app.use("/statistics", statisticsRoutes);
 app.use("/activity-log", activityLogRoutes);
 

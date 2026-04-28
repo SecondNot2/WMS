@@ -3,83 +3,55 @@
 import React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { AlertCircle, ArrowUpRight, History, Package } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowUpRight,
+  History,
+  Package,
+  SlidersHorizontal,
+} from "lucide-react";
 import { Pagination } from "@/components/Pagination";
+import { useInventory } from "@/lib/hooks/use-inventory";
+import { getApiErrorMessage } from "@/lib/api/client";
+import type { GetInventoryQuery, InventoryItem } from "@wms/types";
 
-interface StockRow {
-  id: string;
-  sku: string;
-  name: string;
-  image: string;
-  category: string;
-  unit: string;
-  currentStock: number;
-  minStock: number;
-  costPrice: number;
+interface InventoryTableProps {
+  search?: string;
+  categoryId?: string;
+  lowStock?: boolean;
+  onAdjust?: (item: InventoryItem) => void;
 }
 
-const mockStock: StockRow[] = [
-  {
-    id: "1",
-    sku: "SP000123",
-    name: "Tai nghe Bluetooth Sony WH-1000XM4",
-    image: "https://api.dicebear.com/7.x/shapes/svg?seed=sony",
-    category: "Điện tử",
-    unit: "Cái",
-    currentStock: 3,
-    minStock: 10,
-    costPrice: 4500000,
-  },
-  {
-    id: "2",
-    sku: "SP000124",
-    name: "Chuột không dây Logitech M331",
-    image: "https://api.dicebear.com/7.x/shapes/svg?seed=logi",
-    category: "Phụ kiện",
-    unit: "Cái",
-    currentStock: 156,
-    minStock: 20,
-    costPrice: 350000,
-  },
-  {
-    id: "3",
-    sku: "SP000125",
-    name: "Bàn phím cơ Keychron K2",
-    image: "https://api.dicebear.com/7.x/shapes/svg?seed=key",
-    category: "Phụ kiện",
-    unit: "Cái",
-    currentStock: 0,
-    minStock: 5,
-    costPrice: 1200000,
-  },
-  {
-    id: "4",
-    sku: "SP000126",
-    name: "Màn hình Dell UltraSharp U2419H",
-    image: "https://api.dicebear.com/7.x/shapes/svg?seed=dell",
-    category: "Màn hình",
-    unit: "Cái",
-    currentStock: 12,
-    minStock: 5,
-    costPrice: 5500000,
-  },
-  {
-    id: "5",
-    sku: "SP000127",
-    name: "Loa Bluetooth JBL Flip 5",
-    image: "https://api.dicebear.com/7.x/shapes/svg?seed=jbl",
-    category: "Điện tử",
-    unit: "Cái",
-    currentStock: 8,
-    minStock: 15,
-    costPrice: 2100000,
-  },
-];
+export function InventoryTable({
+  search,
+  categoryId,
+  lowStock,
+  onAdjust,
+}: InventoryTableProps) {
+  const [page, setPage] = React.useState(1);
+  const [limit, setLimit] = React.useState(10);
 
-export function InventoryTable() {
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(10);
-  const stock = mockStock;
+  const filterKey = `${search ?? ""}|${categoryId ?? ""}|${lowStock ? 1 : 0}|${limit}`;
+  const [prevFilterKey, setPrevFilterKey] = React.useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
+    setPage(1);
+  }
+
+  const queryParams = React.useMemo<GetInventoryQuery>(
+    () => ({
+      page,
+      limit,
+      ...(search ? { search } : {}),
+      ...(categoryId ? { categoryId } : {}),
+      ...(lowStock ? { lowStock: true } : {}),
+    }),
+    [page, limit, search, categoryId, lowStock],
+  );
+
+  const { data, isLoading, isError, error } = useInventory(queryParams);
+  const stock = data?.data ?? [];
+  const meta = data?.meta;
 
   return (
     <div className="bg-card-white rounded-xl border border-border-ui shadow-sm flex flex-col overflow-hidden">
@@ -108,27 +80,42 @@ export function InventoryTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border-ui">
-            {stock.length > 0 ? (
+            {isLoading ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="py-16 text-center text-sm text-text-secondary"
+                >
+                  Đang tải dữ liệu...
+                </td>
+              </tr>
+            ) : isError ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="py-16 text-center text-sm text-danger"
+                >
+                  {getApiErrorMessage(error, "Không thể tải dữ liệu tồn kho")}
+                </td>
+              </tr>
+            ) : stock.length > 0 ? (
               stock.map((row) => {
-                const isLow = row.currentStock <= row.minStock && row.currentStock > 0;
+                const isLow =
+                  row.currentStock <= row.minStock && row.currentStock > 0;
                 const isOut = row.currentStock <= 0;
                 return (
                   <tr
-                    key={row.id}
+                    key={row.productId}
                     className="hover:bg-background-app/30 transition-colors group"
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-background-app border border-border-ui overflow-hidden p-1 shrink-0">
-                          <img
-                            src={row.image}
-                            alt=""
-                            className="w-full h-full object-contain"
-                          />
+                        <div className="w-10 h-10 rounded-lg bg-background-app border border-border-ui flex items-center justify-center shrink-0 text-text-secondary">
+                          <Package className="w-5 h-5" />
                         </div>
                         <div className="flex flex-col">
                           <Link
-                            href={`/products/${row.id}`}
+                            href={`/products/${row.productId}`}
                             className="text-[13px] font-semibold text-text-primary hover:text-accent transition-colors truncate max-w-50"
                           >
                             {row.name}
@@ -141,7 +128,7 @@ export function InventoryTable() {
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-[12px] px-2 py-0.5 rounded bg-accent/5 text-accent border border-accent/10">
-                        {row.category}
+                        {row.category.name}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -199,23 +186,36 @@ export function InventoryTable() {
                     <td className="px-4 py-3 text-right">
                       <p className="text-[13px] font-bold text-text-primary">
                         {new Intl.NumberFormat("vi-VN").format(
-                          row.costPrice * row.currentStock,
+                          Math.round(row.stockValue),
                         )}{" "}
                         đ
                       </p>
                       <p className="text-[10px] text-text-secondary">
                         Giá nhập:{" "}
-                        {new Intl.NumberFormat("vi-VN").format(row.costPrice)}
+                        {row.costPrice !== null
+                          ? new Intl.NumberFormat("vi-VN").format(row.costPrice)
+                          : "—"}
                       </p>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
+                        {onAdjust && (
+                          <button
+                            type="button"
+                            onClick={() => onAdjust(row)}
+                            className="p-1.5 hover:bg-accent/10 text-accent rounded-md transition-colors"
+                            title="Điều chỉnh tồn kho"
+                          >
+                            <SlidersHorizontal className="w-4 h-4" />
+                          </button>
+                        )}
+                        <Link
+                          href={`/products/${row.productId}`}
                           className="p-1.5 hover:bg-accent/10 text-accent rounded-md transition-colors"
                           title="Lịch sử tồn kho"
                         >
                           <History className="w-4 h-4" />
-                        </button>
+                        </Link>
                         <Link
                           href="/inbound/new"
                           className="p-1.5 hover:bg-accent/10 text-accent rounded-md transition-colors flex items-center gap-1 text-[11px] font-bold"
@@ -250,12 +250,12 @@ export function InventoryTable() {
       </div>
 
       <Pagination
-        currentPage={currentPage}
-        totalPages={6}
-        pageSize={pageSize}
-        totalItems={56}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={setPageSize}
+        currentPage={meta?.page ?? page}
+        totalPages={meta?.totalPages ?? 1}
+        pageSize={limit}
+        totalItems={meta?.total ?? 0}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => setLimit(size)}
       />
     </div>
   );

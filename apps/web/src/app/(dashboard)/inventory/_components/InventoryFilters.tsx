@@ -3,18 +3,40 @@
 import React from "react";
 import { Search, RotateCcw, AlertTriangle } from "lucide-react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import { useCategories } from "@/lib/hooks/use-categories";
 
-const categoryOptions: ComboboxOption<string>[] = [
-  { value: "", label: "Tất cả" },
-  { value: "1", label: "Điện tử" },
-  { value: "2", label: "Điện lạnh" },
-  { value: "3", label: "Gia dụng" },
-];
+export type InventoryStockMode = "all" | "lowStock";
 
-export function InventoryFilters() {
-  const [search, setSearch] = React.useState("");
-  const [stockMode, setStockMode] = React.useState<"all" | "lowStock">("all");
-  const [category, setCategory] = React.useState<string>("");
+interface InventoryFiltersProps {
+  search: string;
+  stockMode: InventoryStockMode;
+  categoryId: string;
+  onSearchChange: (value: string) => void;
+  onStockModeChange: (value: InventoryStockMode) => void;
+  onCategoryChange: (value: string) => void;
+  onReset: () => void;
+}
+
+export function InventoryFilters({
+  search,
+  stockMode,
+  categoryId,
+  onSearchChange,
+  onStockModeChange,
+  onCategoryChange,
+  onReset,
+}: InventoryFiltersProps) {
+  const { data: categoriesResponse } = useCategories({ page: 1, limit: 100 });
+  const categoryOptions = React.useMemo<ComboboxOption<string>[]>(
+    () => [
+      { value: "", label: "Tất cả" },
+      ...(categoriesResponse?.data ?? []).map((category) => ({
+        value: category.id,
+        label: category.name,
+      })),
+    ],
+    [categoriesResponse?.data],
+  );
 
   return (
     <div className="flex flex-wrap items-center gap-3 bg-card-white p-4 rounded-xl border border-border-ui shadow-sm">
@@ -22,7 +44,7 @@ export function InventoryFilters() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
         <input
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Tìm kiếm sản phẩm theo tên, SKU..."
           className="w-full pl-9 pr-4 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors"
         />
@@ -36,7 +58,7 @@ export function InventoryFilters() {
           <div className="flex bg-background-app/50 p-1 rounded-lg border border-border-ui">
             <button
               type="button"
-              onClick={() => setStockMode("all")}
+              onClick={() => onStockModeChange("all")}
               className={
                 stockMode === "all"
                   ? "px-3 py-1 text-xs font-bold rounded-md bg-card-white text-accent shadow-sm"
@@ -47,7 +69,7 @@ export function InventoryFilters() {
             </button>
             <button
               type="button"
-              onClick={() => setStockMode("lowStock")}
+              onClick={() => onStockModeChange("lowStock")}
               className={
                 stockMode === "lowStock"
                   ? "px-3 py-1 text-xs font-bold rounded-md bg-warning/10 text-warning shadow-sm flex items-center gap-1.5"
@@ -65,21 +87,17 @@ export function InventoryFilters() {
             Danh mục
           </label>
           <Combobox<string>
-            value={category}
-            onChange={(next) => setCategory(next)}
+            value={categoryId}
+            onChange={(next) => onCategoryChange(next || "")}
             options={categoryOptions}
             placeholder="Tất cả"
-            clearable={Boolean(category)}
+            clearable={Boolean(categoryId)}
           />
         </div>
 
         <button
           type="button"
-          onClick={() => {
-            setSearch("");
-            setStockMode("all");
-            setCategory("");
-          }}
+          onClick={onReset}
           className="mt-5 flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary hover:text-accent hover:bg-accent/5 rounded-lg transition-all"
         >
           <RotateCcw className="w-4 h-4" /> Xóa lọc

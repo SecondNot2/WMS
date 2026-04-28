@@ -283,6 +283,50 @@ export interface GetAlertsQuery {
 }
 
 // ─────────────────────────────────────────
+// INVENTORY
+// ─────────────────────────────────────────
+
+export type InventoryAlertLevel = "CRITICAL" | "WARNING" | "OK";
+
+export interface InventoryItem {
+  productId: string;
+  sku: string;
+  name: string;
+  unit: string;
+  category: ProductCategory;
+  currentStock: number;
+  minStock: number;
+  costPrice: number | null;
+  stockValue: number;
+  alertLevel: InventoryAlertLevel;
+  updatedAt: string;
+}
+
+export interface InventoryCategorySummary {
+  categoryId: string;
+  name: string;
+  stock: number;
+  value: number;
+}
+
+export interface InventorySummaryData {
+  totalProducts: number;
+  totalStock: number;
+  totalValue: number;
+  lowStockCount: number;
+  criticalCount: number;
+  byCategory: InventoryCategorySummary[];
+}
+
+export interface GetInventoryQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  categoryId?: string;
+  lowStock?: boolean;
+}
+
+// ─────────────────────────────────────────
 // SUPPLIERS
 // ─────────────────────────────────────────
 
@@ -657,6 +701,142 @@ export interface PerformanceData {
   flowSeries: StatisticsFlowPoint[];
   topProducts: StatisticsTopProduct[];
   categoryDistribution: StatisticsCategoryDistribution[];
+}
+
+// ─────────────────────────────────────────
+// REPORTS
+// ─────────────────────────────────────────
+
+export type ReportType = "inventory" | "receipt-issue" | "top-products";
+export type TopProductsReportType = "IN" | "OUT";
+export type ProductTrend = "UP" | "DOWN" | "STABLE";
+
+export interface GetReportsStatsQuery {
+  type?: "inventory" | "receipt-issue";
+  from?: string;
+  to?: string;
+  categoryId?: string;
+}
+
+export interface ExportReportQuery {
+  type: ReportType;
+  from?: string;
+  to?: string;
+  date?: string;
+  categoryId?: string;
+  supplierId?: string;
+  recipientId?: string;
+  topType?: TopProductsReportType;
+  limit?: number;
+}
+
+export interface ReportStatCard {
+  label: string;
+  value: number;
+  trend?: number;
+}
+
+export interface ReceiptIssueReportQuery {
+  from?: string;
+  to?: string;
+  supplierId?: string;
+  recipientId?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface ReceiptIssueReportSummary {
+  totalInbound: number;
+  totalOutbound: number;
+  inboundAmount: number;
+  outboundAmount: number;
+}
+
+export interface ReceiptIssueChartPoint {
+  date: string;
+  label: string;
+  inbound: number;
+  outbound: number;
+}
+
+export interface ReceiptIssueReportItem {
+  id: string;
+  date: string;
+  type: "NHẬP" | "XUẤT";
+  code: string;
+  item: string;
+  qty: number;
+  value: number;
+}
+
+export interface ReceiptIssueReportData {
+  summary: ReceiptIssueReportSummary;
+  chart: ReceiptIssueChartPoint[];
+  items: ReceiptIssueReportItem[];
+}
+
+export interface InventoryReportQuery {
+  date?: string;
+  categoryId?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface InventoryReportItem {
+  id: string;
+  sku: string;
+  name: string;
+  category: string;
+  stock: number;
+  unit: string;
+  avgPrice: number;
+  totalValue: number;
+}
+
+export interface InventoryValuePoint {
+  name: string;
+  value: number;
+}
+
+export interface InventoryReportData {
+  summary: {
+    totalValue: number;
+    skuCount: number;
+    outOfStock: number;
+    fillRate: number;
+  };
+  chart: InventoryValuePoint[];
+  items: InventoryReportItem[];
+}
+
+export interface TopProductsReportQuery {
+  from?: string;
+  to?: string;
+  type?: TopProductsReportType;
+  limit?: number;
+}
+
+export interface TopProductsReportItem {
+  rank: number;
+  productId: string;
+  sku: string;
+  name: string;
+  category: string;
+  inboundQty: number;
+  outboundQty: number;
+  turnoverRate: number;
+  stock: number;
+  trend: ProductTrend;
+}
+
+export interface TopProductsReportData {
+  summary: {
+    analyzedProducts: number;
+    highTurnover: number;
+    lowTurnover: number;
+    averageTurnoverRate: number;
+  };
+  items: TopProductsReportItem[];
 }
 
 export interface ActivityLogUserSummary {

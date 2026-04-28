@@ -265,6 +265,31 @@ export const getAlertsQuerySchema = z.object({
 export type GetAlertsQuerySchemaInput = z.infer<typeof getAlertsQuerySchema>;
 
 // ─────────────────────────────────────────
+// INVENTORY
+// ─────────────────────────────────────────
+
+export const getInventoryQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  search: z.string().trim().optional(),
+  categoryId: z.string().trim().optional(),
+  lowStock: z
+    .union([z.boolean(), z.enum(["true", "false"])])
+    .transform((v) => (typeof v === "boolean" ? v : v === "true"))
+    .optional(),
+});
+export type GetInventoryQuerySchemaInput = z.infer<
+  typeof getInventoryQuerySchema
+>;
+
+export const inventoryProductIdParamsSchema = z.object({
+  productId: z.string().trim().min(1, "Thiếu mã sản phẩm"),
+});
+export type InventoryProductIdParamsSchemaInput = z.infer<
+  typeof inventoryProductIdParamsSchema
+>;
+
+// ─────────────────────────────────────────
 // SUPPLIERS
 // ─────────────────────────────────────────
 
@@ -570,6 +595,69 @@ export const getStatisticsQuerySchema = z.object({
 });
 export type GetStatisticsQuerySchemaInput = z.infer<
   typeof getStatisticsQuerySchema
+>;
+
+const reportDateSchema = z
+  .string()
+  .trim()
+  .optional()
+  .refine((v) => !v || !Number.isNaN(Date.parse(v)), "Ngày không hợp lệ");
+
+export const getReportsStatsQuerySchema = z.object({
+  type: z.enum(["inventory", "receipt-issue"]).optional(),
+  from: reportDateSchema,
+  to: reportDateSchema,
+  categoryId: z.string().trim().optional(),
+});
+export type GetReportsStatsQuerySchemaInput = z.infer<
+  typeof getReportsStatsQuerySchema
+>;
+
+export const exportReportQuerySchema = z.object({
+  type: z.enum(["inventory", "receipt-issue", "top-products"]),
+  from: reportDateSchema,
+  to: reportDateSchema,
+  date: reportDateSchema,
+  categoryId: z.string().trim().optional(),
+  supplierId: z.string().trim().optional(),
+  recipientId: z.string().trim().optional(),
+  topType: z.enum(["IN", "OUT"]).default("IN"),
+  limit: z.coerce.number().int().positive().max(100).default(100),
+});
+export type ExportReportQuerySchemaInput = z.infer<
+  typeof exportReportQuerySchema
+>;
+
+export const getReceiptIssueReportQuerySchema = z.object({
+  from: reportDateSchema,
+  to: reportDateSchema,
+  supplierId: z.string().trim().optional(),
+  recipientId: z.string().trim().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+});
+export type GetReceiptIssueReportQuerySchemaInput = z.infer<
+  typeof getReceiptIssueReportQuerySchema
+>;
+
+export const getInventoryReportQuerySchema = z.object({
+  date: reportDateSchema,
+  categoryId: z.string().trim().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+});
+export type GetInventoryReportQuerySchemaInput = z.infer<
+  typeof getInventoryReportQuerySchema
+>;
+
+export const getTopProductsReportQuerySchema = z.object({
+  from: reportDateSchema,
+  to: reportDateSchema,
+  type: z.enum(["IN", "OUT"]).default("IN"),
+  limit: z.coerce.number().int().positive().max(100).default(10),
+});
+export type GetTopProductsReportQuerySchemaInput = z.infer<
+  typeof getTopProductsReportQuerySchema
 >;
 
 export const getActivityLogsQuerySchema = z.object({

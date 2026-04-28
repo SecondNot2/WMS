@@ -1,14 +1,57 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { InventoryStats } from "./_components/InventoryStats";
-import { InventoryFilters } from "./_components/InventoryFilters";
+import {
+  InventoryFilters,
+  type InventoryStockMode,
+} from "./_components/InventoryFilters";
 import { InventoryTable } from "./_components/InventoryTable";
-import { AdjustStockModal } from "./_components/AdjustStockModal";
+import {
+  AdjustStockModal,
+  type AdjustStockTarget,
+} from "./_components/AdjustStockModal";
+import { INVENTORY_KEYS, useInventorySummary } from "@/lib/hooks/use-inventory";
+import type { InventoryItem } from "@wms/types";
 
 export default function InventoryPage() {
-  const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { data: summary } = useInventorySummary();
+
+  const [search, setSearch] = React.useState("");
+  const [stockMode, setStockMode] = React.useState<InventoryStockMode>("all");
+  const [categoryId, setCategoryId] = React.useState("");
+  const [adjustTarget, setAdjustTarget] =
+    React.useState<AdjustStockTarget | null>(null);
+  const [isAdjustOpen, setIsAdjustOpen] = React.useState(false);
+
+  const handleReset = () => {
+    setSearch("");
+    setStockMode("all");
+    setCategoryId("");
+  };
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: INVENTORY_KEYS.all });
+  };
+
+  const handleOpenAdjust = (target: AdjustStockTarget | null) => {
+    setAdjustTarget(target);
+    setIsAdjustOpen(true);
+  };
+
+  const handleAdjustFromTable = (item: InventoryItem) => {
+    handleOpenAdjust({
+      productId: item.productId,
+      sku: item.sku,
+      name: item.name,
+      currentStock: item.currentStock,
+    });
+  };
+
+  const lowStockCount = summary?.lowStockCount ?? 0;
 
   return (
     <div className="p-5 space-y-5">
@@ -24,11 +67,16 @@ export default function InventoryPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm">
+          <button
+            type="button"
+            onClick={handleRefresh}
+            className="flex items-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm"
+          >
             <RefreshCw className="w-4 h-4" /> Làm mới
           </button>
           <button
-            onClick={() => setIsAdjustModalOpen(true)}
+            type="button"
+            onClick={() => handleOpenAdjust(null)}
             className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
           >
             Điều chỉnh tồn kho
@@ -40,38 +88,54 @@ export default function InventoryPage() {
       <InventoryStats />
 
       {/* Low Stock Alert */}
-      <div className="bg-warning/5 border border-warning/20 rounded-xl p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-warning/10 rounded-lg text-warning">
-            <AlertTriangle className="w-5 h-5" />
+      {lowStockCount > 0 && (
+        <div className="bg-warning/5 border border-warning/20 rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-warning/10 rounded-lg text-warning">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-text-primary">
+                Phát hiện {lowStockCount} sản phẩm sắp hết hàng
+              </p>
+              <p className="text-xs text-text-secondary">
+                Hãy kiểm tra và lập phiếu nhập hàng để tránh gián đoạn kinh
+                doanh.
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-bold text-text-primary">
-              Phát hiện 42 sản phẩm sắp hết hàng
-            </p>
-            <p className="text-xs text-text-secondary">
-              Hãy kiểm tra và lập phiếu nhập hàng để tránh gián đoạn kinh doanh.
-            </p>
-          </div>
+          <button
+            type="button"
+            onClick={() => setStockMode("lowStock")}
+            className="text-xs font-bold text-warning hover:underline px-4 py-2"
+          >
+            Xem danh sách ngay →
+          </button>
         </div>
-        <button className="text-xs font-bold text-warning hover:underline px-4 py-2">
-          Xem danh sách ngay →
-        </button>
-      </div>
+      )}
 
       {/* Filters + Table */}
-      <InventoryFilters />
-      <InventoryTable />
+      <InventoryFilters
+        search={search}
+        stockMode={stockMode}
+        categoryId={categoryId}
+        onSearchChange={setSearch}
+        onStockModeChange={setStockMode}
+        onCategoryChange={setCategoryId}
+        onReset={handleReset}
+      />
+      <InventoryTable
+        search={search}
+        categoryId={categoryId}
+        lowStock={stockMode === "lowStock"}
+        onAdjust={handleAdjustFromTable}
+      />
 
       {/* Modal */}
       <AdjustStockModal
-        isOpen={isAdjustModalOpen}
-        onClose={() => setIsAdjustModalOpen(false)}
-        product={{
-          sku: "SP000123",
-          name: "Tai nghe Bluetooth Sony WH-1000XM4",
-          currentStock: 3,
-        }}
+        isOpen={isAdjustOpen}
+        onClose={() => setIsAdjustOpen(false)}
+        product={adjustTarget}
       />
     </div>
   );

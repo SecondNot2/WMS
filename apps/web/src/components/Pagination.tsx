@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Combobox } from "@/components/ui/Combobox";
 import { cn } from "@/lib/utils";
 
 interface PaginationProps {
@@ -59,17 +60,17 @@ export function Pagination({
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <span className="text-[12px] text-text-secondary">Hiển thị</span>
-          <select
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="bg-card-white border border-border-ui rounded px-2 py-1 text-[12px] outline-none focus:border-accent transition-colors cursor-pointer"
-          >
-            {[10, 20, 50, 100].map((size) => (
-              <option key={size} value={size}>
-                {size} dòng
-              </option>
-            ))}
-          </select>
+          <div className="min-w-24">
+            <Combobox<string>
+              value={String(pageSize)}
+              onChange={(next) => onPageSizeChange(Number(next || pageSize))}
+              options={[10, 20, 50, 100].map((size) => ({
+                value: String(size),
+                label: `${size} dòng`,
+              }))}
+              searchable={false}
+            />
+          </div>
         </div>
         <span className="text-[12px] text-text-secondary hidden sm:inline">
           Tổng số{" "}

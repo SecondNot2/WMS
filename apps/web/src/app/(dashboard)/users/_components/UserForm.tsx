@@ -2,9 +2,10 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { KeyRound, Mail, Save, Shield, UserRound, Loader2 } from "lucide-react";
+import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import {
   createUserSchema,
   updateUserSchema,
@@ -58,6 +59,7 @@ export function UserForm({ initialData }: UserFormProps) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = form;
 
@@ -143,21 +145,29 @@ export function UserForm({ initialData }: UserFormProps) {
               <label className="text-[12px] font-semibold text-text-secondary">
                 Vai trò <span className="text-danger">*</span>
               </label>
-              <select
-                {...register("roleId")}
-                disabled={rolesLoading}
-                className={cn(
-                  "w-full px-3 py-2 text-sm bg-background-app/50 border rounded-lg outline-none focus:border-accent transition-colors disabled:opacity-50",
-                  errors.roleId ? "border-danger" : "border-border-ui",
+              <Controller
+                control={control}
+                name="roleId"
+                render={({ field }) => (
+                  <Combobox<string>
+                    value={(field.value as string) ?? ""}
+                    onChange={(next) => field.onChange(next)}
+                    options={(roles ?? []).map<ComboboxOption<string>>((r) => ({
+                      value: r.id,
+                      label: ROLE_LABELS[r.name] ?? r.name,
+                      hint: r.name,
+                      icon: (
+                        <span className="w-6 h-6 rounded bg-accent/10 text-accent flex items-center justify-center">
+                          <Shield className="w-3.5 h-3.5" />
+                        </span>
+                      ),
+                    }))}
+                    loading={rolesLoading}
+                    placeholder="-- Chọn vai trò --"
+                    hasError={Boolean(errors.roleId)}
+                  />
                 )}
-              >
-                <option value="">-- Chọn vai trò --</option>
-                {roles?.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {ROLE_LABELS[r.name] ?? r.name}
-                  </option>
-                ))}
-              </select>
+              />
               {errors.roleId && (
                 <p className="text-[10px] text-danger font-medium">
                   {errors.roleId.message as string}
@@ -166,7 +176,8 @@ export function UserForm({ initialData }: UserFormProps) {
             </div>
             <div className="space-y-1.5">
               <label className="text-[12px] font-semibold text-text-secondary">
-                Mật khẩu {isEdit ? "mới" : <span className="text-danger">*</span>}
+                Mật khẩu{" "}
+                {isEdit ? "mới" : <span className="text-danger">*</span>}
               </label>
               <input
                 type="password"

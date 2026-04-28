@@ -13,12 +13,15 @@ import { ProductStatsSidebar } from "./_components/ProductStatsSidebar";
 import type { GetProductsQuery } from "@wms/types";
 
 function toQueryFilters(value: ProductFiltersValue, debouncedSearch: string) {
-  const filters: Pick<GetProductsQuery, "search" | "lowStock" | "isActive"> =
-    {};
+  const filters: Pick<
+    GetProductsQuery,
+    "search" | "lowStock" | "isActive" | "categoryId"
+  > = {};
   const trimmed = debouncedSearch.trim();
   if (trimmed.length > 0) filters.search = trimmed;
   if (value.stock === "lowStock") filters.lowStock = true;
   if (value.stock === "inactive") filters.isActive = false;
+  if (value.categoryId) filters.categoryId = value.categoryId;
   return filters;
 }
 
@@ -73,13 +76,13 @@ export default function ProductsPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
         {/* Main Content Area */}
-        <div className="xl:col-span-10 space-y-5">
+        <div className="xl:col-span-9 space-y-5">
           <ProductFilters value={filters} onChange={setFilters} />
           <ProductTableConnected filters={queryFilters} />
         </div>
 
         {/* Sidebar Area */}
-        <div className="xl:col-span-2 h-full">
+        <div className="xl:col-span-3 h-full">
           <ProductStatsSidebar className="h-full" />
         </div>
       </div>

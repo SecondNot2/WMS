@@ -11,6 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { Combobox } from "@/components/ui/Combobox";
 
 const data = [
   { name: "T2", inbound: 400, outbound: 240, stock: 1200 },
@@ -23,17 +24,25 @@ const data = [
 ];
 
 export function ShipmentComboChart() {
+  const [range, setRange] = React.useState<string>("7d");
   return (
     <div className="bg-card-white p-4 rounded-xl border border-border-ui shadow-sm h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-sm font-semibold text-text-primary">
           Biểu đồ nhập / xuất kho
         </h3>
-        <select className="bg-background-app border-none text-[10px] font-bold text-text-secondary rounded-lg px-2.5 py-1.5 outline-none cursor-pointer hover:bg-border-ui transition-colors">
-          <option>7 ngày qua</option>
-          <option>30 ngày qua</option>
-          <option>3 tháng qua</option>
-        </select>
+        <div className="min-w-32">
+          <Combobox<string>
+            value={range}
+            onChange={(next) => setRange(next || "7d")}
+            options={[
+              { value: "7d", label: "7 ngày qua" },
+              { value: "30d", label: "30 ngày qua" },
+              { value: "3m", label: "3 tháng qua" },
+            ]}
+            searchable={false}
+          />
+        </div>
       </div>
 
       <div className="h-36 flex-1">

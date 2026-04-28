@@ -1,9 +1,17 @@
 "use client";
 
 import React from "react";
-import { Search, RotateCcw, Calendar } from "lucide-react";
+import { Search, RotateCcw, Calendar, Truck } from "lucide-react";
+import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { useSuppliers } from "@/lib/hooks/use-suppliers";
 import type { InboundStatus } from "@wms/types";
+
+const statusOptions: ComboboxOption<"" | InboundStatus>[] = [
+  { value: "", label: "Tất cả" },
+  { value: "PENDING", label: "Đang chờ duyệt" },
+  { value: "APPROVED", label: "Đã duyệt" },
+  { value: "REJECTED", label: "Đã từ chối" },
+];
 
 export interface InboundFilterValues {
   search: string;
@@ -47,40 +55,44 @@ export function InboundFilters({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 min-w-44">
           <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
             Trạng thái
           </label>
-          <select
+          <Combobox<"" | InboundStatus>
             value={value.status}
-            onChange={(e) =>
-              update("status", e.target.value as InboundFilterValues["status"])
+            onChange={(next) =>
+              update("status", (next || "") as InboundFilterValues["status"])
             }
-            className="text-sm bg-background-app/50 border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary min-w-40 focus:border-accent"
-          >
-            <option value="">Tất cả</option>
-            <option value="PENDING">Đang chờ duyệt</option>
-            <option value="APPROVED">Đã duyệt</option>
-            <option value="REJECTED">Đã từ chối</option>
-          </select>
+            options={statusOptions}
+            searchable={false}
+          />
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 min-w-52">
           <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
             Nhà cung cấp
           </label>
-          <select
+          <Combobox<string>
             value={value.supplierId}
-            onChange={(e) => update("supplierId", e.target.value)}
-            className="text-sm bg-background-app/50 border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary min-w-48 focus:border-accent"
-          >
-            <option value="">Tất cả</option>
-            {suppliers.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
+            onChange={(next) => update("supplierId", next)}
+            options={[
+              { value: "", label: "Tất cả" },
+              ...suppliers.map<ComboboxOption<string>>((s) => ({
+                value: s.id,
+                label: s.name,
+                description: [s.taxCode, s.phone].filter(Boolean).join(" · "),
+                icon: (
+                  <span className="w-6 h-6 rounded bg-accent/10 text-accent flex items-center justify-center">
+                    <Truck className="w-3.5 h-3.5" />
+                  </span>
+                ),
+              })),
+            ]}
+            placeholder="Tất cả"
+            searchPlaceholder="Tìm nhà cung cấp..."
+            clearable={Boolean(value.supplierId)}
+          />
         </div>
 
         <div className="flex flex-col gap-1">

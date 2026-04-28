@@ -2,7 +2,24 @@
 
 import React from "react";
 import { Search, Clock, Box, Tag, Download, Truck } from "lucide-react";
+import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { cn } from "@/lib/utils";
+
+const moduleOptions: ComboboxOption<string>[] = [
+  { value: "", label: "Tất cả module" },
+  { value: "products", label: "Sản phẩm" },
+  { value: "inbound", label: "Nhập kho" },
+  { value: "outbound", label: "Xuất kho" },
+  { value: "suppliers", label: "Nhà cung cấp" },
+];
+
+const actionOptions: ComboboxOption<string>[] = [
+  { value: "", label: "Tất cả hành động" },
+  { value: "create", label: "Tạo mới" },
+  { value: "update", label: "Cập nhật" },
+  { value: "delete", label: "Xóa" },
+  { value: "approve", label: "Phê duyệt" },
+];
 
 // Global activity log mock data
 const mockGlobalLogs = [
@@ -67,6 +84,8 @@ const actionStyles = {
 };
 
 export default function GlobalActivityLogPage() {
+  const [module, setModule] = React.useState<string>("");
+  const [action, setAction] = React.useState<string>("");
   return (
     <div className="p-5 space-y-5">
       {/* Header */}
@@ -90,21 +109,23 @@ export default function GlobalActivityLogPage() {
             />
           </div>
 
-          <select className="text-sm bg-background-app border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary font-medium">
-            <option value="">Tất cả module</option>
-            <option value="products">Sản phẩm</option>
-            <option value="inbound">Nhập kho</option>
-            <option value="outbound">Xuất kho</option>
-            <option value="suppliers">Nhà cung cấp</option>
-          </select>
+          <div className="min-w-44">
+            <Combobox<string>
+              value={module}
+              onChange={(next) => setModule(next)}
+              options={moduleOptions}
+              clearable={Boolean(module)}
+            />
+          </div>
 
-          <select className="text-sm bg-background-app border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary font-medium">
-            <option value="">Tất cả hành động</option>
-            <option value="create">Tạo mới</option>
-            <option value="update">Cập nhật</option>
-            <option value="delete">Xóa</option>
-            <option value="approve">Phê duyệt</option>
-          </select>
+          <div className="min-w-44">
+            <Combobox<string>
+              value={action}
+              onChange={(next) => setAction(next)}
+              options={actionOptions}
+              clearable={Boolean(action)}
+            />
+          </div>
 
           <div className="flex items-center gap-2 px-3 py-2 bg-background-app border border-border-ui rounded-lg">
             <Clock className="w-4 h-4 text-text-secondary" />

@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Filter, RotateCcw, Search } from "lucide-react";
+import { Filter, RotateCcw, Search, Shield } from "lucide-react";
+import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import type { RoleEntity } from "@wms/types";
 
 export interface UserFilterValues {
@@ -50,38 +51,45 @@ export function UserFilters({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 min-w-44">
           <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
             Vai trò
           </label>
-          <select
+          <Combobox<string>
             value={value.roleId}
-            onChange={(e) => set("roleId", e.target.value)}
-            disabled={isLoadingRoles}
-            className="text-sm bg-background-app/50 border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary min-w-42 focus:border-accent disabled:opacity-50"
-          >
-            <option value="">Tất cả</option>
-            {roles.map((r) => (
-              <option key={r.id} value={r.id}>
-                {labelOf(r.name)}
-              </option>
-            ))}
-          </select>
+            onChange={(next) => set("roleId", next)}
+            options={[
+              { value: "", label: "Tất cả" },
+              ...roles.map<ComboboxOption<string>>((r) => ({
+                value: r.id,
+                label: labelOf(r.name),
+                hint: r.name,
+                icon: (
+                  <span className="w-6 h-6 rounded bg-accent/10 text-accent flex items-center justify-center">
+                    <Shield className="w-3.5 h-3.5" />
+                  </span>
+                ),
+              })),
+            ]}
+            loading={isLoadingRoles}
+            clearable={Boolean(value.roleId)}
+          />
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 min-w-40">
           <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
             Trạng thái
           </label>
-          <select
+          <Combobox<string>
             value={value.isActive}
-            onChange={(e) => set("isActive", e.target.value)}
-            className="text-sm bg-background-app/50 border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary min-w-35 focus:border-accent"
-          >
-            <option value="">Tất cả</option>
-            <option value="true">Đang hoạt động</option>
-            <option value="false">Đã khóa</option>
-          </select>
+            onChange={(next) => set("isActive", next)}
+            options={[
+              { value: "", label: "Tất cả" },
+              { value: "true", label: "Đang hoạt động" },
+              { value: "false", label: "Đã khóa" },
+            ]}
+            searchable={false}
+          />
         </div>
 
         <button

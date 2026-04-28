@@ -2,8 +2,9 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import * as z from "zod";
 import {
   Building2,
@@ -41,6 +42,7 @@ export function ReceiverForm({ initialData, isEdit }: ReceiverFormProps) {
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors },
   } = useForm<ReceiverFormValues>({
     resolver: zodResolver(receiverSchema),
@@ -96,14 +98,26 @@ export function ReceiverForm({ initialData, isEdit }: ReceiverFormProps) {
                 <label className="text-[12px] font-semibold text-text-secondary">
                   Loại đơn vị
                 </label>
-                <select
-                  {...register("type")}
-                  className="w-full px-3 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors"
-                >
-                  <option value="BRANCH">Chi nhánh</option>
-                  <option value="WAREHOUSE">Kho trung chuyển</option>
-                  <option value="CUSTOMER">Khách hàng/đại lý</option>
-                </select>
+                <Controller
+                  control={control}
+                  name="type"
+                  render={({ field }) => (
+                    <Combobox<"BRANCH" | "WAREHOUSE" | "CUSTOMER">
+                      value={field.value}
+                      onChange={(next) => field.onChange(next || "BRANCH")}
+                      options={
+                        [
+                          { value: "BRANCH", label: "Chi nhánh" },
+                          { value: "WAREHOUSE", label: "Kho trung chuyển" },
+                          { value: "CUSTOMER", label: "Khách hàng/đại lý" },
+                        ] as ComboboxOption<
+                          "BRANCH" | "WAREHOUSE" | "CUSTOMER"
+                        >[]
+                      }
+                      searchable={false}
+                    />
+                  )}
+                />
               </div>
 
               <div className="space-y-1.5">

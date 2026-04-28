@@ -2,12 +2,15 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RotateCcw, Save } from "lucide-react";
+import { Folder, RotateCcw, Save } from "lucide-react";
 import { createProductSchema } from "@wms/validations";
+import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { getApiErrorMessage } from "@/lib/api/client";
+import { productsApi } from "@/lib/api/products";
+import { useCategories } from "@/lib/hooks/use-categories";
 import {
   useCreateProduct,
   useProduct,
@@ -21,12 +24,20 @@ interface ProductFormConnectedProps {
   productId?: string;
 }
 
-type ProductFormValues = CreateProductSchemaInput;
+type ProductFormValues = CreateProductSchemaInput & {
+  /** Chỉ dùng khi tạo mới: lượng tồn kho khởi tạo, sau khi tạo sẽ gọi adjust-stock */
+  initialStock?: number;
+};
 
 export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
   const router = useRouter();
   const isEdit = Boolean(productId);
   const { data: product, isLoading } = useProduct(productId ?? "");
+  const { data: categoriesData, isLoading: categoriesLoading } = useCategories({
+    limit: 100,
+    isActive: true,
+  });
+  const categories = categoriesData?.data ?? [];
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct(productId ?? "");
   const [submitError, setSubmitError] = React.useState<string | null>(null);
@@ -35,6 +46,7 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(
@@ -55,6 +67,7 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
       location: null,
       description: null,
       image: null,
+      initialStock: 0,
     },
   });
 
@@ -80,14 +93,34 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
 
   const onSubmit = async (values: ProductFormValues) => {
     setSubmitError(null);
+    // Tách initialStock khỏi payload — backend createProduct không nhận field này
+    const { initialStock, ...payload } = values;
     try {
       if (isEdit && productId) {
-        await updateMutation.mutateAsync(values as CreateProductInput);
+        await updateMutation.mutateAsync(payload as CreateProductInput);
         router.push(`/products/${productId}`);
       } else {
         const created = await createMutation.mutateAsync(
-          values as CreateProductInput,
+          payload as CreateProductInput,
         );
+        // Nếu user nhập tồn kho khởi tạo > 0 → gọi adjust-stock để tạo entry lịch sử
+        const initial = Number(initialStock ?? 0);
+        if (Number.isInteger(initial) && initial > 0) {
+          try {
+            await productsApi.adjustStock(created.id, {
+              quantity: initial,
+              note: "Tồn kho khởi tạo",
+            });
+          } catch (err) {
+            // Sản phẩm đã tạo thành công — chỉ cảnh báo nếu adjust fail
+            setSubmitError(
+              getApiErrorMessage(
+                err,
+                "Đã tạo sản phẩm nhưng không thể set tồn kho khởi tạo",
+              ),
+            );
+          }
+        }
         router.push(`/products/${created.id}`);
       }
     } catch (error) {
@@ -141,15 +174,43 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
                 />
               </Field>
               <Field
-                label="Mã danh mục"
+                label="Danh mục"
                 error={errors.categoryId?.message}
                 required
               >
-                <input
-                  {...register("categoryId")}
-                  className={inputClass(errors.categoryId?.message)}
-                  placeholder="categoryId"
+                <Controller
+                  control={control}
+                  name="categoryId"
+                  render={({ field }) => (
+                    <Combobox<string>
+                      value={field.value ?? ""}
+                      onChange={(next) => field.onChange(next)}
+                      options={categories.map<ComboboxOption<string>>(
+                        (cat) => ({
+                          value: cat.id,
+                          label: cat.name,
+                          hint: `${cat.productCount} sp`,
+                          icon: (
+                            <span className="w-6 h-6 rounded bg-accent/10 text-accent flex items-center justify-center">
+                              <Folder className="w-3.5 h-3.5" />
+                            </span>
+                          ),
+                        }),
+                      )}
+                      loading={categoriesLoading}
+                      placeholder="-- Chọn danh mục --"
+                      searchPlaceholder="Tìm danh mục..."
+                      hasError={Boolean(errors.categoryId)}
+                      emptyMessage="Chưa có danh mục — hãy tạo danh mục trước"
+                    />
+                  )}
                 />
+                {!categoriesLoading && categories.length === 0 && (
+                  <p className="text-[10px] text-warning font-medium">
+                    Chưa có danh mục nào. Hãy tạo danh mục trước khi thêm sản
+                    phẩm.
+                  </p>
+                )}
               </Field>
               <Field label="Thương hiệu" error={errors.brand?.message}>
                 <input
@@ -216,11 +277,34 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
               >
                 <input
                   type="number"
+                  min={0}
                   {...register("minStock", { valueAsNumber: true })}
                   className={inputClass(errors.minStock?.message)}
                 />
               </Field>
+              {!isEdit && (
+                <Field
+                  label="Tồn kho ban đầu"
+                  error={errors.initialStock?.message}
+                >
+                  <input
+                    type="number"
+                    min={0}
+                    step={1}
+                    {...register("initialStock", { valueAsNumber: true })}
+                    className={inputClass(errors.initialStock?.message)}
+                    placeholder="0"
+                  />
+                </Field>
+              )}
             </div>
+            {!isEdit && (
+              <p className="text-[11px] text-text-secondary mt-3">
+                Tồn kho ban đầu sẽ được ghi vào lịch sử tồn kho với loại
+                <span className="font-bold text-accent"> ADJUST</span>. Để trống
+                hoặc 0 nếu chưa nhập hàng.
+              </p>
+            )}
           </div>
 
           <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-6">

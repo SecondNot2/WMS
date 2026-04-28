@@ -2,8 +2,19 @@
 
 import React from "react";
 import { Calendar, Download } from "lucide-react";
+import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+
+const categoryOptions: ComboboxOption<string>[] = [
+  { value: "", label: "Tất cả" },
+  { value: "1", label: "Điện tử" },
+  { value: "2", label: "Điện lạnh" },
+];
 
 export function ReportFilters() {
+  const [from, setFrom] = React.useState("");
+  const [to, setTo] = React.useState("");
+  const [category, setCategory] = React.useState<string>("");
+
   return (
     <div className="flex flex-wrap items-center gap-3 bg-card-white p-4 rounded-xl border border-border-ui shadow-sm">
       <div className="flex flex-col gap-1">
@@ -13,11 +24,10 @@ export function ReportFilters() {
         <div className="relative">
           <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
           <input
-            type="text"
-            placeholder="Chọn ngày"
-            className="pl-9 pr-3 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors min-w-40"
-            onFocus={(e) => (e.target.type = "date")}
-            onBlur={(e) => (e.target.type = "text")}
+            type="date"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            className="pl-9 pr-3 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors min-w-44"
           />
         </div>
       </div>
@@ -29,27 +39,31 @@ export function ReportFilters() {
         <div className="relative">
           <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
           <input
-            type="text"
-            placeholder="Chọn ngày"
-            className="pl-9 pr-3 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors min-w-40"
-            onFocus={(e) => (e.target.type = "date")}
-            onBlur={(e) => (e.target.type = "text")}
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            className="pl-9 pr-3 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors min-w-44"
           />
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 min-w-44">
         <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
           Danh mục
         </label>
-        <select className="text-sm bg-background-app/50 border border-border-ui rounded-lg px-3 py-2 outline-none text-text-primary min-w-40 focus:border-accent">
-          <option value="">Tất cả</option>
-          <option value="1">Điện tử</option>
-          <option value="2">Điện lạnh</option>
-        </select>
+        <Combobox<string>
+          value={category}
+          onChange={(next) => setCategory(next)}
+          options={categoryOptions}
+          placeholder="Tất cả"
+          clearable={Boolean(category)}
+        />
       </div>
 
-      <button className="mt-5 ml-auto flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20">
+      <button
+        type="button"
+        className="mt-5 ml-auto flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
+      >
         <Download className="w-4 h-4" /> Xuất Excel
       </button>
     </div>

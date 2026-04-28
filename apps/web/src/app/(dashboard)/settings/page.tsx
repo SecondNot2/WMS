@@ -13,6 +13,7 @@ import {
   SlidersHorizontal,
   Warehouse,
 } from "lucide-react";
+import { Combobox } from "@/components/ui/Combobox";
 import { cn } from "@/lib/utils";
 
 const tabs = [
@@ -30,6 +31,8 @@ const labelClassName = "text-xs text-text-secondary font-semibold";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = React.useState<SettingsTab>("general");
+  const [frequency, setFrequency] = React.useState<string>("daily");
+  const [reportFormat, setReportFormat] = React.useState<string>("xlsx");
 
   return (
     <div className="p-5 space-y-5">
@@ -158,11 +161,16 @@ export default function SettingsPage() {
                 </div>
                 <div className="space-y-1.5">
                   <label className={labelClassName}>Tần suất tổng hợp</label>
-                  <select defaultValue="daily" className={inputClassName}>
-                    <option value="realtime">Realtime</option>
-                    <option value="daily">Hằng ngày</option>
-                    <option value="weekly">Hằng tuần</option>
-                  </select>
+                  <Combobox<string>
+                    value={frequency}
+                    onChange={(next) => setFrequency(next || "daily")}
+                    options={[
+                      { value: "realtime", label: "Realtime" },
+                      { value: "daily", label: "Hằng ngày" },
+                      { value: "weekly", label: "Hằng tuần" },
+                    ]}
+                    searchable={false}
+                  />
                 </div>
               </div>
 
@@ -287,11 +295,16 @@ export default function SettingsPage() {
                   <label className={labelClassName}>
                     Định dạng báo cáo mặc định
                   </label>
-                  <select defaultValue="xlsx" className={inputClassName}>
-                    <option value="xlsx">Excel (.xlsx)</option>
-                    <option value="pdf">PDF</option>
-                    <option value="csv">CSV</option>
-                  </select>
+                  <Combobox<string>
+                    value={reportFormat}
+                    onChange={(next) => setReportFormat(next || "xlsx")}
+                    options={[
+                      { value: "xlsx", label: "Excel (.xlsx)" },
+                      { value: "pdf", label: "PDF" },
+                      { value: "csv", label: "CSV" },
+                    ]}
+                    searchable={false}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <label className={labelClassName}>SMTP Host</label>

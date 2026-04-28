@@ -1,17 +1,26 @@
 "use client";
 
 import React from "react";
-import { useForm, useFieldArray, useWatch } from "react-hook-form";
+import { Controller, useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus, Trash2, Save, Package, User, AlertCircle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Save,
+  Package,
+  Truck,
+  User,
+  AlertCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useSuppliers } from "@/lib/hooks/use-suppliers";
-import { useProducts } from "@/lib/hooks/use-products";
 import { useCreateInbound, useUpdateInbound } from "@/lib/hooks/use-inbound";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { useToast } from "@/components/Toast";
+import { ProductCombobox } from "@/components/ProductCombobox";
+import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 
 const inboundItemSchema = z.object({
   productId: z.string().min(1, "Chọn sản phẩm"),
@@ -45,9 +54,6 @@ export function InboundForm({
 
   const { data: suppliersData } = useSuppliers({ limit: 100 });
   const suppliers = suppliersData?.data ?? [];
-
-  const { data: productsData } = useProducts({ limit: 200, isActive: true });
-  const products = productsData?.data ?? [];
 
   const createMutation = useCreateInbound();
   const updateMutation = useUpdateInbound(inboundId ?? "");
@@ -131,20 +137,32 @@ export function InboundForm({
                   <label className="text-sm font-medium text-text-primary">
                     Nhà cung cấp <span className="text-danger">*</span>
                   </label>
-                  <select
-                    {...register("supplierId")}
-                    className={cn(
-                      "w-full px-4 py-2.5 text-sm bg-background-app/50 border rounded-lg outline-none focus:border-accent transition-all",
-                      errors.supplierId ? "border-danger" : "border-border-ui",
+                  <Controller
+                    control={control}
+                    name="supplierId"
+                    render={({ field }) => (
+                      <Combobox<string>
+                        value={field.value}
+                        onChange={(next) => field.onChange(next)}
+                        options={suppliers.map<ComboboxOption<string>>((s) => ({
+                          value: s.id,
+                          label: s.name,
+                          description: [s.taxCode, s.phone]
+                            .filter(Boolean)
+                            .join(" · "),
+                          icon: (
+                            <span className="w-7 h-7 rounded-md bg-accent/10 text-accent flex items-center justify-center">
+                              <Truck className="w-3.5 h-3.5" />
+                            </span>
+                          ),
+                        }))}
+                        placeholder="Chọn nhà cung cấp"
+                        searchPlaceholder="Tìm theo tên, MST, SĐT..."
+                        emptyMessage="Không tìm thấy nhà cung cấp"
+                        hasError={Boolean(errors.supplierId)}
+                      />
                     )}
-                  >
-                    <option value="">Chọn nhà cung cấp</option>
-                    {suppliers.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
+                  />
                   {errors.supplierId && (
                     <p className="text-xs text-danger mt-1">
                       {errors.supplierId.message}
@@ -214,22 +232,30 @@ export function InboundForm({
                           {index + 1}
                         </td>
                         <td className="px-6 py-4">
-                          <select
-                            {...register(`items.${index}.productId` as const)}
-                            className={cn(
-                              "w-full px-3 py-2 text-sm bg-card-white border rounded-lg outline-none focus:border-accent transition-all",
-                              errors.items?.[index]?.productId
-                                ? "border-danger"
-                                : "border-border-ui",
+                          <Controller
+                            control={control}
+                            name={`items.${index}.productId` as const}
+                            render={({ field: ctrl }) => (
+                              <ProductCombobox
+                                value={ctrl.value}
+                                onChange={(id) => ctrl.onChange(id)}
+                                hasError={Boolean(
+                                  errors.items?.[index]?.productId,
+                                )}
+                                excludeIds={(watchItems ?? [])
+                                  .map((it, i) =>
+                                    i !== index ? it?.productId : null,
+                                  )
+                                  .filter((id): id is string => Boolean(id))}
+                                placeholder="Tìm sản phẩm theo SKU/tên..."
+                              />
                             )}
-                          >
-                            <option value="">Tìm sản phẩm...</option>
-                            {products.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.sku} - {p.name}
-                              </option>
-                            ))}
-                          </select>
+                          />
+                          {errors.items?.[index]?.productId && (
+                            <p className="text-[10px] text-danger mt-1">
+                              {errors.items[index]?.productId?.message}
+                            </p>
+                          )}
                         </td>
                         <td className="px-6 py-4">
                           <input

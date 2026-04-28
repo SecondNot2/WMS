@@ -1,16 +1,34 @@
 "use client";
 
 import React from "react";
-import { Search, Clock, Box, Tag, Download, Truck } from "lucide-react";
+import {
+  Search,
+  Clock,
+  Box,
+  Tag,
+  Download,
+  Truck,
+  Upload,
+  UserRound,
+  Shield,
+  type LucideIcon,
+} from "lucide-react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import { getApiErrorMessage } from "@/lib/api/client";
+import { useActivityLogs } from "@/lib/hooks/use-activity-log";
 import { cn } from "@/lib/utils";
+import type { ActivityLog } from "@wms/types";
 
 const moduleOptions: ComboboxOption<string>[] = [
   { value: "", label: "Tất cả module" },
-  { value: "products", label: "Sản phẩm" },
-  { value: "inbound", label: "Nhập kho" },
-  { value: "outbound", label: "Xuất kho" },
-  { value: "suppliers", label: "Nhà cung cấp" },
+  { value: "Product", label: "Sản phẩm" },
+  { value: "Category", label: "Danh mục" },
+  { value: "GoodsReceipt", label: "Nhập kho" },
+  { value: "GoodsIssue", label: "Xuất kho" },
+  { value: "Supplier", label: "Nhà cung cấp" },
+  { value: "Recipient", label: "Đơn vị nhận" },
+  { value: "User", label: "Người dùng" },
+  { value: "Role", label: "Vai trò" },
 ];
 
 const actionOptions: ComboboxOption<string>[] = [
@@ -19,73 +37,120 @@ const actionOptions: ComboboxOption<string>[] = [
   { value: "update", label: "Cập nhật" },
   { value: "delete", label: "Xóa" },
   { value: "approve", label: "Phê duyệt" },
-];
-
-// Global activity log mock data
-const mockGlobalLogs = [
-  {
-    id: "1",
-    time: "20/05/2024 14:30:25",
-    user: "Nguyễn Văn A",
-    module: "Sản phẩm",
-    moduleIcon: Box,
-    action: "Cập nhật",
-    details: "Thay đổi giá bán SP000456: 350,000đ → 370,000đ",
-    type: "update",
-  },
-  {
-    id: "2",
-    time: "20/05/2024 11:15:10",
-    user: "Trần Thị B",
-    module: "Nhập kho",
-    moduleIcon: Download,
-    action: "Phê duyệt",
-    details: "Phê duyệt phiếu nhập kho #PN-20240520-01",
-    type: "approve",
-  },
-  {
-    id: "3",
-    time: "20/05/2024 10:05:00",
-    user: "Lê Văn C",
-    module: "Nhà cung cấp",
-    moduleIcon: Truck,
-    action: "Thêm mới",
-    details: "Thêm nhà cung cấp mới: Công ty TNHH ABC",
-    type: "create",
-  },
-  {
-    id: "4",
-    time: "19/05/2024 16:45:00",
-    user: "Admin",
-    module: "Hệ thống",
-    moduleIcon: Tag,
-    action: "Cấu hình",
-    details: "Thay đổi cấu hình gửi thông báo qua Email",
-    type: "config",
-  },
-  {
-    id: "5",
-    time: "19/05/2024 09:30:15",
-    user: "Nguyễn Văn A",
-    module: "Sản phẩm",
-    moduleIcon: Box,
-    action: "Tạo mới",
-    details: "Thêm sản phẩm mới SP000999",
-    type: "create",
-  },
+  { value: "reject", label: "Từ chối" },
+  { value: "adjust", label: "Điều chỉnh" },
+  { value: "import", label: "Import" },
+  { value: "login", label: "Đăng nhập" },
+  { value: "logout", label: "Đăng xuất" },
 ];
 
 const actionStyles = {
   create: "bg-success/10 text-success border-success/20",
   update: "bg-accent/10 text-accent border-accent/20",
   approve: "bg-info/10 text-info border-info/20",
-  config: "bg-warning/10 text-warning border-warning/20",
+  reject: "bg-warning/10 text-warning border-warning/20",
+  adjust: "bg-warning/10 text-warning border-warning/20",
+  import: "bg-info/10 text-info border-info/20",
+  auth: "bg-background-app text-text-secondary border-border-ui",
   delete: "bg-danger/10 text-danger border-danger/20",
+  default: "bg-background-app text-text-secondary border-border-ui",
 };
+
+const moduleLabels: Record<string, string> = {
+  Product: "Sản phẩm",
+  Category: "Danh mục",
+  GoodsReceipt: "Nhập kho",
+  GoodsIssue: "Xuất kho",
+  Supplier: "Nhà cung cấp",
+  Recipient: "Đơn vị nhận",
+  User: "Người dùng",
+  Role: "Vai trò",
+};
+
+const moduleIcons: Record<string, LucideIcon> = {
+  Product: Box,
+  Category: Tag,
+  GoodsReceipt: Download,
+  GoodsIssue: Upload,
+  Supplier: Truck,
+  Recipient: Truck,
+  User: UserRound,
+  Role: Shield,
+};
+
+function getActionKind(action: string): keyof typeof actionStyles {
+  const normalized = action.toLowerCase();
+  if (normalized.includes("create")) return "create";
+  if (normalized.includes("update")) return "update";
+  if (normalized.includes("delete")) return "delete";
+  if (normalized.includes("approve")) return "approve";
+  if (normalized.includes("reject")) return "reject";
+  if (normalized.includes("adjust")) return "adjust";
+  if (normalized.includes("import")) return "import";
+  if (normalized.includes("login") || normalized.includes("logout")) {
+    return "auth";
+  }
+  return "default";
+}
+
+function getActionLabel(action: string) {
+  const kind = getActionKind(action);
+  const labels: Record<keyof typeof actionStyles, string> = {
+    create: "Tạo mới",
+    update: "Cập nhật",
+    delete: "Xóa",
+    approve: "Phê duyệt",
+    reject: "Từ chối",
+    adjust: "Điều chỉnh",
+    import: "Import",
+    auth: action.toLowerCase().includes("logout") ? "Đăng xuất" : "Đăng nhập",
+    default: action,
+  };
+  return labels[kind];
+}
+
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat("vi-VN", {
+    dateStyle: "short",
+    timeStyle: "medium",
+  }).format(new Date(value));
+}
+
+function getDetail(log: ActivityLog) {
+  if (log.detail) return log.detail;
+  if (log.targetCode) return `${getActionLabel(log.action)} ${log.targetCode}`;
+  return log.action;
+}
 
 export default function GlobalActivityLogPage() {
   const [module, setModule] = React.useState<string>("");
   const [action, setAction] = React.useState<string>("");
+  const [search, setSearch] = React.useState<string>("");
+  const [limit, setLimit] = React.useState(20);
+
+  const from = React.useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+    return date.toISOString();
+  }, []);
+
+  const query = React.useMemo(
+    () => ({
+      page: 1,
+      limit,
+      search: search.trim() || undefined,
+      targetType: module || undefined,
+      action: action || undefined,
+      from,
+    }),
+    [action, from, limit, module, search],
+  );
+
+  const { data, isLoading, isError, error, refetch } = useActivityLogs(query);
+  const logs = data?.data ?? [];
+  const total = data?.meta.total ?? 0;
+  const canLoadMore = logs.length < total;
+
   return (
     <div className="p-5 space-y-5">
       {/* Header */}
@@ -105,6 +170,11 @@ export default function GlobalActivityLogPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
             <input
               placeholder="Tìm theo người dùng, nội dung, module..."
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setLimit(20);
+              }}
               className="w-full pl-10 pr-4 py-2 text-sm bg-background-app border border-border-ui rounded-lg outline-none focus:border-accent transition-colors"
             />
           </div>
@@ -112,7 +182,10 @@ export default function GlobalActivityLogPage() {
           <div className="min-w-44">
             <Combobox<string>
               value={module}
-              onChange={(next) => setModule(next)}
+              onChange={(next) => {
+                setModule(next);
+                setLimit(20);
+              }}
               options={moduleOptions}
               clearable={Boolean(module)}
             />
@@ -121,7 +194,10 @@ export default function GlobalActivityLogPage() {
           <div className="min-w-44">
             <Combobox<string>
               value={action}
-              onChange={(next) => setAction(next)}
+              onChange={(next) => {
+                setAction(next);
+                setLimit(20);
+              }}
               options={actionOptions}
               clearable={Boolean(action)}
             />
@@ -139,52 +215,96 @@ export default function GlobalActivityLogPage() {
       {/* Logs List */}
       <div className="bg-card-white rounded-xl border border-border-ui shadow-sm overflow-hidden">
         <div className="divide-y divide-border-ui">
-          {mockGlobalLogs.map((log) => (
-            <div
-              key={log.id}
-              className="p-5 hover:bg-background-app/20 transition-colors flex items-start gap-4"
-            >
-              <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                <log.moduleIcon className="w-5 h-5 text-accent" />
-              </div>
-
-              <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-text-primary">
-                      {log.user}
-                    </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-background-app text-text-secondary border border-border-ui uppercase tracking-wider font-bold">
-                      {log.module}
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-text-secondary flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5" /> {log.time}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <span
-                    className={cn(
-                      "px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-tight",
-                      actionStyles[log.type as keyof typeof actionStyles],
-                    )}
-                  >
-                    {log.action}
-                  </span>
-                  <p className="text-sm text-text-primary font-medium truncate">
-                    {log.details}
-                  </p>
-                </div>
-              </div>
+          {isLoading && (
+            <div className="p-8 text-sm text-text-secondary">
+              Đang tải nhật ký hoạt động...
             </div>
-          ))}
+          )}
+
+          {!isLoading && isError && (
+            <div className="p-8 text-sm">
+              <p className="text-danger font-medium">
+                {getApiErrorMessage(error, "Không thể tải nhật ký hoạt động")}
+              </p>
+              <button
+                onClick={() => refetch()}
+                className="mt-3 text-xs font-bold text-accent hover:underline"
+              >
+                Thử lại
+              </button>
+            </div>
+          )}
+
+          {!isLoading && !isError && logs.length === 0 && (
+            <div className="p-8 text-sm text-text-secondary">
+              Chưa có nhật ký hoạt động phù hợp với bộ lọc.
+            </div>
+          )}
+
+          {!isLoading &&
+            !isError &&
+            logs.map((log) => {
+              const Icon = log.targetType
+                ? (moduleIcons[log.targetType] ?? Tag)
+                : Tag;
+              const kind = getActionKind(log.action);
+
+              return (
+                <div
+                  key={log.id}
+                  className="p-5 hover:bg-background-app/20 transition-colors flex items-start gap-4"
+                >
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                    <Icon className="w-5 h-5 text-accent" />
+                  </div>
+
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-sm font-bold text-text-primary truncate">
+                          {log.user.name}
+                        </span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-background-app text-text-secondary border border-border-ui uppercase tracking-wider font-bold shrink-0">
+                          {log.targetType
+                            ? (moduleLabels[log.targetType] ?? log.targetType)
+                            : "Hệ thống"}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-text-secondary flex items-center gap-1.5 shrink-0">
+                        <Clock className="w-3.5 h-3.5" />{" "}
+                        {formatTime(log.createdAt)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={cn(
+                          "px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-tight shrink-0",
+                          actionStyles[kind],
+                        )}
+                      >
+                        {getActionLabel(log.action)}
+                      </span>
+                      <p className="text-sm text-text-primary font-medium truncate">
+                        {getDetail(log)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
         </div>
 
         {/* Load more */}
         <div className="p-4 bg-background-app/30 border-t border-border-ui text-center">
-          <button className="text-xs font-bold text-accent hover:underline">
-            Tải thêm nhật ký
+          <button
+            disabled={!canLoadMore || isLoading}
+            onClick={() => setLimit((current) => current + 20)}
+            className="text-xs font-bold text-accent hover:underline disabled:text-text-secondary disabled:no-underline disabled:cursor-not-allowed"
+          >
+            {canLoadMore
+              ? "Tải thêm nhật ký"
+              : `Đã hiển thị ${logs.length}/${total}`}
           </button>
         </div>
       </div>

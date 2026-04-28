@@ -597,3 +597,32 @@ export interface GetRecipientsQuery {
   search?: string;
   isActive?: boolean;
 }
+
+export interface ActivityLogUserSummary {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface ActivityLog {
+  id: string;
+  userId: string;
+  user: ActivityLogUserSummary;
+  action: string;
+  targetType: string | null;
+  targetId: string | null;
+  targetCode: string | null;
+  detail: string | null;
+  createdAt: string;
+}
+
+export interface GetActivityLogsQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  userId?: string;
+  action?: string;
+  targetType?: string;
+  from?: string;
+  to?: string;
+}

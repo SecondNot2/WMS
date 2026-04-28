@@ -543,3 +543,31 @@ export const outboundIdParamsSchema = z.object({
 export type OutboundIdParamsSchemaInput = z.infer<
   typeof outboundIdParamsSchema
 >;
+
+export const getActivityLogsQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  search: z.string().trim().optional(),
+  userId: z.string().trim().optional(),
+  action: z.string().trim().optional(),
+  targetType: z.string().trim().optional(),
+  from: z
+    .string()
+    .trim()
+    .optional()
+    .refine(
+      (v) => !v || !Number.isNaN(Date.parse(v)),
+      "Ngày bắt đầu không hợp lệ",
+    ),
+  to: z
+    .string()
+    .trim()
+    .optional()
+    .refine(
+      (v) => !v || !Number.isNaN(Date.parse(v)),
+      "Ngày kết thúc không hợp lệ",
+    ),
+});
+export type GetActivityLogsQuerySchemaInput = z.infer<
+  typeof getActivityLogsQuerySchema
+>;

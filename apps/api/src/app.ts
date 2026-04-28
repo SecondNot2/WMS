@@ -17,6 +17,7 @@ import recipientsRoutes from "./routes/recipients.routes";
 import inboundRoutes from "./routes/inbound.routes";
 import outboundRoutes from "./routes/outbound.routes";
 import alertsRoutes from "./routes/alerts.routes";
+import activityLogRoutes from "./routes/activityLog.routes";
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use("/recipients", recipientsRoutes);
 app.use("/inbound", inboundRoutes);
 app.use("/outbound", outboundRoutes);
 app.use("/alerts", alertsRoutes);
+app.use("/activity-log", activityLogRoutes);
 
 // 404 handler
 app.use((req, res) => {

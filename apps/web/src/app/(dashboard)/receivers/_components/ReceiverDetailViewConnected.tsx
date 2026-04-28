@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Building2,
   FileUp,
@@ -11,11 +12,15 @@ import {
   Phone,
   ReceiptText,
   Trash2,
-  UserRound,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { getApiErrorMessage } from "@/lib/api/client";
+import {
+  useDeleteRecipient,
+  useRecipient,
+} from "@/lib/hooks/use-recipients";
 
-interface ReceiverDetailViewProps {
+interface ReceiverDetailViewConnectedProps {
   id: string;
 }
 
@@ -23,51 +28,60 @@ const formatCurrency = (value: number) =>
   new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
+    maximumFractionDigits: 0,
   }).format(value);
 
-export function ReceiverDetailView({ id }: ReceiverDetailViewProps) {
-  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("vi-VN", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
 
-  const receiver = {
-    id,
-    code: "DVN001",
-    name: "Chi nhánh Lạng Sơn",
-    type: "Chi nhánh",
-    contactPerson: "Hoàng Văn Bình",
-    phone: "0902 345 678",
-    email: "langson@wms.vn",
-    address: "Số 12 đường Trần Đăng Ninh, TP. Lạng Sơn",
-    issueCount: 35,
-    pendingIssues: 2,
-    totalValue: 452000000,
+const statusLabel: Record<string, { label: string; cls: string }> = {
+  PENDING: { label: "Chờ duyệt", cls: "bg-warning/10 text-warning" },
+  APPROVED: { label: "Đã duyệt", cls: "bg-success/10 text-success" },
+  REJECTED: { label: "Từ chối", cls: "bg-danger/10 text-danger" },
+};
+
+export function ReceiverDetailViewConnected({
+  id,
+}: ReceiverDetailViewConnectedProps) {
+  const router = useRouter();
+  const { data: recipient, isLoading, error } = useRecipient(id);
+  const deleteMutation = useDeleteRecipient();
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
+  const [deleteError, setDeleteError] = React.useState<string | null>(null);
+
+  const handleDelete = async () => {
+    setDeleteError(null);
+    try {
+      await deleteMutation.mutateAsync(id);
+      router.push("/receivers");
+    } catch (err) {
+      setDeleteError(getApiErrorMessage(err, "Không thể xóa đơn vị nhận"));
+    }
   };
 
-  const recentIssues = [
-    {
-      id: "1",
-      code: "PXK-2024-0042",
-      createdAt: "18/05/2024 10:30",
-      itemCount: 5,
-      totalAmount: 45000000,
-      status: "PENDING",
-    },
-    {
-      id: "2",
-      code: "PXK-2024-0041",
-      createdAt: "17/05/2024 15:45",
-      itemCount: 15,
-      totalAmount: 120000000,
-      status: "APPROVED",
-    },
-    {
-      id: "3",
-      code: "PXK-2024-0038",
-      createdAt: "13/05/2024 11:20",
-      itemCount: 6,
-      totalAmount: 35000000,
-      status: "APPROVED",
-    },
-  ];
+  if (isLoading) {
+    return (
+      <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-8 text-sm text-text-secondary">
+        Đang tải thông tin đơn vị nhận...
+      </div>
+    );
+  }
+
+  if (error || !recipient) {
+    return (
+      <div className="bg-danger/5 rounded-xl border border-danger/20 shadow-sm p-8 text-sm text-danger">
+        {getApiErrorMessage(error, "Không tìm thấy đơn vị nhận")}
+      </div>
+    );
+  }
+
+  const pendingCount = recipient.recentOutbounds.filter(
+    (r) => r.status === "PENDING",
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -80,7 +94,10 @@ export function ReceiverDetailView({ id }: ReceiverDetailViewProps) {
           <Pencil className="w-4 h-4" /> Chỉnh sửa
         </Link>
         <button
-          onClick={() => setIsDeleteOpen(true)}
+          onClick={() => {
+            setDeleteError(null);
+            setConfirmDelete(true);
+          }}
           className="flex items-center gap-2 bg-card-white border border-danger/20 text-danger hover:bg-danger/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm"
         >
           <Trash2 className="w-4 h-4" /> Xóa
@@ -90,40 +107,31 @@ export function ReceiverDetailView({ id }: ReceiverDetailViewProps) {
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
         <div className="xl:col-span-8 space-y-6">
           <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-16 h-16 rounded-xl bg-warning/10 text-warning flex items-center justify-center shrink-0">
-                <Building2 className="w-8 h-8" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-warning/10 text-warning uppercase tracking-wider">
-                    {receiver.code}
-                  </span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-info/10 text-info uppercase tracking-wider">
-                    {receiver.type}
-                  </span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success uppercase tracking-wider">
-                    Hoạt động
-                  </span>
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 rounded-xl bg-warning/10 text-warning flex items-center justify-center shrink-0">
+                  <Building2 className="w-8 h-8" />
                 </div>
-                <h2 className="text-2xl font-bold text-text-primary">
-                  {receiver.name}
-                </h2>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className={
+                        recipient.isActive
+                          ? "px-2 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success uppercase tracking-wider"
+                          : "px-2 py-0.5 rounded text-[10px] font-bold bg-warning/10 text-warning uppercase tracking-wider"
+                      }
+                    >
+                      {recipient.isActive ? "Hoạt động" : "Tạm dừng"}
+                    </span>
+                  </div>
+                  <h2 className="text-2xl font-bold text-text-primary">
+                    {recipient.name}
+                  </h2>
+                </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8 pt-6 border-t border-border-ui">
-              <div className="flex items-start gap-3">
-                <UserRound className="w-5 h-5 text-accent mt-0.5" />
-                <div>
-                  <p className="text-xs text-text-secondary uppercase font-bold">
-                    Người liên hệ
-                  </p>
-                  <p className="text-sm font-semibold text-text-primary mt-1">
-                    {receiver.contactPerson}
-                  </p>
-                </div>
-              </div>
               <div className="flex items-start gap-3">
                 <Phone className="w-5 h-5 text-success mt-0.5" />
                 <div>
@@ -131,7 +139,7 @@ export function ReceiverDetailView({ id }: ReceiverDetailViewProps) {
                     Điện thoại
                   </p>
                   <p className="text-sm font-semibold text-text-primary mt-1">
-                    {receiver.phone}
+                    {recipient.phone ?? "—"}
                   </p>
                 </div>
               </div>
@@ -142,18 +150,18 @@ export function ReceiverDetailView({ id }: ReceiverDetailViewProps) {
                     Email
                   </p>
                   <p className="text-sm font-semibold text-accent mt-1">
-                    {receiver.email}
+                    {recipient.email ?? "—"}
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
+              <div className="md:col-span-2 flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-warning mt-0.5" />
                 <div>
                   <p className="text-xs text-text-secondary uppercase font-bold">
                     Địa chỉ
                   </p>
                   <p className="text-sm font-semibold text-text-primary mt-1">
-                    {receiver.address}
+                    {recipient.address ?? "—"}
                   </p>
                 </div>
               </div>
@@ -169,7 +177,7 @@ export function ReceiverDetailView({ id }: ReceiverDetailViewProps) {
                 </h3>
               </div>
               <Link
-                href="/outbound"
+                href={`/outbound?recipientId=${recipient.id}`}
                 className="text-xs font-bold text-accent hover:underline"
               >
                 Xem tất cả
@@ -185,9 +193,6 @@ export function ReceiverDetailView({ id }: ReceiverDetailViewProps) {
                     <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">
                       Ngày lập
                     </th>
-                    <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider text-center">
-                      Mặt hàng
-                    </th>
                     <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider text-right">
                       Tổng tiền
                     </th>
@@ -197,43 +202,49 @@ export function ReceiverDetailView({ id }: ReceiverDetailViewProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-ui">
-                  {recentIssues.map((issue) => (
-                    <tr
-                      key={issue.id}
-                      className="hover:bg-background-app/50 transition-colors"
-                    >
-                      <td className="px-6 py-4">
-                        <Link
-                          href={`/outbound/${issue.id}`}
-                          className="text-sm font-bold text-accent hover:underline"
+                  {recipient.recentOutbounds.length > 0 ? (
+                    recipient.recentOutbounds.map((issue) => {
+                      const status =
+                        statusLabel[issue.status] ?? statusLabel.PENDING;
+                      return (
+                        <tr
+                          key={issue.id}
+                          className="hover:bg-background-app/50 transition-colors"
                         >
-                          {issue.code}
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-text-secondary">
-                        {issue.createdAt}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold text-text-primary text-center">
-                        {issue.itemCount}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold text-text-primary text-right">
-                        {formatCurrency(issue.totalAmount)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={
-                            issue.status === "PENDING"
-                              ? "px-2 py-0.5 rounded-full text-[10px] font-bold bg-warning/10 text-warning"
-                              : "px-2 py-0.5 rounded-full text-[10px] font-bold bg-success/10 text-success"
-                          }
-                        >
-                          {issue.status === "PENDING"
-                            ? "Chờ duyệt"
-                            : "Đã duyệt"}
-                        </span>
+                          <td className="px-6 py-4">
+                            <Link
+                              href={`/outbound/${issue.id}`}
+                              className="text-sm font-bold text-accent hover:underline"
+                            >
+                              {issue.code}
+                            </Link>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-text-secondary">
+                            {formatDate(issue.createdAt)}
+                          </td>
+                          <td className="px-6 py-4 text-sm font-bold text-text-primary text-right">
+                            {formatCurrency(issue.totalAmount)}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${status.cls}`}
+                            >
+                              {status.label}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={4}
+                        className="px-6 py-12 text-center text-sm text-text-secondary"
+                      >
+                        Chưa có phiếu xuất nào cho đơn vị này.
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
@@ -247,15 +258,15 @@ export function ReceiverDetailView({ id }: ReceiverDetailViewProps) {
                 Tổng phiếu xuất
               </p>
               <p className="text-2xl font-bold text-text-primary mt-2">
-                {receiver.issueCount}
+                {recipient.stats.totalOutbound}
               </p>
             </div>
             <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-5">
               <p className="text-xs text-text-secondary uppercase font-bold">
-                Chờ duyệt
+                Đang chờ duyệt
               </p>
               <p className="text-2xl font-bold text-warning mt-2">
-                {receiver.pendingIssues}
+                {pendingCount}
               </p>
             </div>
             <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-5">
@@ -263,13 +274,13 @@ export function ReceiverDetailView({ id }: ReceiverDetailViewProps) {
                 Tổng giá trị xuất
               </p>
               <p className="text-2xl font-bold text-accent mt-2">
-                {formatCurrency(receiver.totalValue)}
+                {formatCurrency(recipient.stats.totalAmount)}
               </p>
             </div>
           </div>
 
           <Link
-            href="/outbound/new"
+            href={`/outbound/new?recipientId=${recipient.id}`}
             className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-white rounded-xl px-4 py-3 text-sm font-bold shadow-lg shadow-accent/20 transition-colors"
           >
             <FileUp className="w-4 h-4" /> Lập phiếu xuất cho đơn vị này
@@ -278,11 +289,17 @@ export function ReceiverDetailView({ id }: ReceiverDetailViewProps) {
       </div>
 
       <ConfirmDialog
-        isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)}
-        onConfirm={() => console.log("Delete receiver", id)}
-        title="Xóa đơn vị nhận"
-        message="Bạn có chắc chắn muốn xóa đơn vị nhận hàng này? Nếu đã phát sinh phiếu xuất, hệ thống nên chuyển sang trạng thái tạm dừng thay vì xóa hẳn."
+        isOpen={confirmDelete}
+        onClose={() => {
+          setConfirmDelete(false);
+          setDeleteError(null);
+        }}
+        onConfirm={handleDelete}
+        title="Xóa đơn vị nhận?"
+        message={
+          deleteError ??
+          "Đơn vị nhận sẽ được chuyển sang trạng thái tạm dừng. Lịch sử phiếu xuất vẫn được giữ lại."
+        }
         confirmLabel="Xóa đơn vị"
         variant="danger"
       />

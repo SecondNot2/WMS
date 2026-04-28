@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { ReceiverForm } from "../_components/ReceiverForm";
+import { ReceiverFormConnected } from "../_components/ReceiverFormConnected";
 
 export default function NewReceiverPage() {
   return (
@@ -27,7 +27,7 @@ export default function NewReceiverPage() {
       </div>
 
       <div className="pl-9">
-        <ReceiverForm />
+        <ReceiverFormConnected />
       </div>
     </div>
   );

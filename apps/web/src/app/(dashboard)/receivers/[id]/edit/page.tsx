@@ -4,22 +4,11 @@ import React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { useParams } from "next/navigation";
-import { ReceiverForm } from "../../_components/ReceiverForm";
+import { ReceiverFormConnected } from "../../_components/ReceiverFormConnected";
 
 export default function EditReceiverPage() {
   const params = useParams();
   const id = params.id as string;
-
-  const mockData = {
-    name: "Chi nhánh Lạng Sơn",
-    type: "BRANCH" as const,
-    contactPerson: "Hoàng Văn Bình",
-    phone: "0902 345 678",
-    email: "langson@wms.vn",
-    address: "Số 12 đường Trần Đăng Ninh, TP. Lạng Sơn",
-    note: `Đang chỉnh sửa đơn vị nhận ${id}`,
-    isActive: true,
-  };
 
   return (
     <div className="p-5 w-full space-y-6">
@@ -42,7 +31,7 @@ export default function EditReceiverPage() {
       </div>
 
       <div className="pl-9">
-        <ReceiverForm initialData={mockData} isEdit />
+        <ReceiverFormConnected receiverId={id} />
       </div>
     </div>
   );

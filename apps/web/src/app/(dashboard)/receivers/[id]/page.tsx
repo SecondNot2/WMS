@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { useParams } from "next/navigation";
-import { ReceiverDetailView } from "../_components/ReceiverDetailView";
+import { ReceiverDetailViewConnected } from "../_components/ReceiverDetailViewConnected";
 
 export default function ReceiverIdPage() {
   const params = useParams();
@@ -31,7 +31,7 @@ export default function ReceiverIdPage() {
       </div>
 
       <div className="pl-9">
-        <ReceiverDetailView id={id} />
+        <ReceiverDetailViewConnected id={id} />
       </div>
     </div>
   );

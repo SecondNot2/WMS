@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { SupplierForm } from "../_components/SupplierForm";
+import { SupplierFormConnected } from "../_components/SupplierFormConnected";
 
 export default function NewSupplierPage() {
   return (
@@ -27,7 +27,7 @@ export default function NewSupplierPage() {
       </div>
 
       <div className="pl-9">
-        <SupplierForm />
+        <SupplierFormConnected />
       </div>
     </div>
   );

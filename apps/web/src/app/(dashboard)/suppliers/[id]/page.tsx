@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { useParams } from "next/navigation";
-import { SupplierDetailView } from "../_components/SupplierDetailView";
+import { SupplierDetailViewConnected } from "../_components/SupplierDetailViewConnected";
 
 export default function SupplierIdPage() {
   const params = useParams();
@@ -31,7 +31,7 @@ export default function SupplierIdPage() {
       </div>
 
       <div className="pl-9">
-        <SupplierDetailView id={id} />
+        <SupplierDetailViewConnected id={id} />
       </div>
     </div>
   );

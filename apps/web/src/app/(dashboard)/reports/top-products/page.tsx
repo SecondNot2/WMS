@@ -4,6 +4,7 @@ import React from "react";
 import {
   BarChart3,
   Download,
+  Loader2,
   Package,
   TrendingDown,
   TrendingUp,
@@ -11,77 +12,11 @@ import {
 } from "lucide-react";
 import { StatsCard } from "@/components/StatsCard";
 import { ReportFilters } from "../_components/ReportFilters";
+import { useTopProductsReport } from "@/lib/hooks/use-reports";
 import { cn } from "@/lib/utils";
-
-interface ProductPerformance {
-  rank: number;
-  sku: string;
-  name: string;
-  category: string;
-  inboundQty: number;
-  outboundQty: number;
-  turnoverRate: number;
-  stock: number;
-  trend: "UP" | "DOWN" | "STABLE";
-}
-
-const topProducts: ProductPerformance[] = [
-  {
-    rank: 1,
-    sku: "SP000123",
-    name: "Tai nghe Bluetooth Sony WH-1000XM4",
-    category: "Điện tử",
-    inboundQty: 120,
-    outboundQty: 96,
-    turnoverRate: 92,
-    stock: 24,
-    trend: "UP",
-  },
-  {
-    rank: 2,
-    sku: "SP000124",
-    name: "Chuột không dây Logitech M331",
-    category: "Phụ kiện",
-    inboundQty: 220,
-    outboundQty: 178,
-    turnoverRate: 88,
-    stock: 42,
-    trend: "UP",
-  },
-  {
-    rank: 3,
-    sku: "SP000125",
-    name: "Bàn phím cơ Keychron K2",
-    category: "Phụ kiện",
-    inboundQty: 90,
-    outboundQty: 63,
-    turnoverRate: 76,
-    stock: 27,
-    trend: "STABLE",
-  },
-  {
-    rank: 4,
-    sku: "SP000126",
-    name: "Màn hình Dell UltraSharp U2419H",
-    category: "Màn hình",
-    inboundQty: 48,
-    outboundQty: 29,
-    turnoverRate: 61,
-    stock: 19,
-    trend: "DOWN",
-  },
-  {
-    rank: 5,
-    sku: "SP000127",
-    name: "Loa Bluetooth JBL Flip 5",
-    category: "Điện tử",
-    inboundQty: 64,
-    outboundQty: 42,
-    turnoverRate: 58,
-    stock: 22,
-    trend: "DOWN",
-  },
-];
+import { reportsApi } from "@/lib/api/reports";
+import { getApiErrorMessage } from "@/lib/api/client";
+import { useToast } from "@/components/Toast";
 
 const trendConfig = {
   UP: {
@@ -98,6 +33,36 @@ const trendConfig = {
 };
 
 export default function TopProductsReportPage() {
+  const { data, isLoading, error } = useTopProductsReport({ limit: 10 });
+  const [exporting, setExporting] = React.useState(false);
+  const toast = useToast();
+  const topProducts = data?.items ?? [];
+  const summary = data?.summary;
+
+  const handleExport = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const blob = await reportsApi.exportExcel({
+        type: "top-products",
+        limit: 100,
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `reports-top-products-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success("Đã xuất báo cáo Excel");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Không thể xuất báo cáo"));
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="p-5 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -110,40 +75,48 @@ export default function TopProductsReportPage() {
             kỳ
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20">
-          <Download className="w-4 h-4" /> Xuất báo cáo
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20 disabled:opacity-60"
+        >
+          {exporting ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4" />
+          )}
+          {exporting ? "Đang xuất..." : "Xuất báo cáo"}
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           label="Sản phẩm phân tích"
-          value="1.254"
+          value={summary?.analyzedProducts ?? 0}
           icon={Package}
           iconBg="bg-accent/10 text-accent"
         />
         <StatsCard
           label="Luân chuyển cao"
-          value="186"
+          value={summary?.highTurnover ?? 0}
           icon={TrendingUp}
           iconBg="bg-success/10 text-success"
-          trend={{ value: "12%", isUp: true }}
         />
         <StatsCard
           label="Luân chuyển thấp"
-          value="42"
+          value={summary?.lowTurnover ?? 0}
           icon={TrendingDown}
           iconBg="bg-danger/10 text-danger"
         />
         <StatsCard
           label="Tỷ lệ trung bình"
-          value="74%"
+          value={`${summary?.averageTurnoverRate ?? 0}%`}
           icon={BarChart3}
           iconBg="bg-info/10 text-info"
         />
       </div>
 
-      <ReportFilters />
+      <ReportFilters onExport={handleExport} isExporting={exporting} />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <div className="xl:col-span-1 bg-card-white rounded-xl border border-border-ui shadow-sm p-5">
@@ -153,6 +126,14 @@ export default function TopProductsReportPage() {
               Top luân chuyển
             </h3>
           </div>
+          {isLoading && (
+            <div className="h-64 bg-background-app animate-pulse rounded-xl" />
+          )}
+          {error && (
+            <div className="text-sm text-danger bg-danger/10 border border-danger/20 rounded-xl p-4">
+              Không thể tải top sản phẩm
+            </div>
+          )}
           <div className="space-y-4">
             {topProducts.map((product) => (
               <div key={product.sku} className="space-y-2">
@@ -185,9 +166,6 @@ export default function TopProductsReportPage() {
             <h3 className="text-sm font-semibold text-text-primary">
               Bảng xếp hạng chi tiết
             </h3>
-            <p className="text-xs text-text-secondary mt-1">
-              Dữ liệu mẫu sẽ được thay bằng GET /reports/top-products
-            </p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left min-w-220">

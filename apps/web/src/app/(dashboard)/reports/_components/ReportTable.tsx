@@ -2,56 +2,18 @@
 
 import React from "react";
 import { DashboardTable } from "@/components/DashboardTable";
+import {
+  useInventoryReport,
+  useReceiptIssueReport,
+} from "@/lib/hooks/use-reports";
 
 interface ReportTableProps {
   type: "receipt-issue" | "inventory";
 }
 
 export function ReportTable({ type }: ReportTableProps) {
-  // TODO: Replace with useQuery -> GET /reports/...
-  const receiptIssueData = [
-    {
-      id: "1",
-      date: "18/05/2024",
-      type: "NHẬP",
-      code: "PNK-2024-0056",
-      item: "Tai nghe Sony WH-1000XM4",
-      qty: 20,
-      value: 90000000,
-    },
-    {
-      id: "2",
-      date: "17/05/2024",
-      type: "XUẤT",
-      code: "PXK-2024-0042",
-      item: "Chuột Logitech M331",
-      qty: 50,
-      value: 27500000,
-    },
-  ];
-
-  const inventoryData = [
-    {
-      id: "1",
-      sku: "SP001",
-      name: "Tai nghe Sony WH-1000XM4",
-      category: "Điện tử",
-      stock: 3,
-      unit: "Cái",
-      avgPrice: 4500000,
-      totalValue: 13500000,
-    },
-    {
-      id: "2",
-      sku: "SP002",
-      name: "Chuột Logitech M331",
-      category: "Phụ kiện",
-      stock: 156,
-      unit: "Cái",
-      avgPrice: 350000,
-      totalValue: 54600000,
-    },
-  ];
+  const receiptIssueQuery = useReceiptIssueReport({ page: 1, limit: 20 });
+  const inventoryQuery = useInventoryReport({ page: 1, limit: 20 });
 
   const receiptIssueColumns = [
     { header: "Ngày", accessor: "date" },
@@ -105,17 +67,38 @@ export function ReportTable({ type }: ReportTableProps) {
     },
   ];
 
+  const activeQuery =
+    type === "receipt-issue" ? receiptIssueQuery : inventoryQuery;
+
+  if (activeQuery.isLoading) {
+    return <div className="h-56 bg-background-app animate-pulse rounded-xl" />;
+  }
+
+  if (activeQuery.error) {
+    return (
+      <div className="text-sm text-danger bg-danger/10 border border-danger/20 rounded-xl p-4">
+        Không thể tải dữ liệu báo cáo
+      </div>
+    );
+  }
+
   if (type === "receipt-issue") {
     return (
       <DashboardTable
         title=""
         columns={receiptIssueColumns}
-        data={receiptIssueData}
+        data={(receiptIssueQuery.data?.items ?? []).map((item) => ({
+          ...item,
+        }))}
       />
     );
   }
 
   return (
-    <DashboardTable title="" columns={inventoryColumns} data={inventoryData} />
+    <DashboardTable
+      title=""
+      columns={inventoryColumns}
+      data={(inventoryQuery.data?.items ?? []).map((item) => ({ ...item }))}
+    />
   );
 }

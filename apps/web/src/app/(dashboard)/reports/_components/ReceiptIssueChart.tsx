@@ -10,35 +10,41 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  BarChart,
-  Bar,
-  Cell,
 } from "recharts";
-
-const mockData = [
-  { name: "Tháng 1", receipt: 4000, issue: 2400 },
-  { name: "Tháng 2", receipt: 3000, issue: 1398 },
-  { name: "Tháng 3", receipt: 2000, issue: 9800 },
-  { name: "Tháng 4", receipt: 2780, issue: 3908 },
-  { name: "Tháng 5", receipt: 1890, issue: 4800 },
-  { name: "Tháng 6", receipt: 2390, issue: 3800 },
-  { name: "Tháng 7", receipt: 3490, issue: 4300 },
-];
+import { useReceiptIssueReport } from "@/lib/hooks/use-reports";
 
 export function ReceiptIssueChart() {
   const [isMounted, setIsMounted] = useState(false);
+  const { data, isLoading, error } = useReceiptIssueReport({
+    page: 1,
+    limit: 20,
+  });
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  if (!isMounted) return <div className="h-87.5 w-full bg-background-app animate-pulse rounded-xl" />;
+  if (!isMounted || isLoading)
+    return (
+      <div className="h-87.5 w-full bg-background-app animate-pulse rounded-xl" />
+    );
+
+  if (error)
+    return (
+      <div className="h-87.5 w-full text-sm text-danger bg-danger/10 border border-danger/20 rounded-xl p-4">
+        Không thể tải biểu đồ nhập xuất
+      </div>
+    );
 
   return (
     <div className="w-full h-87.5">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
-          data={mockData}
+          data={(data?.chart ?? []).map((item) => ({
+            name: item.label,
+            receipt: item.inbound,
+            issue: item.outbound,
+          }))}
           margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
         >
           <defs>
@@ -51,24 +57,37 @@ export function ReceiptIssueChart() {
               <stop offset="95%" stopColor="#f39c12" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-          <XAxis 
-            dataKey="name" 
-            axisLine={false} 
-            tickLine={false} 
+          <CartesianGrid
+            strokeDasharray="3 3"
+            vertical={false}
+            stroke="#f1f5f9"
+          />
+          <XAxis
+            dataKey="name"
+            axisLine={false}
+            tickLine={false}
             tick={{ fontSize: 11, fill: "#64748b", fontWeight: 500 }}
             dy={10}
           />
-          <YAxis 
-            axisLine={false} 
-            tickLine={false} 
+          <YAxis
+            axisLine={false}
+            tickLine={false}
             tick={{ fontSize: 11, fill: "#64748b", fontWeight: 500 }}
           />
-          <Tooltip 
-            contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
+          <Tooltip
+            contentStyle={{
+              borderRadius: "12px",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+            }}
             labelStyle={{ fontWeight: "bold", marginBottom: "4px" }}
           />
-          <Legend verticalAlign="top" align="right" height={36} iconType="circle" />
+          <Legend
+            verticalAlign="top"
+            align="right"
+            height={36}
+            iconType="circle"
+          />
           <Area
             name="Nhập kho"
             type="monotone"

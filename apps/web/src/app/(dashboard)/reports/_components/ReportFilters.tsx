@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Calendar, Download } from "lucide-react";
+import { Calendar, Download, Loader2 } from "lucide-react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 
 const categoryOptions: ComboboxOption<string>[] = [
@@ -10,7 +10,15 @@ const categoryOptions: ComboboxOption<string>[] = [
   { value: "2", label: "Điện lạnh" },
 ];
 
-export function ReportFilters() {
+interface ReportFiltersProps {
+  onExport?: () => void;
+  isExporting?: boolean;
+}
+
+export function ReportFilters({
+  onExport,
+  isExporting = false,
+}: ReportFiltersProps) {
   const [from, setFrom] = React.useState("");
   const [to, setTo] = React.useState("");
   const [category, setCategory] = React.useState<string>("");
@@ -62,9 +70,16 @@ export function ReportFilters() {
 
       <button
         type="button"
+        onClick={onExport}
+        disabled={isExporting}
         className="mt-5 ml-auto flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
       >
-        <Download className="w-4 h-4" /> Xuất Excel
+        {isExporting ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Download className="w-4 h-4" />
+        )}
+        {isExporting ? "Đang xuất..." : "Xuất Excel"}
       </button>
     </div>
   );

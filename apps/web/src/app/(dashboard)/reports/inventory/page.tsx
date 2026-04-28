@@ -6,8 +6,35 @@ import { ReportFilters } from "../_components/ReportFilters";
 import { InventoryValueChart } from "../_components/InventoryValueChart";
 import { ReportTable } from "../_components/ReportTable";
 import { PieChart as PieIcon } from "lucide-react";
+import { reportsApi } from "@/lib/api/reports";
+import { getApiErrorMessage } from "@/lib/api/client";
+import { useToast } from "@/components/Toast";
 
 export default function InventoryReportPage() {
+  const [exporting, setExporting] = React.useState(false);
+  const toast = useToast();
+
+  const handleExport = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const blob = await reportsApi.exportExcel({ type: "inventory" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `reports-inventory-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success("Đã xuất báo cáo Excel");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Không thể xuất báo cáo"));
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="p-5 space-y-5">
       {/* Header */}
@@ -22,7 +49,7 @@ export default function InventoryReportPage() {
 
       <ReportStats type="inventory" />
 
-      <ReportFilters />
+      <ReportFilters onExport={handleExport} isExporting={exporting} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-1 bg-card-white rounded-xl border border-border-ui shadow-sm p-5">

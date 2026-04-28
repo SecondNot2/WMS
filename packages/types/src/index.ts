@@ -518,10 +518,54 @@ export interface OutboundStatsData {
 }
 
 // ─────────────────────────────────────────
-// RECIPIENTS (placeholder — receivers module chưa build)
+// RECIPIENTS (Đơn vị nhận hàng — model Recipient)
 // ─────────────────────────────────────────
 
 export interface RecipientSummary {
   id: string;
   name: string;
+}
+
+export interface Recipient {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  isActive: boolean;
+  outboundCount: number;
+  totalAmount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RecipientRecentOutbound {
+  id: string;
+  code: string;
+  status: OutboundStatus;
+  totalAmount: number;
+  createdAt: string;
+}
+
+export interface RecipientDetail extends Recipient {
+  stats: { totalOutbound: number; totalAmount: number };
+  recentOutbounds: RecipientRecentOutbound[];
+}
+
+export interface CreateRecipientInput {
+  name: string;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+}
+
+export interface UpdateRecipientInput extends Partial<CreateRecipientInput> {
+  isActive?: boolean;
+}
+
+export interface GetRecipientsQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
 }

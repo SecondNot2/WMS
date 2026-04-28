@@ -327,6 +327,43 @@ export type SupplierIdParamsSchemaInput = z.infer<
 >;
 
 // ─────────────────────────────────────────
+// RECIPIENTS
+// ─────────────────────────────────────────
+
+export const createRecipientSchema = z.object({
+  name: z.string().trim().min(1, "Vui lòng nhập tên đơn vị nhận").max(200),
+  phone: nullablePhone,
+  email: nullableEmail,
+  address: nullableAddress,
+});
+export type CreateRecipientSchemaInput = z.infer<typeof createRecipientSchema>;
+
+export const updateRecipientSchema = createRecipientSchema
+  .partial()
+  .extend({ isActive: z.boolean().optional() });
+export type UpdateRecipientSchemaInput = z.infer<typeof updateRecipientSchema>;
+
+export const getRecipientsQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  search: z.string().trim().optional(),
+  isActive: z
+    .union([z.boolean(), z.enum(["true", "false"])])
+    .transform((v) => (typeof v === "boolean" ? v : v === "true"))
+    .optional(),
+});
+export type GetRecipientsQuerySchemaInput = z.infer<
+  typeof getRecipientsQuerySchema
+>;
+
+export const recipientIdParamsSchema = z.object({
+  id: z.string().trim().min(1, "Thiếu mã đơn vị nhận"),
+});
+export type RecipientIdParamsSchemaInput = z.infer<
+  typeof recipientIdParamsSchema
+>;
+
+// ─────────────────────────────────────────
 // INBOUND (GoodsReceipt)
 // ─────────────────────────────────────────
 

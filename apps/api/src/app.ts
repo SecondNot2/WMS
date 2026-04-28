@@ -13,6 +13,7 @@ import rolesRoutes from "./routes/roles.routes";
 import productsRoutes from "./routes/products.routes";
 import categoriesRoutes from "./routes/categories.routes";
 import suppliersRoutes from "./routes/suppliers.routes";
+import recipientsRoutes from "./routes/recipients.routes";
 import inboundRoutes from "./routes/inbound.routes";
 import outboundRoutes from "./routes/outbound.routes";
 
@@ -45,6 +46,7 @@ app.use("/roles", rolesRoutes);
 app.use("/products", productsRoutes);
 app.use("/categories", categoriesRoutes);
 app.use("/suppliers", suppliersRoutes);
+app.use("/recipients", recipientsRoutes);
 app.use("/inbound", inboundRoutes);
 app.use("/outbound", outboundRoutes);
 

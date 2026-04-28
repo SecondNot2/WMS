@@ -19,10 +19,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useRecipients } from "@/lib/hooks/use-recipients";
 import { useProducts } from "@/lib/hooks/use-products";
-import {
-  useCreateOutbound,
-  useUpdateOutbound,
-} from "@/lib/hooks/use-outbound";
+import { useCreateOutbound, useUpdateOutbound } from "@/lib/hooks/use-outbound";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { useToast } from "@/components/Toast";
 
@@ -145,17 +142,6 @@ export function OutboundForm({
                 <Building className="w-5 h-5 text-accent" />
                 Thông tin điểm đến
               </h3>
-
-              {!hasRecipients && (
-                <div className="flex items-start gap-2 text-[12px] text-warning bg-warning/5 border border-warning/15 rounded-lg px-3 py-2.5">
-                  <Info className="w-4 h-4 mt-0.5 shrink-0" />
-                  <span>
-                    Module <strong>Đơn vị nhận hàng</strong> chưa được build —
-                    danh sách đang trống. Vui lòng triển khai module{" "}
-                    <code>/receivers</code> trước khi tạo phiếu xuất.
-                  </span>
-                </div>
-              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -360,8 +346,7 @@ export function OutboundForm({
                           </td>
                           <td className="px-6 py-4 text-sm font-bold text-text-primary text-right">
                             {new Intl.NumberFormat("vi-VN").format(
-                              quantity *
-                                (watchItems?.[index]?.unitPrice || 0),
+                              quantity * (watchItems?.[index]?.unitPrice || 0),
                             )}{" "}
                             đ
                           </td>

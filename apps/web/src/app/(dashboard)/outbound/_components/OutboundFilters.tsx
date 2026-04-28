@@ -135,17 +135,6 @@ export function OutboundFilters({
           </button>
         </div>
       </div>
-
-      {!hasRecipients && (
-        <div className="flex items-start gap-2 text-[11px] text-info bg-info/5 border border-info/10 rounded-lg px-3 py-2">
-          <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-          <span>
-            Module <strong>Đơn vị nhận hàng</strong> chưa được build. Lọc theo
-            đơn vị nhận sẽ khả dụng sau khi module <code>/receivers</code> được
-            triển khai.
-          </span>
-        </div>
-      )}
     </div>
   );
 }

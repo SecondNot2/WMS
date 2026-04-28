@@ -18,8 +18,35 @@ import {
   CategoryDistributionChart,
 } from "./_components/PerformanceCharts";
 import { EfficiencyMetrics } from "./_components/EfficiencyMetrics";
+import { useEfficiency, usePerformance } from "@/lib/hooks/use-statistics";
+import type { StatisticsRange } from "@wms/types";
+
+function formatCompact(value: number): string {
+  if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2)}B`;
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  return value.toString();
+}
+
+function formatTrend(value: number): string {
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(1)}%`;
+}
 
 export default function StatisticsPage() {
+  const [range, setRange] = React.useState<StatisticsRange>("30d");
+  const [categoryId, setCategoryId] = React.useState<string>("");
+
+  const query = React.useMemo(
+    () => ({ range, ...(categoryId ? { categoryId } : {}) }),
+    [range, categoryId],
+  );
+
+  const performanceQuery = usePerformance(query);
+  const efficiencyQuery = useEfficiency(query);
+
+  const summary = performanceQuery.data?.summary;
+  const isLoadingPerf = performanceQuery.isLoading;
   return (
     <div className="p-5 space-y-5">
       {/* Header Section */}
@@ -39,37 +66,74 @@ export default function StatisticsPage() {
       </div>
 
       {/* Filter Bar */}
-      <StatsFilters />
+      <StatsFilters
+        range={range}
+        categoryId={categoryId}
+        onRangeChange={setRange}
+        onCategoryChange={setCategoryId}
+        onReset={() => {
+          setRange("30d");
+          setCategoryId("");
+        }}
+      />
 
       {/* Top Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           label="Tổng nhập kho"
-          value="1,250"
+          value={
+            isLoadingPerf
+              ? "—"
+              : (summary?.totalInbound.value ?? 0).toLocaleString("vi-VN")
+          }
           icon={ArrowDownCircle}
           iconBg="bg-success/10 text-success"
-          trend={{ value: "12.5%", isUp: true }}
+          trend={
+            summary
+              ? {
+                  value: formatTrend(summary.totalInbound.trend),
+                  isUp: summary.totalInbound.trend >= 0,
+                }
+              : undefined
+          }
         />
         <StatsCard
           label="Tổng xuất kho"
-          value="980"
+          value={
+            isLoadingPerf
+              ? "—"
+              : (summary?.totalOutbound.value ?? 0).toLocaleString("vi-VN")
+          }
           icon={ArrowUpCircle}
           iconBg="bg-warning/10 text-warning"
-          trend={{ value: "8.2%", isUp: true }}
+          trend={
+            summary
+              ? {
+                  value: formatTrend(summary.totalOutbound.trend),
+                  isUp: summary.totalOutbound.trend >= 0,
+                }
+              : undefined
+          }
         />
         <StatsCard
           label="Giá trị tồn kho"
-          value="5.68B"
+          value={
+            isLoadingPerf
+              ? "—"
+              : formatCompact(summary?.inventoryValue.value ?? 0)
+          }
           icon={DollarSign}
           iconBg="bg-info/10 text-info"
-          trend={{ value: "3.7%", isUp: true }}
         />
         <StatsCard
           label="Sản phẩm hoạt động"
-          value="856"
+          value={
+            isLoadingPerf
+              ? "—"
+              : (summary?.activeProducts.value ?? 0).toLocaleString("vi-VN")
+          }
           icon={Box}
           iconBg="bg-accent/10 text-accent"
-          trend={{ value: "5", isUp: true }}
         />
       </div>
 
@@ -77,8 +141,14 @@ export default function StatisticsPage() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         {/* Left Column: Flow Analysis (Takes 2/3 space on large screens) */}
         <div className="xl:col-span-2 space-y-5">
-          <FlowAnalysisChart />
-          <EfficiencyMetrics />
+          <FlowAnalysisChart
+            data={performanceQuery.data?.flowSeries}
+            isLoading={performanceQuery.isLoading}
+          />
+          <EfficiencyMetrics
+            data={efficiencyQuery.data}
+            isLoading={efficiencyQuery.isLoading}
+          />
 
           <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-5">
             <div className="flex items-center justify-between mb-5">
@@ -144,8 +214,14 @@ export default function StatisticsPage() {
 
         {/* Right Column: Side Analytics */}
         <div className="space-y-5">
-          <CategoryDistributionChart />
-          <TopProductsChart />
+          <CategoryDistributionChart
+            data={performanceQuery.data?.categoryDistribution}
+            isLoading={performanceQuery.isLoading}
+          />
+          <TopProductsChart
+            data={performanceQuery.data?.topProducts}
+            isLoading={performanceQuery.isLoading}
+          />
         </div>
       </div>
     </div>

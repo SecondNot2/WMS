@@ -598,6 +598,67 @@ export interface GetRecipientsQuery {
   isActive?: boolean;
 }
 
+// ─────────────────────────────────────────
+// STATISTICS
+// ─────────────────────────────────────────
+
+export type StatisticsRange = "7d" | "30d" | "3m" | "1y";
+
+export interface GetStatisticsQuery {
+  from?: string;
+  to?: string;
+  range?: StatisticsRange;
+  categoryId?: string;
+}
+
+export interface EfficiencyData {
+  approvalRate: number;
+  avgApprovalTime: number;
+  stockAccuracy: number;
+  turnoverRate: number;
+  inboundFulfillmentRate: number;
+  outboundFulfillmentRate: number;
+}
+
+export interface StatisticsSummaryCard {
+  value: number;
+  trend: number;
+}
+
+export interface StatisticsSummary {
+  totalInbound: StatisticsSummaryCard;
+  totalOutbound: StatisticsSummaryCard;
+  inventoryValue: StatisticsSummaryCard;
+  activeProducts: StatisticsSummaryCard;
+}
+
+export interface StatisticsFlowPoint {
+  date: string;
+  label: string;
+  inbound: number;
+  outbound: number;
+}
+
+export interface StatisticsTopProduct {
+  productId: string;
+  sku: string;
+  name: string;
+  quantity: number;
+}
+
+export interface StatisticsCategoryDistribution {
+  categoryId: string;
+  name: string;
+  value: number;
+}
+
+export interface PerformanceData {
+  summary: StatisticsSummary;
+  flowSeries: StatisticsFlowPoint[];
+  topProducts: StatisticsTopProduct[];
+  categoryDistribution: StatisticsCategoryDistribution[];
+}
+
 export interface ActivityLogUserSummary {
   id: string;
   name: string;

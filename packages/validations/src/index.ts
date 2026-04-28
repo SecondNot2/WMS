@@ -544,6 +544,34 @@ export type OutboundIdParamsSchemaInput = z.infer<
   typeof outboundIdParamsSchema
 >;
 
+// ─────────────────────────────────────────
+// STATISTICS
+// ─────────────────────────────────────────
+
+export const getStatisticsQuerySchema = z.object({
+  from: z
+    .string()
+    .trim()
+    .optional()
+    .refine(
+      (v) => !v || !Number.isNaN(Date.parse(v)),
+      "Ngày bắt đầu không hợp lệ",
+    ),
+  to: z
+    .string()
+    .trim()
+    .optional()
+    .refine(
+      (v) => !v || !Number.isNaN(Date.parse(v)),
+      "Ngày kết thúc không hợp lệ",
+    ),
+  range: z.enum(["7d", "30d", "3m", "1y"]).optional(),
+  categoryId: z.string().trim().optional(),
+});
+export type GetStatisticsQuerySchemaInput = z.infer<
+  typeof getStatisticsQuerySchema
+>;
+
 export const getActivityLogsQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),

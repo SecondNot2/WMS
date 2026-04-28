@@ -255,6 +255,15 @@ export const productIdParamsSchema = z.object({
 });
 export type ProductIdParamsSchemaInput = z.infer<typeof productIdParamsSchema>;
 
+export const getAlertsQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  search: z.string().trim().optional(),
+  level: z.enum(["CRITICAL", "WARNING"]).optional(),
+  categoryId: z.string().trim().optional(),
+});
+export type GetAlertsQuerySchemaInput = z.infer<typeof getAlertsQuerySchema>;
+
 // ─────────────────────────────────────────
 // SUPPLIERS
 // ─────────────────────────────────────────

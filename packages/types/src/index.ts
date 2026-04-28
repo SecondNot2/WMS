@@ -254,6 +254,34 @@ export interface ImportProductsResult {
   errors: { row: number; reason: string }[];
 }
 
+export type AlertLevel = "CRITICAL" | "WARNING";
+
+export interface Alert {
+  productId: string;
+  sku: string;
+  name: string;
+  category: ProductCategory;
+  currentStock: number;
+  minStock: number;
+  level: AlertLevel;
+  lastUpdated: string;
+}
+
+export interface AlertStatsData {
+  totalAlerts: number;
+  criticalCount: number;
+  warningCount: number;
+  affectedCategories: number;
+}
+
+export interface GetAlertsQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  level?: AlertLevel;
+  categoryId?: string;
+}
+
 // ─────────────────────────────────────────
 // SUPPLIERS
 // ─────────────────────────────────────────

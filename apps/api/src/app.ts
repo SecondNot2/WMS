@@ -1,15 +1,19 @@
 import "dotenv/config";
 import express from "express";
+import http from "http";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { errorHandler } from "./middlewares/errorHandler";
 import { logger } from "./lib/logger";
+import { attachWebSocketServer } from "./lib/websocket";
 import authRoutes from "./routes/auth.routes";
 import usersRoutes from "./routes/users.routes";
 import rolesRoutes from "./routes/roles.routes";
 import productsRoutes from "./routes/products.routes";
 import categoriesRoutes from "./routes/categories.routes";
+import suppliersRoutes from "./routes/suppliers.routes";
+import inboundRoutes from "./routes/inbound.routes";
 
 const app = express();
 
@@ -39,6 +43,8 @@ app.use("/users", usersRoutes);
 app.use("/roles", rolesRoutes);
 app.use("/products", productsRoutes);
 app.use("/categories", categoriesRoutes);
+app.use("/suppliers", suppliersRoutes);
+app.use("/inbound", inboundRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -55,8 +61,12 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 const PORT = Number(process.env.PORT) || 4000;
-app.listen(PORT, () => {
+const server = http.createServer(app);
+attachWebSocketServer(server);
+
+server.listen(PORT, () => {
   logger.info(`API running on http://localhost:${PORT}`);
+  logger.info(`WebSocket on ws://localhost:${PORT}/ws?token=<accessToken>`);
 });
 
 export default app;

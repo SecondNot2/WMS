@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { createSupplierSchema } from "@wms/validations";
 import type { CreateSupplierSchemaInput } from "@wms/validations";
+import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
 import {
   useCreateSupplier,
@@ -24,10 +25,7 @@ import {
   useUpdateSupplier,
 } from "@/lib/hooks/use-suppliers";
 import { cn } from "@/lib/utils";
-import type {
-  CreateSupplierInput,
-  UpdateSupplierInput,
-} from "@wms/types";
+import type { CreateSupplierInput, UpdateSupplierInput } from "@wms/types";
 
 type SupplierFormValues = CreateSupplierSchemaInput & { isActive?: boolean };
 
@@ -52,6 +50,7 @@ export function SupplierFormConnected({
   const { data: supplier, isLoading } = useSupplier(supplierId ?? "");
   const createMutation = useCreateSupplier();
   const updateMutation = useUpdateSupplier(supplierId ?? "");
+  const toast = useToast();
   const [submitError, setSubmitError] = React.useState<string | null>(null);
 
   const {
@@ -95,6 +94,7 @@ export function SupplierFormConnected({
           isActive: values.isActive,
         };
         await updateMutation.mutateAsync(payload);
+        toast.success(`Đã cập nhật ${values.name}`);
         router.push(`/suppliers/${supplierId}`);
       } else {
         const payload: CreateSupplierInput = {
@@ -105,10 +105,13 @@ export function SupplierFormConnected({
           taxCode: values.taxCode,
         };
         const created = await createMutation.mutateAsync(payload);
+        toast.success(`Đã tạo nhà cung cấp ${created.name}`);
         router.push(`/suppliers/${created.id}`);
       }
     } catch (error) {
-      setSubmitError(getApiErrorMessage(error, "Không thể lưu nhà cung cấp"));
+      const msg = getApiErrorMessage(error, "Không thể lưu nhà cung cấp");
+      setSubmitError(msg);
+      toast.error(msg);
     }
   };
 

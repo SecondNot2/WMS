@@ -4,13 +4,18 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { KeyRound, Loader2, Save } from "lucide-react";
-import { changePasswordSchema, type ChangePasswordInput } from "@wms/validations";
+import {
+  changePasswordSchema,
+  type ChangePasswordInput,
+} from "@wms/validations";
 import { cn } from "@/lib/utils";
 import { useChangePassword } from "@/lib/hooks/use-auth";
+import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
 
 export function ChangePasswordForm() {
   const mutation = useChangePassword();
+  const toast = useToast();
   const [serverError, setServerError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState(false);
 
@@ -31,8 +36,11 @@ export function ChangePasswordForm() {
       await mutation.mutateAsync(data);
       reset({ currentPassword: "", newPassword: "" });
       setSuccess(true);
+      toast.success("Đã đổi mật khẩu thành công");
     } catch (e) {
-      setServerError(getApiErrorMessage(e, "Không thể đổi mật khẩu"));
+      const msg = getApiErrorMessage(e, "Không thể đổi mật khẩu");
+      setServerError(msg);
+      toast.error(msg);
     }
   });
 

@@ -2,13 +2,7 @@
 
 import React from "react";
 import { createPortal } from "react-dom";
-import {
-  Check,
-  ChevronsUpDown,
-  Loader2,
-  Search,
-  X,
-} from "lucide-react";
+import { Check, ChevronsUpDown, Loader2, Plus, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ComboboxOption<TValue extends string = string> {
@@ -56,6 +50,13 @@ interface ComboboxProps<TValue extends string = string> {
   renderOption?: (option: ComboboxOption<TValue>) => React.ReactNode;
   /** Render tùy biến cho text trong button */
   renderTrigger?: (option?: ComboboxOption<TValue>) => React.ReactNode;
+
+  /** Callback khi user click "Tạo mới" — truyền search hiện tại. Khi có, dropdown
+   *  sẽ hiển thị hàng "+ Tạo mới" ở cuối (luôn hiển thị dù có kết quả hay không). */
+  onCreateNew?: (search: string) => void;
+  /** Override label cho action tạo mới. Default: 'Tạo mới' (không search) hoặc
+   *  'Tạo mới: "<search>"' (có search). */
+  createNewLabel?: string;
 }
 
 const DROPDOWN_OFFSET = 4;
@@ -86,6 +87,8 @@ export function Combobox<TValue extends string = string>({
   dropdownWidth,
   renderOption,
   renderTrigger,
+  onCreateNew,
+  createNewLabel,
 }: ComboboxProps<TValue>) {
   const [open, setOpen] = React.useState(false);
   const [internalSearch, setInternalSearch] = React.useState("");
@@ -103,8 +106,7 @@ export function Combobox<TValue extends string = string>({
 
   const isControlledSearch = searchValue !== undefined && onSearchChange;
   const search = isControlledSearch ? (searchValue ?? "") : internalSearch;
-  const showSearch =
-    searchable ?? (isControlledSearch || options.length > 7);
+  const showSearch = searchable ?? (isControlledSearch || options.length > 7);
 
   const filtered = React.useMemo(() => {
     if (isControlledSearch || !showSearch || !search.trim()) return options;
@@ -257,18 +259,18 @@ export function Combobox<TValue extends string = string>({
             !selected && "text-text-secondary",
           )}
         >
-          {renderTrigger
-            ? renderTrigger(selected)
-            : selected
-              ? (
-                  <span className="flex items-center gap-2 truncate">
-                    {selected.icon}
-                    <span className="truncate text-text-primary">
-                      {selected.label}
-                    </span>
-                  </span>
-                )
-              : placeholder}
+          {renderTrigger ? (
+            renderTrigger(selected)
+          ) : selected ? (
+            <span className="flex items-center gap-2 truncate">
+              {selected.icon}
+              <span className="truncate text-text-primary">
+                {selected.label}
+              </span>
+            </span>
+          ) : (
+            placeholder
+          )}
         </span>
         <span className="flex items-center gap-1 shrink-0">
           {clearable && selected && !disabled && (
@@ -340,67 +342,127 @@ export function Combobox<TValue extends string = string>({
                   {errorMessage}
                 </div>
               ) : filtered.length === 0 ? (
-                <div className="px-4 py-6 text-center text-sm text-text-secondary">
-                  {emptyMessage}
-                </div>
+                <>
+                  <div className="px-4 py-6 text-center text-sm text-text-secondary">
+                    {emptyMessage}
+                  </div>
+                  {onCreateNew && (
+                    <CreateNewRow
+                      label={
+                        createNewLabel ??
+                        (search.trim()
+                          ? `Thêm mới: “${search.trim()}”`
+                          : "Thêm mới")
+                      }
+                      onClick={() => {
+                        onCreateNew(search.trim());
+                        setOpen(false);
+                      }}
+                    />
+                  )}
+                </>
               ) : (
-                <ul className="py-1">
-                  {filtered.map((option, index) => {
-                    const isSelected = option.value === value;
-                    const isHighlighted = index === highlight;
-                    return (
-                      <li key={option.value} role="option" aria-selected={isSelected}>
-                        <button
-                          type="button"
-                          disabled={option.disabled}
-                          onMouseEnter={() => setHighlight(index)}
-                          onClick={() => handleSelect(option)}
-                          className={cn(
-                            "w-full flex items-start gap-3 px-3 py-2 text-left transition-colors",
-                            isHighlighted && !option.disabled
-                              ? "bg-background-app/80"
-                              : "",
-                            isSelected && "bg-accent/5",
-                            option.disabled && "opacity-50 cursor-not-allowed",
-                          )}
+                <>
+                  <ul className="py-1">
+                    {filtered.map((option, index) => {
+                      const isSelected = option.value === value;
+                      const isHighlighted = index === highlight;
+                      return (
+                        <li
+                          key={option.value}
+                          role="option"
+                          aria-selected={isSelected}
                         >
-                          {option.icon && (
-                            <span className="shrink-0 mt-0.5">{option.icon}</span>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            {renderOption ? (
-                              renderOption(option)
-                            ) : (
-                              <>
-                                <p className="text-[13px] font-medium text-text-primary truncate">
-                                  {option.label}
-                                </p>
-                                {option.description && (
-                                  <p className="text-[11px] text-text-secondary truncate">
-                                    {option.description}
-                                  </p>
-                                )}
-                              </>
+                          <button
+                            type="button"
+                            disabled={option.disabled}
+                            onMouseEnter={() => setHighlight(index)}
+                            onClick={() => handleSelect(option)}
+                            className={cn(
+                              "w-full flex items-start gap-3 px-3 py-2 text-left transition-colors",
+                              isHighlighted && !option.disabled
+                                ? "bg-background-app/80"
+                                : "",
+                              isSelected && "bg-accent/5",
+                              option.disabled &&
+                                "opacity-50 cursor-not-allowed",
                             )}
-                          </div>
-                          {option.hint && (
-                            <span className="text-[11px] text-text-secondary shrink-0 mt-0.5">
-                              {option.hint}
-                            </span>
-                          )}
-                          {isSelected && (
-                            <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                          )}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
+                          >
+                            {option.icon && (
+                              <span className="shrink-0 mt-0.5">
+                                {option.icon}
+                              </span>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              {renderOption ? (
+                                renderOption(option)
+                              ) : (
+                                <>
+                                  <p className="text-[13px] font-medium text-text-primary truncate">
+                                    {option.label}
+                                  </p>
+                                  {option.description && (
+                                    <p className="text-[11px] text-text-secondary truncate">
+                                      {option.description}
+                                    </p>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                            {option.hint && (
+                              <span className="text-[11px] text-text-secondary shrink-0 mt-0.5">
+                                {option.hint}
+                              </span>
+                            )}
+                            {isSelected && (
+                              <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {onCreateNew && (
+                    <CreateNewRow
+                      label={
+                        createNewLabel ??
+                        (search.trim()
+                          ? `Thêm mới: “${search.trim()}”`
+                          : "Thêm mới")
+                      }
+                      onClick={() => {
+                        onCreateNew(search.trim());
+                        setOpen(false);
+                      }}
+                    />
+                  )}
+                </>
               )}
             </div>
           </div>,
           document.body,
         )}
     </div>
+  );
+}
+
+function CreateNewRow({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full flex items-center gap-2 px-3 py-2.5 text-left border-t border-border-ui bg-background-app/40 hover:bg-accent/5 text-accent transition-colors"
+    >
+      <span className="shrink-0 w-7 h-7 rounded-md bg-accent/10 flex items-center justify-center">
+        <Plus className="w-3.5 h-3.5" />
+      </span>
+      <span className="text-[13px] font-semibold truncate">{label}</span>
+    </button>
   );
 }

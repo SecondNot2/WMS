@@ -13,12 +13,10 @@ import {
   ReceiptText,
   Trash2,
 } from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ConfirmDialog } from "@/components/Dialog";
+import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
-import {
-  useDeleteRecipient,
-  useRecipient,
-} from "@/lib/hooks/use-recipients";
+import { useDeleteRecipient, useRecipient } from "@/lib/hooks/use-recipients";
 
 interface ReceiverDetailViewConnectedProps {
   id: string;
@@ -50,16 +48,17 @@ export function ReceiverDetailViewConnected({
   const router = useRouter();
   const { data: recipient, isLoading, error } = useRecipient(id);
   const deleteMutation = useDeleteRecipient();
+  const toast = useToast();
   const [confirmDelete, setConfirmDelete] = React.useState(false);
-  const [deleteError, setDeleteError] = React.useState<string | null>(null);
 
   const handleDelete = async () => {
-    setDeleteError(null);
+    if (!recipient) return;
     try {
       await deleteMutation.mutateAsync(id);
+      toast.success(`Đã xóa ${recipient.name}`);
       router.push("/receivers");
     } catch (err) {
-      setDeleteError(getApiErrorMessage(err, "Không thể xóa đơn vị nhận"));
+      toast.error(getApiErrorMessage(err, "Không thể xóa đơn vị nhận"));
     }
   };
 
@@ -94,10 +93,7 @@ export function ReceiverDetailViewConnected({
           <Pencil className="w-4 h-4" /> Chỉnh sửa
         </Link>
         <button
-          onClick={() => {
-            setDeleteError(null);
-            setConfirmDelete(true);
-          }}
+          onClick={() => setConfirmDelete(true)}
           className="flex items-center gap-2 bg-card-white border border-danger/20 text-danger hover:bg-danger/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm"
         >
           <Trash2 className="w-4 h-4" /> Xóa
@@ -289,19 +285,20 @@ export function ReceiverDetailViewConnected({
       </div>
 
       <ConfirmDialog
-        isOpen={confirmDelete}
-        onClose={() => {
-          setConfirmDelete(false);
-          setDeleteError(null);
-        }}
+        open={confirmDelete}
+        onClose={() => !deleteMutation.isPending && setConfirmDelete(false)}
         onConfirm={handleDelete}
         title="Xóa đơn vị nhận?"
         message={
-          deleteError ??
-          "Đơn vị nhận sẽ được chuyển sang trạng thái tạm dừng. Lịch sử phiếu xuất vẫn được giữ lại."
+          <>
+            <strong className="text-text-primary">{recipient.name}</strong> sẽ
+            được chuyển sang trạng thái tạm dừng. Lịch sử phiếu xuất vẫn được
+            giữ lại.
+          </>
         }
         confirmLabel="Xóa đơn vị"
         variant="danger"
+        loading={deleteMutation.isPending}
       />
     </div>
   );

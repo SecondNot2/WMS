@@ -3,12 +3,14 @@
 import React from "react";
 import { AlertCircle, CheckCircle2, FileUp } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api/client";
+import { useToast } from "@/components/Toast";
 import { useImportCategories } from "@/lib/hooks/use-categories";
 
 export function CategoryImportWizardConnected() {
   const [file, setFile] = React.useState<File | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const importMutation = useImportCategories();
+  const toast = useToast();
 
   const handleSubmit = async () => {
     if (!file) {
@@ -17,9 +19,14 @@ export function CategoryImportWizardConnected() {
     }
     setError(null);
     try {
-      await importMutation.mutateAsync(file);
+      const r = await importMutation.mutateAsync(file);
+      toast.success(
+        `Nhập danh mục: ${r.imported} thành công, ${r.skipped} bỏ qua, ${r.errors.length} lỗi`,
+      );
     } catch (err) {
-      setError(getApiErrorMessage(err, "Không thể nhập danh mục"));
+      const msg = getApiErrorMessage(err, "Không thể nhập danh mục");
+      setError(msg);
+      toast.error(msg);
     }
   };
 
@@ -57,7 +64,9 @@ export function CategoryImportWizardConnected() {
         <div className="flex items-center gap-4 p-4 bg-info/5 border border-info/20 rounded-2xl text-info">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <p className="text-[12px] leading-relaxed">
-            File cần có cột tối thiểu: <b>Tên</b> (hoặc <b>name</b>). Cột <b>Mô tả</b> (hoặc <b>description</b>) là tùy chọn. Các dòng lỗi sẽ được bỏ qua và trả về lý do.
+            File cần có cột tối thiểu: <b>Tên</b> (hoặc <b>name</b>). Cột{" "}
+            <b>Mô tả</b> (hoặc <b>description</b>) là tùy chọn. Các dòng lỗi sẽ
+            được bỏ qua và trả về lý do.
           </p>
         </div>
 

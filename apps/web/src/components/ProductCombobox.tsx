@@ -13,6 +13,8 @@ interface ProductComboboxProps {
   disabled?: boolean;
   excludeIds?: string[];
   placeholder?: string;
+  /** Khi truyền — hiển thị hàng "Thêm mới" trong dropdown (forward sang Combobox) */
+  onCreateNew?: (search: string) => void;
 }
 
 /**
@@ -26,6 +28,7 @@ export function ProductCombobox({
   disabled,
   excludeIds = [],
   placeholder = "Chọn sản phẩm...",
+  onCreateNew,
 }: ProductComboboxProps) {
   const [search, setSearch] = React.useState("");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
@@ -50,7 +53,9 @@ export function ProductCombobox({
     if (selectedFromList) setSelectedSnapshot(selectedFromList);
   }, [selectedFromList]);
 
-  const detailQuery = useProduct(value && !selectedFromList && !selectedSnapshot ? value : "");
+  const detailQuery = useProduct(
+    value && !selectedFromList && !selectedSnapshot ? value : "",
+  );
   React.useEffect(() => {
     if (!detailQuery.data) return;
     if (selectedFromList || selectedSnapshot) return;
@@ -135,6 +140,7 @@ export function ProductCombobox({
       onSearchChange={setSearch}
       searchPlaceholder="Tìm theo SKU, tên, mã vạch..."
       renderTrigger={triggerLabel}
+      onCreateNew={onCreateNew}
     />
   );
 }

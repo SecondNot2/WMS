@@ -3,7 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { Building2, Eye, Pencil, Trash2 } from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ConfirmDialog } from "@/components/Dialog";
+import { useToast } from "@/components/Toast";
 import { Pagination } from "@/components/Pagination";
 import { getApiErrorMessage } from "@/lib/api/client";
 import {
@@ -36,8 +37,11 @@ export function ReceiverTableConnected({
 }: ReceiverTableConnectedProps = {}) {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
-  const [deleteId, setDeleteId] = React.useState<string | null>(null);
-  const [deleteError, setDeleteError] = React.useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const toast = useToast();
 
   const filtersKey = JSON.stringify(filters ?? {});
   React.useEffect(() => {
@@ -54,13 +58,13 @@ export function ReceiverTableConnected({
   const meta = data?.meta;
 
   const handleConfirmDelete = async () => {
-    if (!deleteId) return;
-    setDeleteError(null);
+    if (!deleteTarget) return;
     try {
-      await deleteMutation.mutateAsync(deleteId);
-      setDeleteId(null);
+      await deleteMutation.mutateAsync(deleteTarget.id);
+      toast.success(`Đã xóa ${deleteTarget.name}`);
+      setDeleteTarget(null);
     } catch (err) {
-      setDeleteError(getApiErrorMessage(err, "Không thể xóa đơn vị nhận"));
+      toast.error(getApiErrorMessage(err, "Không thể xóa đơn vị nhận"));
     }
   };
 
@@ -195,10 +199,12 @@ export function ReceiverTableConnected({
                           <Pencil className="w-4 h-4" />
                         </Link>
                         <button
-                          onClick={() => {
-                            setDeleteError(null);
-                            setDeleteId(receiver.id);
-                          }}
+                          onClick={() =>
+                            setDeleteTarget({
+                              id: receiver.id,
+                              name: receiver.name,
+                            })
+                          }
                           className="p-1.5 hover:bg-danger/10 text-danger rounded-md transition-colors"
                           title="Xóa"
                         >
@@ -249,19 +255,22 @@ export function ReceiverTableConnected({
       </div>
 
       <ConfirmDialog
-        isOpen={!!deleteId}
-        onClose={() => {
-          setDeleteId(null);
-          setDeleteError(null);
-        }}
+        open={!!deleteTarget}
+        onClose={() => !deleteMutation.isPending && setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}
         title="Xóa đơn vị nhận?"
         message={
-          deleteError ??
-          "Đơn vị nhận sẽ được chuyển sang trạng thái tạm dừng. Lịch sử phiếu xuất vẫn được giữ lại."
+          deleteTarget && (
+            <>
+              <strong className="text-text-primary">{deleteTarget.name}</strong>{" "}
+              sẽ được chuyển sang trạng thái tạm dừng. Lịch sử phiếu xuất vẫn
+              được giữ lại.
+            </>
+          )
         }
         confirmLabel="Xóa đơn vị"
         variant="danger"
+        loading={deleteMutation.isPending}
       />
     </div>
   );

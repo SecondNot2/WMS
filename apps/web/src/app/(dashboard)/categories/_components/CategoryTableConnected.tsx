@@ -2,20 +2,12 @@
 
 import React from "react";
 import Link from "next/link";
-import {
-  Eye,
-  FolderOpen,
-  Package,
-  Pencil,
-  Trash2,
-} from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { Eye, FolderOpen, Package, Pencil, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/Dialog";
+import { useToast } from "@/components/Toast";
 import { Pagination } from "@/components/Pagination";
 import { getApiErrorMessage } from "@/lib/api/client";
-import {
-  useCategories,
-  useDeleteCategory,
-} from "@/lib/hooks/use-categories";
+import { useCategories, useDeleteCategory } from "@/lib/hooks/use-categories";
 import { cn } from "@/lib/utils";
 import type { GetCategoriesQuery } from "@wms/types";
 
@@ -40,8 +32,11 @@ export function CategoryTableConnected({
 }: CategoryTableConnectedProps = {}) {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
-  const [deleteId, setDeleteId] = React.useState<string | null>(null);
-  const [deleteError, setDeleteError] = React.useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const toast = useToast();
 
   const filtersKey = JSON.stringify(filters ?? {});
   React.useEffect(() => {
@@ -58,13 +53,13 @@ export function CategoryTableConnected({
   const meta = data?.meta;
 
   const handleConfirmDelete = async () => {
-    if (!deleteId) return;
-    setDeleteError(null);
+    if (!deleteTarget) return;
     try {
-      await deleteMutation.mutateAsync(deleteId);
-      setDeleteId(null);
+      await deleteMutation.mutateAsync(deleteTarget.id);
+      toast.success(`Đã xóa ${deleteTarget.name}`);
+      setDeleteTarget(null);
     } catch (err) {
-      setDeleteError(getApiErrorMessage(err, "Không thể xóa danh mục"));
+      toast.error(getApiErrorMessage(err, "Không thể xóa danh mục"));
     }
   };
 
@@ -174,10 +169,12 @@ export function CategoryTableConnected({
                             <Pencil className="w-4 h-4" />
                           </Link>
                           <button
-                            onClick={() => {
-                              setDeleteError(null);
-                              setDeleteId(category.id);
-                            }}
+                            onClick={() =>
+                              setDeleteTarget({
+                                id: category.id,
+                                name: category.name,
+                              })
+                            }
                             className="p-1.5 hover:bg-danger/10 text-danger rounded-md transition-colors"
                             title="Xóa"
                           >
@@ -229,19 +226,22 @@ export function CategoryTableConnected({
       </div>
 
       <ConfirmDialog
-        isOpen={!!deleteId}
-        onClose={() => {
-          setDeleteId(null);
-          setDeleteError(null);
-        }}
+        open={!!deleteTarget}
+        onClose={() => !deleteMutation.isPending && setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}
         title="Xóa danh mục?"
         message={
-          deleteError ??
-          "Danh mục sẽ được chuyển sang trạng thái không hoạt động. Chỉ có thể xóa khi không còn sản phẩm thuộc danh mục."
+          deleteTarget && (
+            <>
+              <strong className="text-text-primary">{deleteTarget.name}</strong>{" "}
+              sẽ được chuyển sang trạng thái không hoạt động. Chỉ có thể xóa khi
+              không còn sản phẩm thuộc danh mục.
+            </>
+          )
         }
         confirmLabel="Xóa"
         variant="danger"
+        loading={deleteMutation.isPending}
       />
     </div>
   );

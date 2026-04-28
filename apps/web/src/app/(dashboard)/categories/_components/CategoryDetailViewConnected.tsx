@@ -4,12 +4,10 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2 } from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ConfirmDialog } from "@/components/Dialog";
+import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
-import {
-  useCategory,
-  useDeleteCategory,
-} from "@/lib/hooks/use-categories";
+import { useCategory, useDeleteCategory } from "@/lib/hooks/use-categories";
 import { cn } from "@/lib/utils";
 
 interface CategoryDetailViewConnectedProps {
@@ -29,16 +27,17 @@ export function CategoryDetailViewConnected({
   const router = useRouter();
   const { data: category, isLoading, error } = useCategory(id);
   const deleteMutation = useDeleteCategory();
+  const toast = useToast();
   const [confirmDelete, setConfirmDelete] = React.useState(false);
-  const [deleteError, setDeleteError] = React.useState<string | null>(null);
 
   const handleDelete = async () => {
-    setDeleteError(null);
+    if (!category) return;
     try {
       await deleteMutation.mutateAsync(id);
+      toast.success(`Đã xóa danh mục ${category.name}`);
       router.push("/categories");
     } catch (err) {
-      setDeleteError(getApiErrorMessage(err, "Không thể xóa danh mục"));
+      toast.error(getApiErrorMessage(err, "Không thể xóa danh mục"));
     }
   };
 
@@ -70,10 +69,7 @@ export function CategoryDetailViewConnected({
           Chỉnh sửa
         </button>
         <button
-          onClick={() => {
-            setDeleteError(null);
-            setConfirmDelete(true);
-          }}
+          onClick={() => setConfirmDelete(true)}
           className="flex items-center gap-2 bg-card-white border border-danger/20 text-danger hover:bg-danger/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm"
         >
           <Trash2 className="w-4 h-4" />
@@ -121,7 +117,9 @@ export function CategoryDetailViewConnected({
             </p>
           </div>
           <div>
-            <p className="text-xs text-text-secondary mb-1">Cập nhật lần cuối</p>
+            <p className="text-xs text-text-secondary mb-1">
+              Cập nhật lần cuối
+            </p>
             <p className="text-sm font-medium text-text-primary">
               {formatDate(category.updatedAt)}
             </p>
@@ -197,19 +195,20 @@ export function CategoryDetailViewConnected({
       </div>
 
       <ConfirmDialog
-        isOpen={confirmDelete}
-        onClose={() => {
-          setConfirmDelete(false);
-          setDeleteError(null);
-        }}
+        open={confirmDelete}
+        onClose={() => !deleteMutation.isPending && setConfirmDelete(false)}
         onConfirm={handleDelete}
         title="Xóa danh mục?"
         message={
-          deleteError ??
-          "Danh mục sẽ được chuyển sang trạng thái không hoạt động. Chỉ có thể xóa khi không còn sản phẩm thuộc danh mục."
+          <>
+            <strong className="text-text-primary">{category.name}</strong> sẽ
+            được chuyển sang trạng thái không hoạt động. Chỉ có thể xóa khi
+            không còn sản phẩm thuộc danh mục.
+          </>
         }
         confirmLabel="Xóa"
         variant="danger"
+        loading={deleteMutation.isPending}
       />
     </div>
   );

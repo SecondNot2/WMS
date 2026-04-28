@@ -3,7 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { Eye, Pencil, Shield, Trash2 } from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ConfirmDialog } from "@/components/Dialog";
+import { useToast } from "@/components/Toast";
 import { useDeleteRole, useRoles } from "@/lib/hooks/use-roles";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { countPermissions } from "./PermissionMatrix";
@@ -30,15 +31,19 @@ const formatDate = (iso: string) => {
 export function RoleTable() {
   const { data: roles, isLoading, isError, error, refetch } = useRoles();
   const deleteMutation = useDeleteRole();
-  const [deleteTarget, setDeleteTarget] = React.useState<RoleEntity | null>(null);
+  const toast = useToast();
+  const [deleteTarget, setDeleteTarget] = React.useState<RoleEntity | null>(
+    null,
+  );
 
   const onConfirmDelete = async () => {
     if (!deleteTarget) return;
     try {
       await deleteMutation.mutateAsync(deleteTarget.id);
+      toast.success(`Đã xóa vai trò ${deleteTarget.name}`);
       setDeleteTarget(null);
     } catch (e) {
-      alert(getApiErrorMessage(e, "Không thể xóa vai trò"));
+      toast.error(getApiErrorMessage(e, "Không thể xóa vai trò"));
     }
   };
 
@@ -187,13 +192,22 @@ export function RoleTable() {
       </div>
 
       <ConfirmDialog
-        isOpen={deleteTarget !== null}
-        onClose={() => setDeleteTarget(null)}
+        open={deleteTarget !== null}
+        onClose={() => !deleteMutation.isPending && setDeleteTarget(null)}
         onConfirm={onConfirmDelete}
         title="Xóa vai trò"
-        message={`Hành động này không thể hoàn tác. Bạn có chắc muốn xóa "${deleteTarget?.name}"?`}
+        message={
+          deleteTarget && (
+            <>
+              Hành động này không thể hoàn tác. Bạn có chắc muốn xóa vai trò{" "}
+              <strong className="text-text-primary">{deleteTarget.name}</strong>
+              ?
+            </>
+          )
+        }
         confirmLabel="Xóa vai trò"
         variant="danger"
+        loading={deleteMutation.isPending}
       />
     </div>
   );

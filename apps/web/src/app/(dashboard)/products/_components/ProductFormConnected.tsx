@@ -8,9 +8,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Folder, RotateCcw, Save } from "lucide-react";
 import { createProductSchema } from "@wms/validations";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import { ImageUpload, type ImageUploadHandle } from "@/components/ImageUpload";
+import { QuickAddCategoryDialog } from "@/components/quick-add/QuickAddCategoryDialog";
+import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { productsApi } from "@/lib/api/products";
-import { useCategories } from "@/lib/hooks/use-categories";
+import { useCategories, useCategory } from "@/lib/hooks/use-categories";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import {
   useCreateProduct,
   useProduct,
@@ -33,20 +37,33 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
   const router = useRouter();
   const isEdit = Boolean(productId);
   const { data: product, isLoading } = useProduct(productId ?? "");
-  const { data: categoriesData, isLoading: categoriesLoading } = useCategories({
-    limit: 100,
-    isActive: true,
-  });
+  // Server-side search cho danh mục
+  const [categorySearch, setCategorySearch] = React.useState("");
+  const debouncedCategorySearch = useDebouncedValue(categorySearch, 250);
+  const { data: categoriesData, isFetching: categoriesLoading } = useCategories(
+    {
+      limit: 30,
+      search: debouncedCategorySearch || undefined,
+      isActive: true,
+    },
+  );
   const categories = categoriesData?.data ?? [];
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct(productId ?? "");
+  const toast = useToast();
+  const imageUploadRef = React.useRef<ImageUploadHandle>(null);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const [categoryQuickAdd, setCategoryQuickAdd] = React.useState<{
+    open: boolean;
+    name: string;
+  }>({ open: false, name: "" });
 
   const {
     register,
     handleSubmit,
     reset,
     control,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(
@@ -96,13 +113,20 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
     // Tách initialStock khỏi payload — backend createProduct không nhận field này
     const { initialStock, ...payload } = values;
     try {
+      // Upload ảnh pending (nếu có) và xóa ảnh cũ — trước khi gửi API
+      if (imageUploadRef.current) {
+        const finalImage = await imageUploadRef.current.commit();
+        payload.image = finalImage;
+      }
       if (isEdit && productId) {
         await updateMutation.mutateAsync(payload as CreateProductInput);
+        toast.success(`Đã cập nhật ${values.name}`);
         router.push(`/products/${productId}`);
       } else {
         const created = await createMutation.mutateAsync(
           payload as CreateProductInput,
         );
+        toast.success(`Đã tạo sản phẩm ${created.name}`);
         // Nếu user nhập tồn kho khởi tạo > 0 → gọi adjust-stock để tạo entry lịch sử
         const initial = Number(initialStock ?? 0);
         if (Number.isInteger(initial) && initial > 0) {
@@ -113,18 +137,20 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
             });
           } catch (err) {
             // Sản phẩm đã tạo thành công — chỉ cảnh báo nếu adjust fail
-            setSubmitError(
-              getApiErrorMessage(
-                err,
-                "Đã tạo sản phẩm nhưng không thể set tồn kho khởi tạo",
-              ),
+            const msg = getApiErrorMessage(
+              err,
+              "Đã tạo sản phẩm nhưng không thể set tồn kho khởi tạo",
             );
+            setSubmitError(msg);
+            toast.error(msg);
           }
         }
         router.push(`/products/${created.id}`);
       }
     } catch (error) {
-      setSubmitError(getApiErrorMessage(error, "Không thể lưu sản phẩm"));
+      const msg = getApiErrorMessage(error, "Không thể lưu sản phẩm");
+      setSubmitError(msg);
+      toast.error(msg);
     }
   };
 
@@ -182,26 +208,17 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
                   control={control}
                   name="categoryId"
                   render={({ field }) => (
-                    <Combobox<string>
+                    <CategoryComboboxField
                       value={field.value ?? ""}
-                      onChange={(next) => field.onChange(next)}
-                      options={categories.map<ComboboxOption<string>>(
-                        (cat) => ({
-                          value: cat.id,
-                          label: cat.name,
-                          hint: `${cat.productCount} sp`,
-                          icon: (
-                            <span className="w-6 h-6 rounded bg-accent/10 text-accent flex items-center justify-center">
-                              <Folder className="w-3.5 h-3.5" />
-                            </span>
-                          ),
-                        }),
-                      )}
+                      onChange={field.onChange}
+                      categories={categories}
                       loading={categoriesLoading}
-                      placeholder="-- Chọn danh mục --"
-                      searchPlaceholder="Tìm danh mục..."
+                      searchValue={categorySearch}
+                      onSearchChange={setCategorySearch}
                       hasError={Boolean(errors.categoryId)}
-                      emptyMessage="Chưa có danh mục — hãy tạo danh mục trước"
+                      onCreateNew={(search) =>
+                        setCategoryQuickAdd({ open: true, name: search })
+                      }
                     />
                   )}
                 />
@@ -313,11 +330,19 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
               Mô tả & hình ảnh
             </h3>
             <div className="space-y-4">
-              <Field label="URL hình ảnh" error={errors.image?.message}>
-                <input
-                  {...register("image")}
-                  className={inputClass(errors.image?.message)}
-                  placeholder="https://..."
+              <Field label="Hình ảnh sản phẩm" error={errors.image?.message}>
+                <Controller
+                  control={control}
+                  name="image"
+                  render={({ field }) => (
+                    <ImageUpload
+                      ref={imageUploadRef}
+                      value={field.value ?? null}
+                      onChange={(url) => field.onChange(url)}
+                      folder="products"
+                      aspect="video"
+                    />
+                  )}
                 />
               </Field>
               <Field label="Mô tả" error={errors.description?.message}>
@@ -365,7 +390,82 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
           </div>
         </div>
       </div>
+
+      <QuickAddCategoryDialog
+        open={categoryQuickAdd.open}
+        onClose={() => setCategoryQuickAdd({ open: false, name: "" })}
+        initialName={categoryQuickAdd.name}
+        onCreated={(c) => {
+          setValue("categoryId", c.id, { shouldValidate: true });
+        }}
+      />
     </form>
+  );
+}
+
+// Category Combobox với server-side search + giữ selected khi đang search
+function CategoryComboboxField({
+  value,
+  onChange,
+  categories,
+  loading,
+  searchValue,
+  onSearchChange,
+  hasError,
+  onCreateNew,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  categories: Array<{ id: string; name: string; productCount: number }>;
+  loading: boolean;
+  searchValue: string;
+  onSearchChange: (next: string) => void;
+  hasError: boolean;
+  onCreateNew: (search: string) => void;
+}) {
+  const hasSelectedInList = !!value && categories.some((c) => c.id === value);
+  const { data: selectedCategory } = useCategory(
+    !value || hasSelectedInList ? "" : value,
+  );
+
+  const merged = React.useMemo(() => {
+    if (hasSelectedInList || !selectedCategory) return categories;
+    return [
+      {
+        id: selectedCategory.id,
+        name: selectedCategory.name,
+        productCount: selectedCategory.productCount,
+      },
+      ...categories,
+    ];
+  }, [hasSelectedInList, selectedCategory, categories]);
+
+  return (
+    <Combobox<string>
+      value={value}
+      onChange={(next) => onChange(next)}
+      options={merged.map<ComboboxOption<string>>((cat) => ({
+        value: cat.id,
+        label: cat.name,
+        hint: `${cat.productCount} sp`,
+        icon: (
+          <span className="w-6 h-6 rounded bg-accent/10 text-accent flex items-center justify-center">
+            <Folder className="w-3.5 h-3.5" />
+          </span>
+        ),
+      }))}
+      searchable
+      searchValue={searchValue}
+      onSearchChange={onSearchChange}
+      loading={loading}
+      placeholder="-- Chọn danh mục --"
+      searchPlaceholder="Tìm danh mục..."
+      hasError={hasError}
+      emptyMessage={
+        searchValue ? `Không tìm thấy "${searchValue}"` : "Chưa có danh mục"
+      }
+      onCreateNew={onCreateNew}
+    />
   );
 }
 

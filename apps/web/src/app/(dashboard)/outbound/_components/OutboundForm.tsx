@@ -15,9 +15,12 @@ import {
 } from "lucide-react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { ProductCombobox } from "@/components/ProductCombobox";
+import { QuickAddRecipientDialog } from "@/components/quick-add/QuickAddRecipientDialog";
+import { QuickAddProductDialog } from "@/components/quick-add/QuickAddProductDialog";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useRecipients } from "@/lib/hooks/use-recipients";
+import { useRecipient, useRecipientsList } from "@/lib/hooks/use-recipients";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { useProducts } from "@/lib/hooks/use-products";
 import { useCreateOutbound, useUpdateOutbound } from "@/lib/hooks/use-outbound";
 import { getApiErrorMessage } from "@/lib/api/client";
@@ -54,8 +57,16 @@ export function OutboundForm({
 }: OutboundFormProps) {
   const router = useRouter();
 
-  const { data: recipients } = useRecipients();
-  const hasRecipients = recipients.length > 0;
+  // Server-side search cho danh sách đơn vị nhận
+  const [recipientSearch, setRecipientSearch] = React.useState("");
+  const debouncedRecipientSearch = useDebouncedValue(recipientSearch, 250);
+  const { data: recipientsData, isFetching: recipientsLoading } =
+    useRecipientsList({
+      limit: 30,
+      search: debouncedRecipientSearch || undefined,
+      isActive: true,
+    });
+  const recipients = recipientsData?.data ?? [];
 
   // Load products để hiển thị tồn kho cảnh báo trên từng dòng
   const { data: productsData } = useProducts({ limit: 100, isActive: true });
@@ -69,10 +80,21 @@ export function OutboundForm({
   const updateMutation = useUpdateOutbound(outboundId ?? "");
   const toast = useToast();
 
+  const [recipientQuickAdd, setRecipientQuickAdd] = React.useState<{
+    open: boolean;
+    name: string;
+  }>({ open: false, name: "" });
+  const [productQuickAdd, setProductQuickAdd] = React.useState<{
+    open: boolean;
+    name: string;
+    rowIndex: number;
+  } | null>(null);
+
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<OutboundFormValues>({
     resolver: zodResolver(outboundSchema),
@@ -152,27 +174,17 @@ export function OutboundForm({
                     control={control}
                     name="recipientId"
                     render={({ field }) => (
-                      <Combobox<string>
+                      <RecipientComboboxField
                         value={field.value}
-                        onChange={(next) => field.onChange(next)}
-                        options={recipients.map<ComboboxOption<string>>(
-                          (r) => ({
-                            value: r.id,
-                            label: r.name,
-                            icon: (
-                              <span className="w-7 h-7 rounded-md bg-accent/10 text-accent flex items-center justify-center">
-                                <Building className="w-3.5 h-3.5" />
-                              </span>
-                            ),
-                          }),
-                        )}
-                        placeholder={
-                          hasRecipients ? "Chọn đơn vị nhận" : "Chưa có dữ liệu"
-                        }
-                        searchPlaceholder="Tìm đơn vị..."
-                        emptyMessage="Chưa có đơn vị nhận nào"
+                        onChange={field.onChange}
+                        recipients={recipients}
+                        loading={recipientsLoading}
+                        searchValue={recipientSearch}
+                        onSearchChange={setRecipientSearch}
                         hasError={Boolean(errors.recipientId)}
-                        disabled={!hasRecipients}
+                        onCreateNew={(search) =>
+                          setRecipientQuickAdd({ open: true, name: search })
+                        }
                       />
                     )}
                   />
@@ -290,6 +302,13 @@ export function OutboundForm({
                                     )
                                     .filter((id): id is string => Boolean(id))}
                                   placeholder="Tìm sản phẩm theo SKU/tên..."
+                                  onCreateNew={(search) =>
+                                    setProductQuickAdd({
+                                      open: true,
+                                      name: search,
+                                      rowIndex: index,
+                                    })
+                                  }
                                 />
                               )}
                             />
@@ -437,6 +456,101 @@ export function OutboundForm({
           </div>
         </div>
       </div>
+
+      <QuickAddRecipientDialog
+        open={recipientQuickAdd.open}
+        onClose={() => setRecipientQuickAdd({ open: false, name: "" })}
+        initialName={recipientQuickAdd.name}
+        onCreated={(r) => {
+          setValue("recipientId", r.id, { shouldValidate: true });
+        }}
+      />
+
+      {productQuickAdd && (
+        <QuickAddProductDialog
+          open={productQuickAdd.open}
+          onClose={() => setProductQuickAdd(null)}
+          initialName={productQuickAdd.name}
+          onCreated={(p) => {
+            setValue(`items.${productQuickAdd.rowIndex}.productId`, p.id, {
+              shouldValidate: true,
+            });
+          }}
+        />
+      )}
     </form>
+  );
+}
+
+// Field component cho Đơn vị nhận Combobox với server-side search.
+function RecipientComboboxField({
+  value,
+  onChange,
+  recipients,
+  loading,
+  searchValue,
+  onSearchChange,
+  hasError,
+  onCreateNew,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  recipients: Array<{
+    id: string;
+    name: string;
+    phone: string | null;
+    email: string | null;
+  }>;
+  loading: boolean;
+  searchValue: string;
+  onSearchChange: (next: string) => void;
+  hasError: boolean;
+  onCreateNew: (search: string) => void;
+}) {
+  const hasSelectedInList = !!value && recipients.some((r) => r.id === value);
+  const { data: selectedRecipient } = useRecipient(
+    !value || hasSelectedInList ? "" : value,
+  );
+
+  const merged = React.useMemo(() => {
+    if (hasSelectedInList || !selectedRecipient) return recipients;
+    return [
+      {
+        id: selectedRecipient.id,
+        name: selectedRecipient.name,
+        phone: selectedRecipient.phone,
+        email: selectedRecipient.email,
+      },
+      ...recipients,
+    ];
+  }, [hasSelectedInList, selectedRecipient, recipients]);
+
+  return (
+    <Combobox<string>
+      value={value}
+      onChange={(next) => onChange(next)}
+      options={merged.map<ComboboxOption<string>>((r) => ({
+        value: r.id,
+        label: r.name,
+        description:
+          [r.phone, r.email].filter(Boolean).join(" · ") || undefined,
+        icon: (
+          <span className="w-7 h-7 rounded-md bg-accent/10 text-accent flex items-center justify-center">
+            <Building className="w-3.5 h-3.5" />
+          </span>
+        ),
+      }))}
+      searchable
+      searchValue={searchValue}
+      onSearchChange={onSearchChange}
+      loading={loading}
+      placeholder="Chọn đơn vị nhận"
+      searchPlaceholder="Tìm tên, SĐT, email..."
+      emptyMessage={
+        searchValue ? `Không tìm thấy "${searchValue}"` : "Chưa có đơn vị nhận"
+      }
+      hasError={hasError}
+      onCreateNew={onCreateNew}
+    />
   );
 }

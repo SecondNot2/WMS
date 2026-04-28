@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Eye, Lock, Pencil, Trash2, Unlock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Pagination } from "@/components/Pagination";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ConfirmDialog } from "@/components/Dialog";
+import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
 import {
   useDeleteUser,
@@ -62,20 +63,27 @@ export function UserTable({ search, roleId, isActive }: UserTableProps) {
   const { data, isLoading, isError, error, refetch } = useUsers(params);
   const toggleMutation = useToggleUserActive();
   const deleteMutation = useDeleteUser();
+  const toast = useToast();
 
   const users = data?.data ?? [];
   const meta = data?.meta;
 
   const onConfirmToggle = async () => {
     if (!toggleTarget) return;
+    const willActivate = !toggleTarget.isActive;
     try {
       await toggleMutation.mutateAsync({
         id: toggleTarget.id,
-        isActive: !toggleTarget.isActive,
+        isActive: willActivate,
       });
+      toast.success(
+        willActivate
+          ? `Đã mở khóa ${toggleTarget.name}`
+          : `Đã khóa ${toggleTarget.name}`,
+      );
       setToggleTarget(null);
     } catch (e) {
-      alert(getApiErrorMessage(e, "Không thể cập nhật trạng thái"));
+      toast.error(getApiErrorMessage(e, "Không thể cập nhật trạng thái"));
     }
   };
 
@@ -83,9 +91,10 @@ export function UserTable({ search, roleId, isActive }: UserTableProps) {
     if (!deleteTarget) return;
     try {
       await deleteMutation.mutateAsync(deleteTarget.id);
+      toast.success(`Đã xóa ${deleteTarget.name}`);
       setDeleteTarget(null);
     } catch (e) {
-      alert(getApiErrorMessage(e, "Không thể xóa người dùng"));
+      toast.error(getApiErrorMessage(e, "Không thể xóa người dùng"));
     }
   };
 
@@ -277,8 +286,8 @@ export function UserTable({ search, roleId, isActive }: UserTableProps) {
       </div>
 
       <ConfirmDialog
-        isOpen={toggleTarget !== null}
-        onClose={() => setToggleTarget(null)}
+        open={toggleTarget !== null}
+        onClose={() => !toggleMutation.isPending && setToggleTarget(null)}
         onConfirm={onConfirmToggle}
         title={toggleTarget?.isActive ? "Khóa tài khoản" : "Mở khóa tài khoản"}
         message={
@@ -288,16 +297,26 @@ export function UserTable({ search, roleId, isActive }: UserTableProps) {
         }
         confirmLabel={toggleTarget?.isActive ? "Khóa tài khoản" : "Mở khóa"}
         variant={toggleTarget?.isActive ? "danger" : "info"}
+        loading={toggleMutation.isPending}
       />
 
       <ConfirmDialog
-        isOpen={deleteTarget !== null}
-        onClose={() => setDeleteTarget(null)}
+        open={deleteTarget !== null}
+        onClose={() => !deleteMutation.isPending && setDeleteTarget(null)}
         onConfirm={onConfirmDelete}
         title="Xóa người dùng"
-        message={`Hành động này không thể hoàn tác. Bạn có chắc muốn xóa "${deleteTarget?.name}"?`}
+        message={
+          deleteTarget && (
+            <>
+              Hành động này không thể hoàn tác. Bạn có chắc muốn xóa{" "}
+              <strong className="text-text-primary">{deleteTarget.name}</strong>
+              ?
+            </>
+          )
+        }
         confirmLabel="Xóa"
         variant="danger"
+        loading={deleteMutation.isPending}
       />
     </div>
   );

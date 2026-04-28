@@ -7,6 +7,7 @@ import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RotateCcw, Save } from "lucide-react";
 import { createCategorySchema } from "@wms/validations";
+import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
 import {
   useCategory,
@@ -14,10 +15,7 @@ import {
   useUpdateCategory,
 } from "@/lib/hooks/use-categories";
 import { cn } from "@/lib/utils";
-import type {
-  CreateCategoryInput,
-  UpdateCategoryInput,
-} from "@wms/types";
+import type { CreateCategoryInput, UpdateCategoryInput } from "@wms/types";
 import type { CreateCategorySchemaInput } from "@wms/validations";
 
 interface CategoryFormConnectedProps {
@@ -40,6 +38,7 @@ export function CategoryFormConnected({
   const { data: category, isLoading } = useCategory(categoryId ?? "");
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory(categoryId ?? "");
+  const toast = useToast();
   const [submitError, setSubmitError] = React.useState<string | null>(null);
 
   const {
@@ -77,6 +76,7 @@ export function CategoryFormConnected({
           isActive: values.isActive,
         };
         await updateMutation.mutateAsync(payload);
+        toast.success(`Đã cập nhật ${values.name}`);
         router.push(`/categories/${categoryId}`);
       } else {
         const payload: CreateCategoryInput = {
@@ -84,10 +84,13 @@ export function CategoryFormConnected({
           description: values.description,
         };
         const created = await createMutation.mutateAsync(payload);
+        toast.success(`Đã tạo danh mục ${created.name}`);
         router.push(`/categories/${created.id}`);
       }
     } catch (error) {
-      setSubmitError(getApiErrorMessage(error, "Không thể lưu danh mục"));
+      const msg = getApiErrorMessage(error, "Không thể lưu danh mục");
+      setSubmitError(msg);
+      toast.error(msg);
     }
   };
 

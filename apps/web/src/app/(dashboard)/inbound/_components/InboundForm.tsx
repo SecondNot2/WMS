@@ -13,14 +13,16 @@ import {
   User,
   AlertCircle,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useSuppliers } from "@/lib/hooks/use-suppliers";
+import { useSupplier, useSuppliers } from "@/lib/hooks/use-suppliers";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { useCreateInbound, useUpdateInbound } from "@/lib/hooks/use-inbound";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { useToast } from "@/components/Toast";
 import { ProductCombobox } from "@/components/ProductCombobox";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import { QuickAddSupplierDialog } from "@/components/quick-add/QuickAddSupplierDialog";
+import { QuickAddProductDialog } from "@/components/quick-add/QuickAddProductDialog";
 
 const inboundItemSchema = z.object({
   productId: z.string().min(1, "Chọn sản phẩm"),
@@ -52,17 +54,36 @@ export function InboundForm({
 }: InboundFormProps) {
   const router = useRouter();
 
-  const { data: suppliersData } = useSuppliers({ limit: 100 });
+  // Server-side search cho danh sách nhà cung cấp
+  const [supplierSearch, setSupplierSearch] = React.useState("");
+  const debouncedSupplierSearch = useDebouncedValue(supplierSearch, 250);
+  const { data: suppliersData, isFetching: suppliersLoading } = useSuppliers({
+    limit: 30,
+    search: debouncedSupplierSearch || undefined,
+    isActive: true,
+  });
   const suppliers = suppliersData?.data ?? [];
 
   const createMutation = useCreateInbound();
   const updateMutation = useUpdateInbound(inboundId ?? "");
   const toast = useToast();
 
+  // Quick-add states
+  const [supplierQuickAdd, setSupplierQuickAdd] = React.useState<{
+    open: boolean;
+    name: string;
+  }>({ open: false, name: "" });
+  const [productQuickAdd, setProductQuickAdd] = React.useState<{
+    open: boolean;
+    name: string;
+    rowIndex: number;
+  } | null>(null);
+
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<InboundFormValues>({
     resolver: zodResolver(inboundSchema),
@@ -141,25 +162,17 @@ export function InboundForm({
                     control={control}
                     name="supplierId"
                     render={({ field }) => (
-                      <Combobox<string>
+                      <SupplierComboboxField
                         value={field.value}
-                        onChange={(next) => field.onChange(next)}
-                        options={suppliers.map<ComboboxOption<string>>((s) => ({
-                          value: s.id,
-                          label: s.name,
-                          description: [s.taxCode, s.phone]
-                            .filter(Boolean)
-                            .join(" · "),
-                          icon: (
-                            <span className="w-7 h-7 rounded-md bg-accent/10 text-accent flex items-center justify-center">
-                              <Truck className="w-3.5 h-3.5" />
-                            </span>
-                          ),
-                        }))}
-                        placeholder="Chọn nhà cung cấp"
-                        searchPlaceholder="Tìm theo tên, MST, SĐT..."
-                        emptyMessage="Không tìm thấy nhà cung cấp"
+                        onChange={field.onChange}
+                        suppliers={suppliers}
+                        loading={suppliersLoading}
+                        searchValue={supplierSearch}
+                        onSearchChange={setSupplierSearch}
                         hasError={Boolean(errors.supplierId)}
+                        onCreateNew={(search) =>
+                          setSupplierQuickAdd({ open: true, name: search })
+                        }
                       />
                     )}
                   />
@@ -248,6 +261,13 @@ export function InboundForm({
                                   )
                                   .filter((id): id is string => Boolean(id))}
                                 placeholder="Tìm sản phẩm theo SKU/tên..."
+                                onCreateNew={(search) =>
+                                  setProductQuickAdd({
+                                    open: true,
+                                    name: search,
+                                    rowIndex: index,
+                                  })
+                                }
                               />
                             )}
                           />
@@ -383,6 +403,104 @@ export function InboundForm({
           </div>
         </div>
       </div>
+
+      <QuickAddSupplierDialog
+        open={supplierQuickAdd.open}
+        onClose={() => setSupplierQuickAdd({ open: false, name: "" })}
+        initialName={supplierQuickAdd.name}
+        onCreated={(s) => {
+          setValue("supplierId", s.id, { shouldValidate: true });
+        }}
+      />
+
+      {productQuickAdd && (
+        <QuickAddProductDialog
+          open={productQuickAdd.open}
+          onClose={() => setProductQuickAdd(null)}
+          initialName={productQuickAdd.name}
+          onCreated={(p) => {
+            setValue(`items.${productQuickAdd.rowIndex}.productId`, p.id, {
+              shouldValidate: true,
+            });
+          }}
+        />
+      )}
     </form>
+  );
+}
+
+// Field component cho NCC Combobox: tự fetch supplier đã chọn nếu nó không có
+// trong kết quả search hiện tại (case edit phiếu cũ với search đang gõ).
+function SupplierComboboxField({
+  value,
+  onChange,
+  suppliers,
+  loading,
+  searchValue,
+  onSearchChange,
+  hasError,
+  onCreateNew,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  suppliers: Array<{
+    id: string;
+    name: string;
+    taxCode: string | null;
+    phone: string | null;
+  }>;
+  loading: boolean;
+  searchValue: string;
+  onSearchChange: (next: string) => void;
+  hasError: boolean;
+  onCreateNew: (search: string) => void;
+}) {
+  // Nếu supplier đã chọn không có trong kết quả search → fetch riêng để vẫn
+  // hiển thị tên trong trigger và giữ trong dropdown.
+  const hasSelectedInList = !!value && suppliers.some((s) => s.id === value);
+  const { data: selectedSupplier } = useSupplier(
+    !value || hasSelectedInList ? "" : value,
+  );
+
+  const merged = React.useMemo(() => {
+    if (hasSelectedInList || !selectedSupplier) return suppliers;
+    return [
+      {
+        id: selectedSupplier.id,
+        name: selectedSupplier.name,
+        taxCode: selectedSupplier.taxCode,
+        phone: selectedSupplier.phone,
+      },
+      ...suppliers,
+    ];
+  }, [hasSelectedInList, selectedSupplier, suppliers]);
+
+  return (
+    <Combobox<string>
+      value={value}
+      onChange={(next) => onChange(next)}
+      options={merged.map<ComboboxOption<string>>((s) => ({
+        value: s.id,
+        label: s.name,
+        description:
+          [s.taxCode, s.phone].filter(Boolean).join(" · ") || undefined,
+        icon: (
+          <span className="w-7 h-7 rounded-md bg-accent/10 text-accent flex items-center justify-center">
+            <Truck className="w-3.5 h-3.5" />
+          </span>
+        ),
+      }))}
+      searchable
+      searchValue={searchValue}
+      onSearchChange={onSearchChange}
+      loading={loading}
+      placeholder="Chọn nhà cung cấp"
+      searchPlaceholder="Tìm theo tên, MST, SĐT..."
+      emptyMessage={
+        searchValue ? `Không tìm thấy "${searchValue}"` : "Chưa có nhà cung cấp"
+      }
+      hasError={hasError}
+      onCreateNew={onCreateNew}
+    />
   );
 }

@@ -3,6 +3,7 @@
 import React from "react";
 import { Loader2, Minus, Plus, X } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api/client";
+import { useToast } from "@/components/Toast";
 import { useAdjustProductStock } from "@/lib/hooks/use-products";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ export function StockAdjustDialog({
   const [error, setError] = React.useState<string | null>(null);
 
   const adjust = useAdjustProductStock(productId);
+  const toast = useToast();
 
   React.useEffect(() => {
     if (open) {
@@ -55,8 +57,7 @@ export function StockAdjustDialog({
   if (!open) return null;
 
   const numericAmount = Number(amount);
-  const isValidAmount =
-    Number.isInteger(numericAmount) && numericAmount > 0;
+  const isValidAmount = Number.isInteger(numericAmount) && numericAmount > 0;
   const delta = direction === "in" ? numericAmount : -numericAmount;
   const stockAfter = isValidAmount ? currentStock + delta : currentStock;
   const insufficient = direction === "out" && stockAfter < 0;
@@ -76,10 +77,17 @@ export function StockAdjustDialog({
         quantity: delta,
         note: note.trim() ? note.trim() : undefined,
       });
+      toast.success(
+        direction === "in"
+          ? `Đã cộng ${numericAmount} ${unit} cho ${productName}`
+          : `Đã trừ ${numericAmount} ${unit} từ ${productName}`,
+      );
       onSuccess?.();
       onClose();
     } catch (err) {
-      setError(getApiErrorMessage(err, "Không thể điều chỉnh tồn kho"));
+      const msg = getApiErrorMessage(err, "Không thể điều chỉnh tồn kho");
+      setError(msg);
+      toast.error(msg);
     }
   };
 
@@ -183,9 +191,7 @@ export function StockAdjustDialog({
               </span>
             </div>
             <div className="flex items-center justify-between mt-1">
-              <span className="text-text-secondary">
-                Sau điều chỉnh:
-              </span>
+              <span className="text-text-secondary">Sau điều chỉnh:</span>
               <span
                 className={cn(
                   "font-bold",

@@ -13,12 +13,10 @@ import {
   Trash2,
   Truck,
 } from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ConfirmDialog } from "@/components/Dialog";
+import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
-import {
-  useDeleteSupplier,
-  useSupplier,
-} from "@/lib/hooks/use-suppliers";
+import { useDeleteSupplier, useSupplier } from "@/lib/hooks/use-suppliers";
 
 interface SupplierDetailViewConnectedProps {
   id: string;
@@ -50,16 +48,17 @@ export function SupplierDetailViewConnected({
   const router = useRouter();
   const { data: supplier, isLoading, error } = useSupplier(id);
   const deleteMutation = useDeleteSupplier();
+  const toast = useToast();
   const [confirmDelete, setConfirmDelete] = React.useState(false);
-  const [deleteError, setDeleteError] = React.useState<string | null>(null);
 
   const handleDelete = async () => {
-    setDeleteError(null);
+    if (!supplier) return;
     try {
       await deleteMutation.mutateAsync(id);
+      toast.success(`Đã xóa ${supplier.name}`);
       router.push("/suppliers");
     } catch (err) {
-      setDeleteError(getApiErrorMessage(err, "Không thể xóa nhà cung cấp"));
+      toast.error(getApiErrorMessage(err, "Không thể xóa nhà cung cấp"));
     }
   };
 
@@ -94,10 +93,7 @@ export function SupplierDetailViewConnected({
           <Pencil className="w-4 h-4" /> Chỉnh sửa
         </Link>
         <button
-          onClick={() => {
-            setDeleteError(null);
-            setConfirmDelete(true);
-          }}
+          onClick={() => setConfirmDelete(true)}
           className="flex items-center gap-2 bg-card-white border border-danger/20 text-danger hover:bg-danger/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm"
         >
           <Trash2 className="w-4 h-4" /> Xóa
@@ -297,19 +293,20 @@ export function SupplierDetailViewConnected({
       </div>
 
       <ConfirmDialog
-        isOpen={confirmDelete}
-        onClose={() => {
-          setConfirmDelete(false);
-          setDeleteError(null);
-        }}
+        open={confirmDelete}
+        onClose={() => !deleteMutation.isPending && setConfirmDelete(false)}
         onConfirm={handleDelete}
         title="Xóa nhà cung cấp?"
         message={
-          deleteError ??
-          "Nhà cung cấp sẽ được chuyển sang trạng thái tạm dừng. Lịch sử phiếu nhập vẫn được giữ lại."
+          <>
+            <strong className="text-text-primary">{supplier.name}</strong> sẽ
+            được chuyển sang trạng thái tạm dừng. Lịch sử phiếu nhập vẫn được
+            giữ lại.
+          </>
         }
         confirmLabel="Xóa nhà cung cấp"
         variant="danger"
+        loading={deleteMutation.isPending}
       />
     </div>
   );

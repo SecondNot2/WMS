@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { createRecipientSchema } from "@wms/validations";
 import type { CreateRecipientSchemaInput } from "@wms/validations";
+import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
 import {
   useCreateRecipient,
@@ -24,10 +25,7 @@ import {
   useUpdateRecipient,
 } from "@/lib/hooks/use-recipients";
 import { cn } from "@/lib/utils";
-import type {
-  CreateRecipientInput,
-  UpdateRecipientInput,
-} from "@wms/types";
+import type { CreateRecipientInput, UpdateRecipientInput } from "@wms/types";
 
 type ReceiverFormValues = CreateRecipientSchemaInput & { isActive?: boolean };
 
@@ -51,6 +49,7 @@ export function ReceiverFormConnected({
   const { data: recipient, isLoading } = useRecipient(receiverId ?? "");
   const createMutation = useCreateRecipient();
   const updateMutation = useUpdateRecipient(receiverId ?? "");
+  const toast = useToast();
   const [submitError, setSubmitError] = React.useState<string | null>(null);
 
   const {
@@ -92,6 +91,7 @@ export function ReceiverFormConnected({
           isActive: values.isActive,
         };
         await updateMutation.mutateAsync(payload);
+        toast.success(`Đã cập nhật ${values.name}`);
         router.push(`/receivers/${receiverId}`);
       } else {
         const payload: CreateRecipientInput = {
@@ -101,10 +101,13 @@ export function ReceiverFormConnected({
           address: values.address,
         };
         const created = await createMutation.mutateAsync(payload);
+        toast.success(`Đã tạo đơn vị nhận ${created.name}`);
         router.push(`/receivers/${created.id}`);
       }
     } catch (error) {
-      setSubmitError(getApiErrorMessage(error, "Không thể lưu đơn vị nhận"));
+      const msg = getApiErrorMessage(error, "Không thể lưu đơn vị nhận");
+      setSubmitError(msg);
+      toast.error(msg);
     }
   };
 

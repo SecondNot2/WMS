@@ -3,13 +3,11 @@
 import React from "react";
 import Link from "next/link";
 import { Building2, Eye, Pencil, Trash2, Truck } from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ConfirmDialog } from "@/components/Dialog";
+import { useToast } from "@/components/Toast";
 import { Pagination } from "@/components/Pagination";
 import { getApiErrorMessage } from "@/lib/api/client";
-import {
-  useDeleteSupplier,
-  useSuppliers,
-} from "@/lib/hooks/use-suppliers";
+import { useDeleteSupplier, useSuppliers } from "@/lib/hooks/use-suppliers";
 import { cn } from "@/lib/utils";
 import type { GetSuppliersQuery } from "@wms/types";
 
@@ -36,8 +34,11 @@ export function SupplierTableConnected({
 }: SupplierTableConnectedProps = {}) {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
-  const [deleteId, setDeleteId] = React.useState<string | null>(null);
-  const [deleteError, setDeleteError] = React.useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const toast = useToast();
 
   const filtersKey = JSON.stringify(filters ?? {});
   React.useEffect(() => {
@@ -54,13 +55,13 @@ export function SupplierTableConnected({
   const meta = data?.meta;
 
   const handleConfirmDelete = async () => {
-    if (!deleteId) return;
-    setDeleteError(null);
+    if (!deleteTarget) return;
     try {
-      await deleteMutation.mutateAsync(deleteId);
-      setDeleteId(null);
+      await deleteMutation.mutateAsync(deleteTarget.id);
+      toast.success(`Đã xóa ${deleteTarget.name}`);
+      setDeleteTarget(null);
     } catch (err) {
-      setDeleteError(getApiErrorMessage(err, "Không thể xóa nhà cung cấp"));
+      toast.error(getApiErrorMessage(err, "Không thể xóa nhà cung cấp"));
     }
   };
 
@@ -201,10 +202,12 @@ export function SupplierTableConnected({
                           <Pencil className="w-4 h-4" />
                         </Link>
                         <button
-                          onClick={() => {
-                            setDeleteError(null);
-                            setDeleteId(supplier.id);
-                          }}
+                          onClick={() =>
+                            setDeleteTarget({
+                              id: supplier.id,
+                              name: supplier.name,
+                            })
+                          }
                           className="p-1.5 hover:bg-danger/10 text-danger rounded-md transition-colors"
                           title="Xóa"
                         >
@@ -255,19 +258,22 @@ export function SupplierTableConnected({
       </div>
 
       <ConfirmDialog
-        isOpen={!!deleteId}
-        onClose={() => {
-          setDeleteId(null);
-          setDeleteError(null);
-        }}
+        open={!!deleteTarget}
+        onClose={() => !deleteMutation.isPending && setDeleteTarget(null)}
         onConfirm={handleConfirmDelete}
         title="Xóa nhà cung cấp?"
         message={
-          deleteError ??
-          "Nhà cung cấp sẽ được chuyển sang trạng thái tạm dừng. Lịch sử phiếu nhập vẫn được giữ lại."
+          deleteTarget && (
+            <>
+              <strong className="text-text-primary">{deleteTarget.name}</strong>{" "}
+              sẽ được chuyển sang trạng thái tạm dừng. Lịch sử phiếu nhập vẫn
+              được giữ lại.
+            </>
+          )
         }
         confirmLabel="Xóa nhà cung cấp"
         variant="danger"
+        loading={deleteMutation.isPending}
       />
     </div>
   );

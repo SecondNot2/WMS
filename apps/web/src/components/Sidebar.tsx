@@ -24,7 +24,8 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useLayoutStore } from "@/lib/store";
+import { useAuthStore, useLayoutStore } from "@/lib/store";
+import { UserMenu } from "./UserMenu";
 
 const menuGroups = [
   {
@@ -70,6 +71,7 @@ const menuGroups = [
 export function Sidebar() {
   const pathname = usePathname();
   const { sidebarCollapsed, toggleSidebar } = useLayoutStore();
+  const user = useAuthStore((s) => s.user);
 
   return (
     <aside
@@ -152,34 +154,15 @@ export function Sidebar() {
       </div>
 
       <div className="p-3 border-t border-white/10 bg-primary/50">
-        <div
-          className={cn(
-            "flex items-center",
-            sidebarCollapsed ? "justify-center" : "px-1",
-          )}
-        >
-          <div className="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center border border-accent/30 overflow-hidden cursor-pointer">
-            <img
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-              alt="Avatar"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          {!sidebarCollapsed && (
-            <div className="ml-3 overflow-hidden">
-              <p className="text-sm font-semibold text-white truncate">
-                Nguyễn Văn A
-              </p>
-              <p className="text-[11px] text-white/60 truncate">
-                Quản trị viên
-              </p>
-            </div>
-          )}
-        </div>
+        <UserMenu
+          user={user}
+          variant={sidebarCollapsed ? "sidebar-collapsed" : "sidebar-expanded"}
+          placement="top-right"
+        />
         {sidebarCollapsed && (
           <button
             onClick={toggleSidebar}
-            className="w-full mt-4 flex justify-center p-2 hover:bg-white/10 rounded-md transition-colors text-white/60"
+            className="w-full mt-3 flex justify-center p-2 hover:bg-white/10 rounded-md transition-colors text-white/60"
           >
             <PanelLeftOpen className="w-5 h-5" />
           </button>

@@ -1,10 +1,20 @@
 "use client";
 
 import React from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, CheckCircle2, Info, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type DialogVariant = "danger" | "warning" | "success" | "info";
+/**
+ * Hook nhỏ — chỉ trả true sau khi mount để portal an toàn với SSR.
+ */
+function useMounted() {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+  return mounted;
+}
+
+export type DialogVariant = "danger" | "warning" | "success" | "info";
 
 const VARIANT_STYLES: Record<
   DialogVariant,
@@ -78,9 +88,11 @@ function DialogShell({
     return () => document.removeEventListener("keydown", handler);
   }, [open, loading, onClose]);
 
-  if (!open) return null;
+  const mounted = useMounted();
 
-  return (
+  if (!open || !mounted) return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in"
       onClick={() => !loading && onClose()}
@@ -148,7 +160,8 @@ function DialogShell({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -279,5 +292,110 @@ export function PromptDialog({
       )}
       {error && <p className="text-xs text-danger mt-1.5">{error}</p>}
     </DialogShell>
+  );
+}
+
+// ─────────────────────────────────────────
+// FormDialog — modal lớn dạng panel, chứa form custom
+// Dùng cho quick-add (Supplier/Recipient/Category/Product)
+// ─────────────────────────────────────────
+
+interface FormDialogProps {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  description?: React.ReactNode;
+  children: React.ReactNode;
+  /** Submit button rendered trong footer; nếu null thì caller tự render */
+  footer?: React.ReactNode;
+  /** Width tối đa: sm=420px, md=520px, lg=720px */
+  size?: "sm" | "md" | "lg";
+  /** Khi loading → disable backdrop click & ESC */
+  loading?: boolean;
+  /** Icon tùy chọn ở header trái */
+  icon?: React.ReactNode;
+}
+
+const SIZE_CLS: Record<NonNullable<FormDialogProps["size"]>, string> = {
+  sm: "max-w-md",
+  md: "max-w-lg",
+  lg: "max-w-3xl",
+};
+
+export function FormDialog({
+  open,
+  onClose,
+  title,
+  description,
+  children,
+  footer,
+  size = "md",
+  loading,
+  icon,
+}: FormDialogProps) {
+  React.useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !loading) onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open, loading, onClose]);
+
+  const mounted = useMounted();
+
+  if (!open || !mounted) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in"
+      onClick={() => !loading && onClose()}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+        className={cn(
+          "bg-card-white rounded-xl shadow-2xl w-full border border-border-ui overflow-hidden flex flex-col max-h-[90vh]",
+          SIZE_CLS[size],
+        )}
+      >
+        <div className="flex items-start justify-between gap-3 px-6 py-4 border-b border-border-ui">
+          <div className="flex items-start gap-3 min-w-0">
+            {icon && (
+              <span className="shrink-0 mt-0.5 text-accent">{icon}</span>
+            )}
+            <div className="min-w-0">
+              <h3 className="text-base font-bold text-text-primary leading-snug truncate">
+                {title}
+              </h3>
+              {description && (
+                <p className="mt-1 text-xs text-text-secondary leading-relaxed">
+                  {description}
+                </p>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="p-1 -mr-1 text-text-secondary hover:text-text-primary hover:bg-background-app rounded-md disabled:opacity-50"
+            aria-label="Đóng"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6">{children}</div>
+
+        {footer && (
+          <div className="flex justify-end gap-2 px-6 py-3 bg-background-app/40 border-t border-border-ui">
+            {footer}
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body,
   );
 }

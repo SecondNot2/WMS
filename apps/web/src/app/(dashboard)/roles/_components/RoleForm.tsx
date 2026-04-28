@@ -6,11 +6,9 @@ import { Loader2, Save, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PermissionMatrix } from "./PermissionMatrix";
 import { useCreateRole, useUpdateRole } from "@/lib/hooks/use-roles";
+import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
-import {
-  createRoleSchema,
-  updateRoleSchema,
-} from "@wms/validations";
+import { createRoleSchema, updateRoleSchema } from "@wms/validations";
 import type { RoleEntity, RolePermissions } from "@wms/types";
 
 interface RoleFormProps {
@@ -31,6 +29,7 @@ export function RoleForm({ initialData }: RoleFormProps) {
 
   const createMutation = useCreateRole();
   const updateMutation = useUpdateRole(initialData?.id ?? "");
+  const toast = useToast();
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -51,12 +50,16 @@ export function RoleForm({ initialData }: RoleFormProps) {
     try {
       if (isEdit) {
         await updateMutation.mutateAsync({ name, permissions });
+        toast.success(`Đã cập nhật vai trò ${name}`);
       } else {
         await createMutation.mutateAsync({ name, permissions });
+        toast.success(`Đã tạo vai trò ${name}`);
       }
       router.push("/roles");
     } catch (err) {
-      setErrors({ root: getApiErrorMessage(err, "Không thể lưu vai trò") });
+      const msg = getApiErrorMessage(err, "Không thể lưu vai trò");
+      setErrors({ root: msg });
+      toast.error(msg);
     }
   };
 

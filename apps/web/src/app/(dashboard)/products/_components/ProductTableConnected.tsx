@@ -11,7 +11,8 @@ import {
   Trash2,
   XCircle,
 } from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ConfirmDialog } from "@/components/Dialog";
+import { useToast } from "@/components/Toast";
 import { Pagination } from "@/components/Pagination";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { useDeleteProduct, useProducts } from "@/lib/hooks/use-products";
@@ -58,7 +59,11 @@ export function ProductTableConnected({
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
-  const [deleteId, setDeleteId] = React.useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const toast = useToast();
 
   const filtersKey = JSON.stringify(filters ?? {});
   React.useEffect(() => {
@@ -268,7 +273,12 @@ export function ProductTableConnected({
                             <Pencil className="w-4 h-4" />
                           </Link>
                           <button
-                            onClick={() => setDeleteId(product.id)}
+                            onClick={() =>
+                              setDeleteTarget({
+                                id: product.id,
+                                name: product.name,
+                              })
+                            }
                             className="p-1.5 hover:bg-danger/10 text-danger rounded-md transition-colors"
                             title="Xóa"
                           >
@@ -345,14 +355,31 @@ export function ProductTableConnected({
       )}
 
       <ConfirmDialog
-        isOpen={!!deleteId}
-        onClose={() => setDeleteId(null)}
-        onConfirm={() => {
-          if (deleteId) deleteMutation.mutate(deleteId);
+        open={!!deleteTarget}
+        onClose={() => !deleteMutation.isPending && setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          try {
+            await deleteMutation.mutateAsync(deleteTarget.id);
+            toast.success(`Đã xóa ${deleteTarget.name}`);
+            setDeleteTarget(null);
+          } catch (err) {
+            toast.error(getApiErrorMessage(err, "Không thể xóa sản phẩm"));
+          }
         }}
-        title="Xóa sản phẩm"
-        message="Sản phẩm sẽ được chuyển sang trạng thái không hoạt động. Bạn có chắc chắn muốn tiếp tục?"
-        confirmLabel="Xóa"
+        title="Xóa sản phẩm?"
+        message={
+          deleteTarget && (
+            <>
+              <strong className="text-text-primary">{deleteTarget.name}</strong>{" "}
+              sẽ được chuyển sang trạng thái không hoạt động. Tồn kho và lịch sử
+              vẫn được giữ lại.
+            </>
+          )
+        }
+        confirmLabel="Xóa sản phẩm"
+        variant="danger"
+        loading={deleteMutation.isPending}
       />
     </div>
   );

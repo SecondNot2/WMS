@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useRoles } from "@/lib/hooks/use-roles";
 import { useCreateUser, useUpdateUser } from "@/lib/hooks/use-users";
+import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
 import type { User } from "@wms/types";
 
@@ -38,6 +39,7 @@ export function UserForm({ initialData }: UserFormProps) {
   const { data: roles, isLoading: rolesLoading } = useRoles();
   const createMutation = useCreateUser();
   const updateMutation = useUpdateUser(initialData?.id ?? "");
+  const toast = useToast();
 
   const form = useForm<CreateValues | UpdateValues>({
     resolver: zodResolver(isEdit ? updateUserSchema : createUserSchema),
@@ -76,12 +78,19 @@ export function UserForm({ initialData }: UserFormProps) {
           password: data.password || undefined,
         };
         await updateMutation.mutateAsync(payload);
+        toast.success(
+          `Đã cập nhật ${data.name ?? initialData?.name ?? "người dùng"}`,
+        );
       } else {
-        await createMutation.mutateAsync(raw as CreateValues);
+        const data = raw as CreateValues;
+        await createMutation.mutateAsync(data);
+        toast.success(`Đã tạo tài khoản ${data.name}`);
       }
       router.push("/users");
     } catch (e) {
-      setServerError(getApiErrorMessage(e, "Không thể lưu thông tin"));
+      const msg = getApiErrorMessage(e, "Không thể lưu thông tin");
+      setServerError(msg);
+      toast.error(msg);
     }
   });
 

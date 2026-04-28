@@ -13,7 +13,8 @@ import {
   Unlock,
   UserRound,
 } from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ConfirmDialog } from "@/components/Dialog";
+import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
 import {
   useDeleteUser,
@@ -45,6 +46,7 @@ export function UserDetailView({ id }: UserDetailViewProps) {
   const { data: user, isLoading, isError, error } = useUser(id);
   const toggleMutation = useToggleUserActive();
   const deleteMutation = useDeleteUser();
+  const toast = useToast();
 
   const [isToggleOpen, setIsToggleOpen] = React.useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
@@ -73,20 +75,25 @@ export function UserDetailView({ id }: UserDetailViewProps) {
   const roleLabel = ROLE_LABELS[user.role.name] ?? user.role.name;
 
   const onConfirmToggle = async () => {
+    const willActivate = !user.isActive;
     try {
-      await toggleMutation.mutateAsync({ id, isActive: !user.isActive });
+      await toggleMutation.mutateAsync({ id, isActive: willActivate });
+      toast.success(
+        willActivate ? `Đã mở khóa ${user.name}` : `Đã khóa ${user.name}`,
+      );
       setIsToggleOpen(false);
     } catch (e) {
-      alert(getApiErrorMessage(e, "Không thể cập nhật trạng thái"));
+      toast.error(getApiErrorMessage(e, "Không thể cập nhật trạng thái"));
     }
   };
 
   const onConfirmDelete = async () => {
     try {
       await deleteMutation.mutateAsync(id);
+      toast.success(`Đã xóa ${user.name}`);
       router.push("/users");
     } catch (e) {
-      alert(getApiErrorMessage(e, "Không thể xóa người dùng"));
+      toast.error(getApiErrorMessage(e, "Không thể xóa người dùng"));
     }
   };
 
@@ -105,7 +112,11 @@ export function UserDetailView({ id }: UserDetailViewProps) {
           onClick={() => setIsToggleOpen(true)}
           className="flex items-center gap-2 bg-card-white border border-warning/20 text-warning hover:bg-warning/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {user.isActive ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+          {user.isActive ? (
+            <Lock className="w-4 h-4" />
+          ) : (
+            <Unlock className="w-4 h-4" />
+          )}
           {user.isActive ? "Khóa tài khoản" : "Mở khóa"}
         </button>
         <button
@@ -210,8 +221,8 @@ export function UserDetailView({ id }: UserDetailViewProps) {
       </div>
 
       <ConfirmDialog
-        isOpen={isToggleOpen}
-        onClose={() => setIsToggleOpen(false)}
+        open={isToggleOpen}
+        onClose={() => !toggleMutation.isPending && setIsToggleOpen(false)}
         onConfirm={onConfirmToggle}
         title={user.isActive ? "Khóa tài khoản" : "Mở khóa tài khoản"}
         message={
@@ -221,16 +232,23 @@ export function UserDetailView({ id }: UserDetailViewProps) {
         }
         confirmLabel={user.isActive ? "Khóa tài khoản" : "Mở khóa"}
         variant={user.isActive ? "danger" : "info"}
+        loading={toggleMutation.isPending}
       />
 
       <ConfirmDialog
-        isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)}
+        open={isDeleteOpen}
+        onClose={() => !deleteMutation.isPending && setIsDeleteOpen(false)}
         onConfirm={onConfirmDelete}
         title="Xóa người dùng"
-        message={`Hành động này không thể hoàn tác. Bạn có chắc muốn xóa "${user.name}"?`}
+        message={
+          <>
+            Hành động này không thể hoàn tác. Bạn có chắc muốn xóa{" "}
+            <strong className="text-text-primary">{user.name}</strong>?
+          </>
+        }
         confirmLabel="Xóa"
         variant="danger"
+        loading={deleteMutation.isPending}
       />
     </div>
   );

@@ -254,3 +254,156 @@ export const productIdParamsSchema = z.object({
   id: z.string().trim().min(1, "Thiếu mã sản phẩm"),
 });
 export type ProductIdParamsSchemaInput = z.infer<typeof productIdParamsSchema>;
+
+// ─────────────────────────────────────────
+// SUPPLIERS
+// ─────────────────────────────────────────
+
+const nullableEmail = z
+  .string()
+  .trim()
+  .max(200)
+  .email("Email không hợp lệ")
+  .optional()
+  .nullable()
+  .or(z.literal("").transform(() => null));
+
+const nullablePhone = z
+  .string()
+  .trim()
+  .max(30)
+  .optional()
+  .nullable()
+  .or(z.literal("").transform(() => null));
+
+const nullableAddress = z
+  .string()
+  .trim()
+  .max(300)
+  .optional()
+  .nullable()
+  .or(z.literal("").transform(() => null));
+
+const nullableTaxCode = z
+  .string()
+  .trim()
+  .max(30)
+  .optional()
+  .nullable()
+  .or(z.literal("").transform(() => null));
+
+export const createSupplierSchema = z.object({
+  name: z.string().trim().min(1, "Vui lòng nhập tên nhà cung cấp").max(200),
+  phone: nullablePhone,
+  email: nullableEmail,
+  address: nullableAddress,
+  taxCode: nullableTaxCode,
+});
+export type CreateSupplierSchemaInput = z.infer<typeof createSupplierSchema>;
+
+export const updateSupplierSchema = createSupplierSchema
+  .partial()
+  .extend({ isActive: z.boolean().optional() });
+export type UpdateSupplierSchemaInput = z.infer<typeof updateSupplierSchema>;
+
+export const getSuppliersQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  search: z.string().trim().optional(),
+  isActive: z
+    .union([z.boolean(), z.enum(["true", "false"])])
+    .transform((v) => (typeof v === "boolean" ? v : v === "true"))
+    .optional(),
+});
+export type GetSuppliersQuerySchemaInput = z.infer<
+  typeof getSuppliersQuerySchema
+>;
+
+export const supplierIdParamsSchema = z.object({
+  id: z.string().trim().min(1, "Thiếu mã nhà cung cấp"),
+});
+export type SupplierIdParamsSchemaInput = z.infer<
+  typeof supplierIdParamsSchema
+>;
+
+// ─────────────────────────────────────────
+// INBOUND (GoodsReceipt)
+// ─────────────────────────────────────────
+
+export const inboundItemSchema = z.object({
+  productId: z.string().trim().min(1, "Vui lòng chọn sản phẩm"),
+  quantity: z.coerce
+    .number()
+    .int("Số lượng phải là số nguyên")
+    .positive("Số lượng phải lớn hơn 0"),
+  unitPrice: z.coerce.number().nonnegative("Đơn giá không được âm"),
+});
+export type InboundItemSchemaInput = z.infer<typeof inboundItemSchema>;
+
+const nullableInboundNote = z
+  .string()
+  .trim()
+  .max(1000)
+  .optional()
+  .nullable()
+  .or(z.literal("").transform(() => null));
+
+export const createInboundSchema = z.object({
+  supplierId: z.string().trim().min(1, "Vui lòng chọn nhà cung cấp"),
+  note: nullableInboundNote,
+  items: z
+    .array(inboundItemSchema)
+    .min(1, "Phiếu nhập phải có ít nhất 1 sản phẩm"),
+});
+export type CreateInboundSchemaInput = z.infer<typeof createInboundSchema>;
+
+export const updateInboundSchema = z.object({
+  supplierId: z.string().trim().min(1).optional(),
+  note: nullableInboundNote,
+  items: z
+    .array(inboundItemSchema)
+    .min(1, "Phiếu nhập phải có ít nhất 1 sản phẩm")
+    .optional(),
+});
+export type UpdateInboundSchemaInput = z.infer<typeof updateInboundSchema>;
+
+export const getInboundsQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  search: z.string().trim().optional(),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
+  supplierId: z.string().trim().optional(),
+  from: z
+    .string()
+    .trim()
+    .optional()
+    .refine(
+      (v) => !v || !Number.isNaN(Date.parse(v)),
+      "Ngày bắt đầu không hợp lệ",
+    ),
+  to: z
+    .string()
+    .trim()
+    .optional()
+    .refine(
+      (v) => !v || !Number.isNaN(Date.parse(v)),
+      "Ngày kết thúc không hợp lệ",
+    ),
+});
+export type GetInboundsQuerySchemaInput = z.infer<
+  typeof getInboundsQuerySchema
+>;
+
+export const rejectInboundSchema = z.object({
+  reason: z
+    .string()
+    .trim()
+    .min(1, "Vui lòng nhập lý do từ chối")
+    .max(500, "Lý do tối đa 500 ký tự"),
+});
+export type RejectInboundSchemaInput = z.infer<typeof rejectInboundSchema>;
+
+export const inboundIdParamsSchema = z.object({
+  id: z.string().trim().min(1, "Thiếu mã phiếu nhập"),
+});
+export type InboundIdParamsSchemaInput = z.infer<typeof inboundIdParamsSchema>;

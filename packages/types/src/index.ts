@@ -253,3 +253,158 @@ export interface ImportProductsResult {
   skipped: number;
   errors: { row: number; reason: string }[];
 }
+
+// ─────────────────────────────────────────
+// SUPPLIERS
+// ─────────────────────────────────────────
+
+export interface Supplier {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  taxCode: string | null;
+  isActive: boolean;
+  inboundCount: number;
+  totalAmount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SupplierRecentInbound {
+  id: string;
+  code: string;
+  status: InboundStatus;
+  totalAmount: number;
+  createdAt: string;
+}
+
+export interface SupplierDetail extends Supplier {
+  stats: { totalInbound: number; totalAmount: number };
+  recentInbounds: SupplierRecentInbound[];
+}
+
+export interface CreateSupplierInput {
+  name: string;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  taxCode?: string | null;
+}
+
+export interface UpdateSupplierInput extends Partial<CreateSupplierInput> {
+  isActive?: boolean;
+}
+
+export interface GetSuppliersQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+}
+
+// ─────────────────────────────────────────
+// INBOUND (GoodsReceipt)
+// ─────────────────────────────────────────
+
+export type InboundStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface InboundUserSummary {
+  id: string;
+  name: string;
+}
+
+export interface InboundSupplierSummary {
+  id: string;
+  name: string;
+}
+
+export interface InboundListItem {
+  id: string;
+  code: string;
+  supplier: InboundSupplierSummary;
+  status: InboundStatus;
+  totalAmount: number;
+  itemCount: number;
+  createdBy: InboundUserSummary;
+  createdAt: string;
+}
+
+export interface InboundDetailItemProduct {
+  id: string;
+  sku: string;
+  name: string;
+  unit: string;
+  currentStock: number;
+}
+
+export interface InboundDetailItem {
+  id: string;
+  product: InboundDetailItemProduct;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export interface InboundSupplierDetail extends InboundSupplierSummary {
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  taxCode: string | null;
+}
+
+export interface InboundDetail {
+  id: string;
+  code: string;
+  supplier: InboundSupplierDetail;
+  status: InboundStatus;
+  note: string | null;
+  totalAmount: number;
+  createdBy: InboundUserSummary;
+  approvedBy: InboundUserSummary | null;
+  rejectedReason: string | null;
+  receivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  items: InboundDetailItem[];
+}
+
+export interface InboundItemInput {
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface CreateInboundInput {
+  supplierId: string;
+  note?: string | null;
+  items: InboundItemInput[];
+}
+
+export interface UpdateInboundInput {
+  supplierId?: string;
+  note?: string | null;
+  items?: InboundItemInput[];
+}
+
+export interface GetInboundsQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: InboundStatus;
+  supplierId?: string;
+  from?: string;
+  to?: string;
+}
+
+export interface RejectInboundInput {
+  reason: string;
+}
+
+export interface InboundStatsData {
+  thisMonth: number;
+  pending: number;
+  approvedToday: number;
+  rejected: number;
+}

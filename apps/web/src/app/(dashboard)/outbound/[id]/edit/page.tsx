@@ -2,38 +2,17 @@
 
 import React from "react";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { OutboundForm } from "../../_components/OutboundForm";
+import { useOutbound } from "@/lib/hooks/use-outbound";
+import { getApiErrorMessage } from "@/lib/api/client";
 
 export default function EditOutboundPage() {
   const params = useParams();
   const id = params.id as string;
 
-  // TODO: Replace with useQuery -> GET /goods-issues/:id
-  const mockData = {
-    recipientId: "1",
-    purpose: "Xuất hàng định kỳ tháng 5",
-    note: "Hàng dễ vỡ, yêu cầu đóng gói kỹ bằng xốp hơi.",
-    items: [
-      {
-        productId: "p1",
-        sku: "SP001",
-        name: "Chuột không dây Logitech M331",
-        unit: "Cái",
-        quantity: 20,
-        unitPrice: 550000,
-      },
-      {
-        productId: "p2",
-        sku: "SP002",
-        name: "Bàn phím cơ Keychron K2",
-        unit: "Cái",
-        quantity: 10,
-        unitPrice: 1500000,
-      },
-    ],
-  };
+  const { data: issue, isLoading, isError, error } = useOutbound(id);
 
   return (
     <div className="p-5 w-full space-y-6">
@@ -56,7 +35,43 @@ export default function EditOutboundPage() {
       </div>
 
       <div className="pl-9">
-        <OutboundForm initialData={mockData} isEdit={true} />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20 text-text-secondary">
+            <Loader2 className="w-6 h-6 animate-spin mr-3" />
+            <span className="text-sm">Đang tải phiếu xuất...</span>
+          </div>
+        ) : isError || !issue ? (
+          <div className="flex flex-col items-center justify-center py-20 text-danger">
+            <p className="text-sm font-bold mb-1">Không thể tải phiếu xuất</p>
+            <p className="text-xs text-text-secondary">
+              {getApiErrorMessage(error)}
+            </p>
+          </div>
+        ) : issue.status !== "PENDING" ? (
+          <div className="bg-warning/5 border border-warning/20 rounded-xl p-6 text-center">
+            <p className="text-sm font-bold text-warning mb-1">
+              Không thể chỉnh sửa
+            </p>
+            <p className="text-xs text-text-secondary">
+              Chỉ có thể sửa phiếu ở trạng thái Chờ duyệt.
+            </p>
+          </div>
+        ) : (
+          <OutboundForm
+            initialData={{
+              recipientId: issue.recipient.id,
+              purpose: issue.purpose ?? "",
+              note: issue.note ?? "",
+              items: issue.items.map((item) => ({
+                productId: item.product.id,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+              })),
+            }}
+            isEdit
+            outboundId={id}
+          />
+        )}
       </div>
     </div>
   );

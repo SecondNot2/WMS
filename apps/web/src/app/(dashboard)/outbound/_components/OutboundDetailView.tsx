@@ -11,77 +11,143 @@ import {
   FileText,
   Package,
   Truck,
+  Phone,
+  Clock,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import {
+  useOutbound,
+  useApproveOutbound,
+  useRejectOutbound,
+  useDeleteOutbound,
+} from "@/lib/hooks/use-outbound";
+import { getApiErrorMessage } from "@/lib/api/client";
+import { ConfirmDialog, PromptDialog } from "@/components/Dialog";
+import { useToast } from "@/components/Toast";
+import type { OutboundStatus } from "@wms/types";
 
 interface OutboundDetailViewProps {
   id: string;
 }
 
+const STATUS_CONFIG: Record<
+  OutboundStatus,
+  { label: string; cls: string; icon: typeof Clock }
+> = {
+  PENDING: {
+    label: "Chờ duyệt xuất",
+    cls: "bg-warning/10 text-warning",
+    icon: Clock,
+  },
+  APPROVED: {
+    label: "Đã xuất kho",
+    cls: "bg-success/10 text-success",
+    icon: CheckCircle2,
+  },
+  REJECTED: {
+    label: "Đã từ chối",
+    cls: "bg-danger/10 text-danger",
+    icon: XCircle,
+  },
+};
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(value);
+
+const formatNumber = (value: number) =>
+  new Intl.NumberFormat("vi-VN").format(value);
+
+const formatDateTime = (iso: string | null) => {
+  if (!iso) return "---";
+  try {
+    return new Date(iso).toLocaleString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+};
+
 export function OutboundDetailView({ id }: OutboundDetailViewProps) {
   const router = useRouter();
+  const { data: issue, isLoading, isError, error } = useOutbound(id);
 
-  // TODO: Replace with useQuery -> GET /goods-issues/:id
-  const mockIssue = {
-    id: id,
-    code: "PXK-2024-0042",
-    status: "PENDING",
-    recipient: {
-      name: "Chi nhánh Lạng Sơn",
-      address: "Cửa khẩu Tân Thanh, Lạng Sơn",
-      phone: "0205 3888 999",
-    },
-    purpose: "Xuất hàng định kỳ tháng 5 cho hệ thống cửa hàng biên giới",
-    items: [
-      {
-        id: "1",
-        sku: "SP001",
-        name: "Chuột không dây Logitech M331",
-        unit: "Cái",
-        quantity: 20,
-        price: 550000,
-        total: 11000000,
-      },
-      {
-        id: "2",
-        sku: "SP002",
-        name: "Bàn phím cơ Keychron K2",
-        unit: "Cái",
-        quantity: 10,
-        price: 1500000,
-        total: 15000000,
-      },
-      {
-        id: "3",
-        sku: "SP004",
-        name: "Tai nghe Sony WH-1000XM4",
-        unit: "Cái",
-        quantity: 3,
-        price: 5200000,
-        total: 15600000,
-      },
-    ],
-    totalAmount: 41600000,
-    note: "Hàng dễ vỡ, yêu cầu đóng gói kỹ bằng xốp hơi.",
-    createdBy: {
-      name: "Nguyễn Văn A",
-      role: "Nhân viên kho",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=A",
-    },
-    createdAt: "18/05/2024 10:30",
-    approvedBy: null,
-    approvedAt: null,
+  const approveMutation = useApproveOutbound(id);
+  const rejectMutation = useRejectOutbound(id);
+  const deleteMutation = useDeleteOutbound();
+  const toast = useToast();
+
+  const [confirmType, setConfirmType] = React.useState<
+    null | "approve" | "delete" | "reject"
+  >(null);
+
+  const closeConfirm = () => setConfirmType(null);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-text-secondary">
+        <Loader2 className="w-6 h-6 animate-spin mr-3" />
+        <span className="text-sm">Đang tải phiếu xuất...</span>
+      </div>
+    );
+  }
+
+  if (isError || !issue) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-danger">
+        <p className="text-sm font-bold mb-1">Không thể tải phiếu xuất</p>
+        <p className="text-xs text-text-secondary">
+          {getApiErrorMessage(error)}
+        </p>
+      </div>
+    );
+  }
+
+  const currentStatus = STATUS_CONFIG[issue.status];
+
+  const handleConfirmApprove = async () => {
+    try {
+      await approveMutation.mutateAsync();
+      toast.success(`Đã duyệt phiếu ${issue.code}`);
+      closeConfirm();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Không thể duyệt phiếu"));
+    }
   };
 
-  const STATUS_CONFIG = {
-    PENDING: { label: "Chờ duyệt xuất", cls: "bg-warning/10 text-warning" },
-    APPROVED: { label: "Đã xuất kho", cls: "bg-success/10 text-success" },
-    REJECTED: { label: "Đã từ chối", cls: "bg-danger/10 text-danger" },
+  const handleConfirmReject = async (reason: string) => {
+    try {
+      await rejectMutation.mutateAsync({ reason });
+      toast.success(`Đã từ chối phiếu ${issue.code}`);
+      closeConfirm();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Không thể từ chối phiếu"));
+    }
   };
 
-  const currentStatus =
-    STATUS_CONFIG[mockIssue.status as keyof typeof STATUS_CONFIG];
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(id);
+      toast.success(`Đã xóa phiếu ${issue.code}`);
+      router.push("/outbound");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Không thể xóa phiếu"));
+    }
+  };
+
+  const isPending =
+    approveMutation.isPending ||
+    rejectMutation.isPending ||
+    deleteMutation.isPending;
 
   return (
     <div className="space-y-6">
@@ -99,35 +165,61 @@ export function OutboundDetailView({ id }: OutboundDetailViewProps) {
           </span>
           <div>
             <p className="text-sm font-bold text-text-primary">
-              Mã phiếu: {mockIssue.code}
+              Mã phiếu: {issue.code}
             </p>
             <p className="text-[11px] text-text-secondary">
-              Ngày tạo: {mockIssue.createdAt}
+              Ngày tạo: {formatDateTime(issue.createdAt)}
             </p>
           </div>
         </div>
 
-        {mockIssue.status === "PENDING" && (
+        {issue.status === "PENDING" && (
           <div className="flex items-center gap-2 flex-wrap">
-            <button className="flex items-center gap-2 bg-success hover:bg-success/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm">
+            <button
+              type="button"
+              onClick={() => setConfirmType("approve")}
+              disabled={isPending}
+              className="flex items-center gap-2 bg-success hover:bg-success/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+            >
               <CheckCircle2 className="w-4 h-4" /> Duyệt xuất
             </button>
-            <button className="flex items-center gap-2 bg-danger hover:bg-danger/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm">
+            <button
+              type="button"
+              onClick={() => setConfirmType("reject")}
+              disabled={isPending}
+              className="flex items-center gap-2 bg-danger hover:bg-danger/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+            >
               <XCircle className="w-4 h-4" /> Từ chối
             </button>
             <div className="w-px h-8 bg-border-ui mx-1" />
             <button
+              type="button"
               onClick={() => router.push(`/outbound/${id}/edit`)}
-              className="flex items-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm"
+              disabled={isPending}
+              className="flex items-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
             >
               <Pencil className="w-4 h-4" /> Sửa
             </button>
-            <button className="flex items-center gap-2 bg-card-white border border-danger/20 text-danger hover:bg-danger/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm">
+            <button
+              type="button"
+              onClick={() => setConfirmType("delete")}
+              disabled={isPending}
+              className="flex items-center gap-2 bg-card-white border border-danger/20 text-danger hover:bg-danger/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+            >
               <Trash2 className="w-4 h-4" /> Xóa
             </button>
           </div>
         )}
       </div>
+
+      {issue.status === "REJECTED" && issue.rejectedReason && (
+        <div className="bg-danger/5 border border-danger/20 rounded-xl p-4">
+          <p className="text-xs font-bold text-danger uppercase tracking-wider mb-1">
+            Lý do từ chối
+          </p>
+          <p className="text-sm text-text-primary">{issue.rejectedReason}</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
@@ -149,13 +241,30 @@ export function OutboundDetailView({ id }: OutboundDetailViewProps) {
                       Đơn vị nhận
                     </p>
                     <p className="text-sm font-bold text-text-primary">
-                      {mockIssue.recipient.name}
+                      {issue.recipient.name}
                     </p>
-                    <p className="text-[12px] text-text-secondary mt-1">
-                      {mockIssue.recipient.address}
-                    </p>
+                    {issue.recipient.address && (
+                      <p className="text-[12px] text-text-secondary mt-1">
+                        {issue.recipient.address}
+                      </p>
+                    )}
                   </div>
                 </div>
+                {issue.recipient.phone && (
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-background-app rounded-lg">
+                      <Phone className="w-4 h-4 text-text-secondary" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-text-secondary uppercase font-bold tracking-tighter">
+                        Liên hệ
+                      </p>
+                      <p className="text-sm font-medium text-text-primary">
+                        {issue.recipient.phone}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-background-app rounded-lg">
                     <FileText className="w-4 h-4 text-text-secondary" />
@@ -165,7 +274,7 @@ export function OutboundDetailView({ id }: OutboundDetailViewProps) {
                       Lý do xuất
                     </p>
                     <p className="text-sm font-medium text-text-primary">
-                      {mockIssue.purpose}
+                      {issue.purpose ?? "(không có)"}
                     </p>
                   </div>
                 </div>
@@ -180,7 +289,7 @@ export function OutboundDetailView({ id }: OutboundDetailViewProps) {
                       Ghi chú
                     </p>
                     <p className="text-sm text-text-primary leading-relaxed italic">
-                      "{mockIssue.note}"
+                      {issue.note ? `"${issue.note}"` : "(không có)"}
                     </p>
                   </div>
                 </div>
@@ -197,7 +306,7 @@ export function OutboundDetailView({ id }: OutboundDetailViewProps) {
                 </h3>
               </div>
               <span className="text-xs font-bold text-accent bg-accent/5 px-3 py-1 rounded-full border border-accent/10">
-                {mockIssue.items.length} MẶT HÀNG
+                {issue.items.length} MẶT HÀNG
               </span>
             </div>
             <div className="overflow-x-auto">
@@ -222,25 +331,25 @@ export function OutboundDetailView({ id }: OutboundDetailViewProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-ui">
-                  {mockIssue.items.map((item) => (
+                  {issue.items.map((item) => (
                     <tr
                       key={item.id}
                       className="hover:bg-background-app/30 transition-colors"
                     >
                       <td className="px-6 py-4 text-sm font-mono text-text-secondary">
-                        {item.sku}
+                        {item.product.sku}
                       </td>
                       <td className="px-6 py-4 text-sm font-bold text-text-primary">
-                        {item.name}
+                        {item.product.name}
                       </td>
                       <td className="px-6 py-4 text-sm text-text-primary text-right font-medium">
-                        {item.quantity} {item.unit}
+                        {item.quantity} {item.product.unit}
                       </td>
                       <td className="px-6 py-4 text-sm text-text-primary text-right">
-                        {new Intl.NumberFormat("vi-VN").format(item.price)} đ
+                        {formatNumber(item.unitPrice)} đ
                       </td>
                       <td className="px-6 py-4 text-sm font-bold text-text-primary text-right">
-                        {new Intl.NumberFormat("vi-VN").format(item.total)} đ
+                        {formatNumber(item.totalPrice)} đ
                       </td>
                     </tr>
                   ))}
@@ -254,10 +363,7 @@ export function OutboundDetailView({ id }: OutboundDetailViewProps) {
                       Tổng giá trị phiếu xuất:
                     </td>
                     <td className="px-6 py-5 text-lg text-accent text-right border-t border-border-ui tracking-tight">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(mockIssue.totalAmount)}
+                      {formatCurrency(issue.totalAmount)}
                     </td>
                   </tr>
                 </tfoot>
@@ -274,24 +380,27 @@ export function OutboundDetailView({ id }: OutboundDetailViewProps) {
             </h3>
 
             <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <img
-                  src={mockIssue.createdBy.avatar}
-                  className="w-12 h-12 rounded-xl border-2 border-border-ui"
-                  alt=""
-                />
+              <div>
+                <p className="text-[10px] text-text-secondary uppercase font-bold tracking-tighter">
+                  Người lập phiếu
+                </p>
+                <p className="text-sm font-bold text-text-primary mt-1">
+                  {issue.createdBy.name}
+                </p>
+              </div>
+
+              {issue.approvedBy && (
                 <div>
                   <p className="text-[10px] text-text-secondary uppercase font-bold tracking-tighter">
-                    Người lập phiếu
+                    {issue.status === "APPROVED"
+                      ? "Người duyệt xuất"
+                      : "Người xử lý"}
                   </p>
-                  <p className="text-sm font-bold text-text-primary">
-                    {mockIssue.createdBy.name}
-                  </p>
-                  <p className="text-xs text-text-secondary">
-                    {mockIssue.createdBy.role}
+                  <p className="text-sm font-bold text-text-primary mt-1">
+                    {issue.approvedBy.name}
                   </p>
                 </div>
-              </div>
+              )}
 
               <hr className="border-border-ui/50" />
 
@@ -303,10 +412,24 @@ export function OutboundDetailView({ id }: OutboundDetailViewProps) {
                       Ngày khởi tạo
                     </p>
                     <p className="text-sm font-medium text-text-primary">
-                      {mockIssue.createdAt}
+                      {formatDateTime(issue.createdAt)}
                     </p>
                   </div>
                 </div>
+
+                {issue.status === "APPROVED" && (
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="w-4 h-4 text-success" />
+                    <div>
+                      <p className="text-[10px] text-text-secondary uppercase font-bold">
+                        Ngày xuất kho
+                      </p>
+                      <p className="text-sm font-medium text-text-primary">
+                        {formatDateTime(issue.issuedAt)}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -332,6 +455,59 @@ export function OutboundDetailView({ id }: OutboundDetailViewProps) {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmType === "approve"}
+        onClose={() => !approveMutation.isPending && closeConfirm()}
+        title="Duyệt phiếu xuất?"
+        message={
+          <>
+            Sau khi duyệt phiếu{" "}
+            <strong className="text-text-primary">{issue.code}</strong>, tồn
+            kho của các sản phẩm sẽ tự động bị trừ tương ứng.
+          </>
+        }
+        variant="success"
+        confirmLabel="Duyệt phiếu"
+        loading={approveMutation.isPending}
+        onConfirm={handleConfirmApprove}
+      />
+
+      <PromptDialog
+        open={confirmType === "reject"}
+        onClose={() => !rejectMutation.isPending && closeConfirm()}
+        title="Từ chối phiếu xuất?"
+        message={
+          <>
+            Vui lòng nhập lý do từ chối phiếu{" "}
+            <strong className="text-text-primary">{issue.code}</strong>.
+          </>
+        }
+        variant="danger"
+        inputLabel="Lý do từ chối"
+        placeholder="VD: Sai thông tin đơn vị nhận, tồn kho không đủ..."
+        confirmLabel="Từ chối"
+        required
+        loading={rejectMutation.isPending}
+        onConfirm={handleConfirmReject}
+      />
+
+      <ConfirmDialog
+        open={confirmType === "delete"}
+        onClose={() => !deleteMutation.isPending && closeConfirm()}
+        title="Xóa phiếu xuất?"
+        message={
+          <>
+            Bạn sắp xóa phiếu{" "}
+            <strong className="text-text-primary">{issue.code}</strong>. Hành
+            động này không thể khôi phục.
+          </>
+        }
+        variant="danger"
+        confirmLabel="Xóa phiếu"
+        loading={deleteMutation.isPending}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

@@ -408,3 +408,120 @@ export interface InboundStatsData {
   approvedToday: number;
   rejected: number;
 }
+
+// ─────────────────────────────────────────
+// OUTBOUND (GoodsIssue)
+// ─────────────────────────────────────────
+
+export type OutboundStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface OutboundUserSummary {
+  id: string;
+  name: string;
+}
+
+export interface OutboundRecipientSummary {
+  id: string;
+  name: string;
+}
+
+export interface OutboundListItem {
+  id: string;
+  code: string;
+  recipient: OutboundRecipientSummary;
+  status: OutboundStatus;
+  purpose: string | null;
+  totalAmount: number;
+  itemCount: number;
+  createdBy: OutboundUserSummary;
+  createdAt: string;
+}
+
+export interface OutboundDetailItemProduct {
+  id: string;
+  sku: string;
+  name: string;
+  unit: string;
+  currentStock: number;
+}
+
+export interface OutboundDetailItem {
+  id: string;
+  product: OutboundDetailItemProduct;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export interface OutboundRecipientDetail extends OutboundRecipientSummary {
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+}
+
+export interface OutboundDetail {
+  id: string;
+  code: string;
+  recipient: OutboundRecipientDetail;
+  status: OutboundStatus;
+  purpose: string | null;
+  note: string | null;
+  totalAmount: number;
+  createdBy: OutboundUserSummary;
+  approvedBy: OutboundUserSummary | null;
+  rejectedReason: string | null;
+  issuedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  items: OutboundDetailItem[];
+}
+
+export interface OutboundItemInput {
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface CreateOutboundInput {
+  recipientId: string;
+  purpose: string;
+  note?: string | null;
+  items: OutboundItemInput[];
+}
+
+export interface UpdateOutboundInput {
+  recipientId?: string;
+  purpose?: string;
+  note?: string | null;
+  items?: OutboundItemInput[];
+}
+
+export interface GetOutboundsQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: OutboundStatus;
+  recipientId?: string;
+  from?: string;
+  to?: string;
+}
+
+export interface RejectOutboundInput {
+  reason: string;
+}
+
+export interface OutboundStatsData {
+  thisMonth: number;
+  pending: number;
+  approvedToday: number;
+  rejected: number;
+}
+
+// ─────────────────────────────────────────
+// RECIPIENTS (placeholder — receivers module chưa build)
+// ─────────────────────────────────────────
+
+export interface RecipientSummary {
+  id: string;
+  name: string;
+}

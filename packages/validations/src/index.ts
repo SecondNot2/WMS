@@ -407,3 +407,93 @@ export const inboundIdParamsSchema = z.object({
   id: z.string().trim().min(1, "Thiếu mã phiếu nhập"),
 });
 export type InboundIdParamsSchemaInput = z.infer<typeof inboundIdParamsSchema>;
+
+// ─────────────────────────────────────────
+// OUTBOUND (GoodsIssue)
+// ─────────────────────────────────────────
+
+export const outboundItemSchema = z.object({
+  productId: z.string().trim().min(1, "Vui lòng chọn sản phẩm"),
+  quantity: z.coerce
+    .number()
+    .int("Số lượng phải là số nguyên")
+    .positive("Số lượng phải lớn hơn 0"),
+  unitPrice: z.coerce.number().nonnegative("Đơn giá không được âm"),
+});
+export type OutboundItemSchemaInput = z.infer<typeof outboundItemSchema>;
+
+const nullableOutboundNote = z
+  .string()
+  .trim()
+  .max(1000)
+  .optional()
+  .nullable()
+  .or(z.literal("").transform(() => null));
+
+export const createOutboundSchema = z.object({
+  recipientId: z.string().trim().min(1, "Vui lòng chọn đơn vị nhận"),
+  purpose: z
+    .string()
+    .trim()
+    .min(1, "Vui lòng nhập lý do xuất")
+    .max(200, "Lý do tối đa 200 ký tự"),
+  note: nullableOutboundNote,
+  items: z
+    .array(outboundItemSchema)
+    .min(1, "Phiếu xuất phải có ít nhất 1 sản phẩm"),
+});
+export type CreateOutboundSchemaInput = z.infer<typeof createOutboundSchema>;
+
+export const updateOutboundSchema = z.object({
+  recipientId: z.string().trim().min(1).optional(),
+  purpose: z.string().trim().min(1).max(200).optional(),
+  note: nullableOutboundNote,
+  items: z
+    .array(outboundItemSchema)
+    .min(1, "Phiếu xuất phải có ít nhất 1 sản phẩm")
+    .optional(),
+});
+export type UpdateOutboundSchemaInput = z.infer<typeof updateOutboundSchema>;
+
+export const getOutboundsQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  search: z.string().trim().optional(),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
+  recipientId: z.string().trim().optional(),
+  from: z
+    .string()
+    .trim()
+    .optional()
+    .refine(
+      (v) => !v || !Number.isNaN(Date.parse(v)),
+      "Ngày bắt đầu không hợp lệ",
+    ),
+  to: z
+    .string()
+    .trim()
+    .optional()
+    .refine(
+      (v) => !v || !Number.isNaN(Date.parse(v)),
+      "Ngày kết thúc không hợp lệ",
+    ),
+});
+export type GetOutboundsQuerySchemaInput = z.infer<
+  typeof getOutboundsQuerySchema
+>;
+
+export const rejectOutboundSchema = z.object({
+  reason: z
+    .string()
+    .trim()
+    .min(1, "Vui lòng nhập lý do từ chối")
+    .max(500, "Lý do tối đa 500 ký tự"),
+});
+export type RejectOutboundSchemaInput = z.infer<typeof rejectOutboundSchema>;
+
+export const outboundIdParamsSchema = z.object({
+  id: z.string().trim().min(1, "Thiếu mã phiếu xuất"),
+});
+export type OutboundIdParamsSchemaInput = z.infer<
+  typeof outboundIdParamsSchema
+>;

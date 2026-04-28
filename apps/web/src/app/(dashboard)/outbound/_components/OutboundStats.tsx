@@ -2,37 +2,37 @@
 
 import React from "react";
 import { StatsCard } from "@/components/StatsCard";
-import { Upload, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Upload, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { useOutboundStats } from "@/lib/hooks/use-outbound";
 
 export function OutboundStats() {
-  // TODO: Replace with useQuery -> GET /dashboard/stats
+  const { data, isLoading } = useOutboundStats();
+
+  const fmt = (n?: number) => (isLoading ? "…" : String(n ?? 0));
+
   const statsData = [
     {
       label: "Phiếu xuất tháng này",
-      value: "132",
-      trend: { value: "10.1%", isUp: true },
+      value: fmt(data?.thisMonth),
       icon: Upload,
       iconBg: "bg-accent/10 text-accent",
     },
     {
       label: "Đang chờ duyệt",
-      value: "18",
-      trend: { value: "3", isUp: true },
+      value: fmt(data?.pending),
       icon: Clock,
       iconBg: "bg-warning/10 text-warning",
     },
     {
       label: "Đã xuất hôm nay",
-      value: "8",
-      trend: { value: "2", isUp: true },
+      value: fmt(data?.approvedToday),
       icon: CheckCircle2,
       iconBg: "bg-success/10 text-success",
     },
     {
-      label: "Cảnh báo tồn kho",
-      value: "5",
-      trend: { value: "1", isUp: false },
-      icon: AlertTriangle,
+      label: "Bị từ chối tháng này",
+      value: fmt(data?.rejected),
+      icon: XCircle,
       iconBg: "bg-danger/10 text-danger",
     },
   ];

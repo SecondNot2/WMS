@@ -3,60 +3,20 @@
 import React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Eye, Pencil, Trash2, FileText } from "lucide-react";
+import { Eye, Pencil, Trash2, FileText, Loader2 } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
+import { ConfirmDialog } from "@/components/Dialog";
+import { useToast } from "@/components/Toast";
+import { useOutbounds, useDeleteOutbound } from "@/lib/hooks/use-outbound";
+import { getApiErrorMessage } from "@/lib/api/client";
+import type { OutboundStatus } from "@wms/types";
+import type { OutboundFilterValues } from "./OutboundFilters";
 
-type IssueStatus = "PENDING" | "APPROVED" | "REJECTED";
-
-interface OutboundIssue {
-  id: string;
-  code: string;
-  recipient: string;
-  purpose: string;
-  totalAmount: number;
-  itemCount: number;
-  createdBy: string;
-  createdAt: string;
-  status: IssueStatus;
+interface OutboundTableProps {
+  filters: OutboundFilterValues;
 }
 
-const mockIssues: OutboundIssue[] = [
-  {
-    id: "1",
-    code: "PXK-2024-0042",
-    recipient: "Chi nhánh Lạng Sơn",
-    purpose: "Xuất hàng định kỳ tháng 5",
-    totalAmount: 45000000,
-    itemCount: 5,
-    createdBy: "Nguyễn Văn A",
-    createdAt: "18/05/2024 10:30",
-    status: "PENDING",
-  },
-  {
-    id: "2",
-    code: "PXK-2024-0041",
-    recipient: "Kho trung chuyển Hà Nội",
-    purpose: "Điều chuyển hàng hóa nội bộ",
-    totalAmount: 120000000,
-    itemCount: 15,
-    createdBy: "Trần Thị B",
-    createdAt: "17/05/2024 15:45",
-    status: "APPROVED",
-  },
-  {
-    id: "3",
-    code: "PXK-2024-0040",
-    recipient: "Cửa hàng Outlet",
-    purpose: "Xuất hàng khuyến mãi",
-    totalAmount: 8500000,
-    itemCount: 2,
-    createdBy: "Lê Văn C",
-    createdAt: "16/05/2024 09:15",
-    status: "REJECTED",
-  },
-];
-
-const STATUS_STYLES: Record<IssueStatus, { label: string; cls: string }> = {
+const STATUS_STYLES: Record<OutboundStatus, { label: string; cls: string }> = {
   PENDING: { label: "Chờ duyệt", cls: "bg-warning/10 text-warning" },
   APPROVED: { label: "Đã duyệt", cls: "bg-success/10 text-success" },
   REJECTED: { label: "Từ chối", cls: "bg-danger/10 text-danger" },
@@ -68,10 +28,63 @@ const formatCurrency = (value: number) =>
     currency: "VND",
   }).format(value);
 
-export function OutboundTable() {
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(10);
-  const issues = mockIssues;
+const formatDateTime = (iso: string) => {
+  try {
+    return new Date(iso).toLocaleString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+};
+
+export function OutboundTable({ filters }: OutboundTableProps) {
+  const [page, setPage] = React.useState(1);
+  const [limit, setLimit] = React.useState(10);
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [filters]);
+
+  const query = React.useMemo(
+    () => ({
+      page,
+      limit,
+      ...(filters.search && { search: filters.search }),
+      ...(filters.status && { status: filters.status }),
+      ...(filters.recipientId && { recipientId: filters.recipientId }),
+      ...(filters.from && { from: filters.from }),
+      ...(filters.to && { to: filters.to }),
+    }),
+    [page, limit, filters],
+  );
+
+  const { data, isLoading, isError, error } = useOutbounds(query);
+  const deleteMutation = useDeleteOutbound();
+  const toast = useToast();
+
+  const [pendingDelete, setPendingDelete] = React.useState<{
+    id: string;
+    code: string;
+  } | null>(null);
+
+  const issues = data?.data ?? [];
+  const meta = data?.meta;
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) return;
+    try {
+      await deleteMutation.mutateAsync(pendingDelete.id);
+      toast.success(`Đã xóa phiếu ${pendingDelete.code}`);
+      setPendingDelete(null);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Không thể xóa phiếu"));
+    }
+  };
 
   return (
     <div className="bg-card-white rounded-xl border border-border-ui shadow-sm flex flex-col overflow-hidden">
@@ -106,7 +119,27 @@ export function OutboundTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border-ui">
-            {issues.length > 0 ? (
+            {isLoading ? (
+              <tr>
+                <td colSpan={8} className="py-20">
+                  <div className="flex flex-col items-center justify-center text-center text-text-secondary">
+                    <Loader2 className="w-6 h-6 animate-spin mb-3" />
+                    <p className="text-xs">Đang tải dữ liệu...</p>
+                  </div>
+                </td>
+              </tr>
+            ) : isError ? (
+              <tr>
+                <td colSpan={8} className="py-20">
+                  <div className="flex flex-col items-center justify-center text-center text-danger">
+                    <p className="text-sm font-bold mb-1">
+                      Không thể tải dữ liệu
+                    </p>
+                    <p className="text-xs">{getApiErrorMessage(error)}</p>
+                  </div>
+                </td>
+              </tr>
+            ) : issues.length > 0 ? (
               issues.map((issue) => {
                 const status = STATUS_STYLES[issue.status];
                 return (
@@ -123,10 +156,10 @@ export function OutboundTable() {
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-[13px] font-medium text-text-primary">
-                      {issue.recipient}
+                      {issue.recipient.name}
                     </td>
                     <td className="px-4 py-3 text-[12px] text-text-secondary line-clamp-1 max-w-50">
-                      {issue.purpose}
+                      {issue.purpose ?? "—"}
                     </td>
                     <td className="px-4 py-3 text-[13px] font-bold text-text-primary text-right">
                       {formatCurrency(issue.totalAmount)}
@@ -135,7 +168,7 @@ export function OutboundTable() {
                       {issue.itemCount}
                     </td>
                     <td className="px-4 py-3 text-[11px] text-text-secondary">
-                      {issue.createdAt}
+                      {formatDateTime(issue.createdAt)}
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -167,7 +200,15 @@ export function OutboundTable() {
                               <Pencil className="w-4 h-4" />
                             </Link>
                             <button
-                              className="p-1.5 hover:bg-danger/10 text-danger rounded-md transition-colors"
+                              type="button"
+                              onClick={() =>
+                                setPendingDelete({
+                                  id: issue.id,
+                                  code: issue.code,
+                                })
+                              }
+                              disabled={deleteMutation.isPending}
+                              className="p-1.5 hover:bg-danger/10 text-danger rounded-md transition-colors disabled:opacity-50"
                               title="Xóa"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -206,13 +247,39 @@ export function OutboundTable() {
         </table>
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={4}
-        pageSize={pageSize}
-        totalItems={36}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={setPageSize}
+      {meta && meta.total > 0 && (
+        <Pagination
+          currentPage={meta.page}
+          totalPages={meta.totalPages}
+          pageSize={limit}
+          totalItems={meta.total}
+          onPageChange={setPage}
+          onPageSizeChange={(size) => {
+            setLimit(size);
+            setPage(1);
+          }}
+        />
+      )}
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onClose={() => !deleteMutation.isPending && setPendingDelete(null)}
+        title="Xóa phiếu xuất?"
+        message={
+          pendingDelete && (
+            <>
+              Bạn sắp xóa phiếu{" "}
+              <strong className="text-text-primary">
+                {pendingDelete.code}
+              </strong>
+              . Hành động này không thể khôi phục.
+            </>
+          )
+        }
+        variant="danger"
+        confirmLabel="Xóa phiếu"
+        loading={deleteMutation.isPending}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

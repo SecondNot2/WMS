@@ -1,6 +1,33 @@
-# Vercel sẽ chỉ build apps/web — bỏ qua các thư mục không cần thiết
+# Vercel upload ignore
+
+# Dependencies / build output
+node_modules
+**/node_modules
+.next
+**/.next
+dist
+**/dist
+coverage
+**/coverage
+
+# Local env / logs
+.env
+.env.local
+.env.*.local
+*.log
+
+# Legacy backend archive
 apps/api
+apps/api.legacy
+
+# Tooling / local metadata
+.git
 .github
+.vercel
+.windsurf
+.agents
 docs
+
+# Large or non-deploy docs
 *.md
-!apps/web/**
+progress.txt

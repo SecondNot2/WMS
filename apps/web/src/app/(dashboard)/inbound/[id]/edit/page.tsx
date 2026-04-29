@@ -2,37 +2,17 @@
 
 import React from "react";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { InboundForm } from "../../_components/InboundForm";
+import { useInbound } from "@/lib/hooks/use-inbound";
+import { getApiErrorMessage } from "@/lib/api/client";
 
 export default function EditInboundPage() {
   const params = useParams();
   const id = params.id as string;
 
-  // TODO: Replace with useQuery -> GET /goods-receipts/:id
-  const mockData = {
-    supplierId: "1",
-    note: "Nhập hàng linh kiện máy tính tháng 5/2024",
-    items: [
-      {
-        productId: "p1",
-        sku: "SP001",
-        name: "Chuột không dây Logitech M331",
-        unit: "Cái",
-        quantity: 100,
-        unitPrice: 450000,
-      },
-      {
-        productId: "p2",
-        sku: "SP002",
-        name: "Bàn phím cơ Keychron K2",
-        unit: "Cái",
-        quantity: 50,
-        unitPrice: 1200000,
-      },
-    ],
-  };
+  const { data: receipt, isLoading, isError, error } = useInbound(id);
 
   return (
     <div className="p-5 w-full space-y-6">
@@ -55,7 +35,42 @@ export default function EditInboundPage() {
       </div>
 
       <div className="pl-9">
-        <InboundForm initialData={mockData} isEdit={true} />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20 text-text-secondary">
+            <Loader2 className="w-6 h-6 animate-spin mr-3" />
+            <span className="text-sm">Đang tải phiếu nhập...</span>
+          </div>
+        ) : isError || !receipt ? (
+          <div className="flex flex-col items-center justify-center py-20 text-danger">
+            <p className="text-sm font-bold mb-1">Không thể tải phiếu nhập</p>
+            <p className="text-xs text-text-secondary">
+              {getApiErrorMessage(error)}
+            </p>
+          </div>
+        ) : receipt.status !== "PENDING" ? (
+          <div className="bg-warning/5 border border-warning/20 rounded-xl p-6 text-center">
+            <p className="text-sm font-bold text-warning mb-1">
+              Không thể chỉnh sửa
+            </p>
+            <p className="text-xs text-text-secondary">
+              Chỉ có thể sửa phiếu ở trạng thái Chờ duyệt.
+            </p>
+          </div>
+        ) : (
+          <InboundForm
+            initialData={{
+              supplierId: receipt.supplier.id,
+              note: receipt.note ?? "",
+              items: receipt.items.map((item) => ({
+                productId: item.product.id,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+              })),
+            }}
+            isEdit
+            inboundId={id}
+          />
+        )}
       </div>
     </div>
   );

@@ -8,13 +8,8 @@ import { useToast } from "@/components/Toast";
 import { useDeleteRole, useRoles } from "@/lib/hooks/use-roles";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { countPermissions } from "./PermissionMatrix";
+import { ROLE_LABELS } from "@/lib/permissions";
 import type { RoleEntity } from "@wms/types";
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Quản trị viên",
-  WAREHOUSE_STAFF: "Thủ kho",
-  ACCOUNTANT: "Kế toán",
-};
 
 const ROLE_DESCRIPTIONS: Record<string, string> = {
   ADMIN: "Toàn quyền hệ thống, duyệt phiếu và quản lý người dùng",

@@ -10,6 +10,7 @@ import {
 } from "./_components/SupplierFiltersConnected";
 import { SupplierStatsSidebarConnected } from "./_components/SupplierStatsSidebarConnected";
 import { SupplierTableConnected } from "./_components/SupplierTableConnected";
+import { Can } from "@/components/Can";
 import type { GetSuppliersQuery } from "@wms/types";
 
 function toQueryFilters(
@@ -52,12 +53,14 @@ export default function SuppliersPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            href="/suppliers/new"
-            className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
-          >
-            <Plus className="w-4 h-4" /> Thêm nhà cung cấp
-          </Link>
+          <Can action="supplier.create">
+            <Link
+              href="/suppliers/new"
+              className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
+            >
+              <Plus className="w-4 h-4" /> Thêm nhà cung cấp
+            </Link>
+          </Can>
         </div>
       </div>
 

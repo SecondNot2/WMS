@@ -3,6 +3,7 @@
 import React from "react";
 import { Filter, RotateCcw, Search, Shield } from "lucide-react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import { ROLE_LABELS } from "@/lib/permissions";
 import type { RoleEntity } from "@wms/types";
 
 export interface UserFilterValues {
@@ -17,12 +18,6 @@ interface UserFiltersProps {
   roles: RoleEntity[];
   isLoadingRoles?: boolean;
 }
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Quản trị viên",
-  WAREHOUSE_STAFF: "Thủ kho",
-  ACCOUNTANT: "Kế toán",
-};
 
 const labelOf = (name: string) => ROLE_LABELS[name] ?? name;
 

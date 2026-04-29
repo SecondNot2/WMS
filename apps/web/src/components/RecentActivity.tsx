@@ -35,6 +35,17 @@ function formatRelative(dateStr: string): string {
   }).format(new Date(dateStr));
 }
 
+const targetTypeLabel: Record<string, string> = {
+  GoodsReceipt: "Phiếu nhập",
+  GoodsIssue: "Phiếu xuất",
+  Product: "Sản phẩm",
+  Category: "Danh mục",
+  Supplier: "Nhà cung cấp",
+  Recipient: "Đơn vị nhận",
+  User: "Người dùng",
+  Role: "Vai trò",
+};
+
 const targetIconMap: Record<string, { icon: LucideIcon; color: string }> = {
   GoodsReceipt: { icon: Download, color: "bg-success/10 text-success" },
   GoodsIssue: { icon: Upload, color: "bg-warning/10 text-warning" },
@@ -115,7 +126,11 @@ export function RecentActivity() {
               color: "bg-background-app text-text-secondary",
             };
             const href = getTargetHref(log);
-            const target = log.targetCode ?? log.detail ?? log.targetType ?? "";
+            const target =
+              log.targetCode ??
+              (log.targetType
+                ? (targetTypeLabel[log.targetType] ?? log.targetType)
+                : "");
             return (
               <div
                 key={log.id}

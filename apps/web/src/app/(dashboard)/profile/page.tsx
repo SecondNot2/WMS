@@ -15,12 +15,7 @@ import { useMe } from "@/lib/hooks/use-auth";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { ProfileInfoForm } from "./_components/ProfileInfoForm";
 import { ChangePasswordForm } from "./_components/ChangePasswordForm";
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Quản trị viên",
-  WAREHOUSE_STAFF: "Thủ kho",
-  ACCOUNTANT: "Kế toán",
-};
+import { ROLE_LABELS } from "@/lib/permissions";
 
 type TabKey = "info" | "password";
 

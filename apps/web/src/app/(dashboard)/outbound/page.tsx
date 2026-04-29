@@ -12,6 +12,7 @@ import { OutboundTable } from "./_components/OutboundTable";
 import { outboundApi } from "@/lib/api/outbound";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { useToast } from "@/components/Toast";
+import { Can } from "@/components/Can";
 
 const DEFAULT_FILTERS: OutboundFilterValues = {
   search: "",
@@ -81,12 +82,14 @@ export default function OutboundPage() {
             )}
             {exporting ? "Đang xuất..." : "Xuất báo cáo"}
           </button>
-          <Link
-            href="/outbound/new"
-            className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
-          >
-            <Plus className="w-4 h-4" /> Lập phiếu xuất
-          </Link>
+          <Can action="issue.create">
+            <Link
+              href="/outbound/new"
+              className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
+            >
+              <Plus className="w-4 h-4" /> Lập phiếu xuất
+            </Link>
+          </Can>
         </div>
       </div>
 

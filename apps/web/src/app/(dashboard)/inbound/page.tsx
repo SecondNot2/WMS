@@ -12,6 +12,7 @@ import { InboundTable } from "./_components/InboundTable";
 import { inboundApi } from "@/lib/api/inbound";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { useToast } from "@/components/Toast";
+import { Can } from "@/components/Can";
 
 const DEFAULT_FILTERS: InboundFilterValues = {
   search: "",
@@ -81,12 +82,14 @@ export default function InboundPage() {
             )}
             {exporting ? "Đang xuất..." : "Xuất báo cáo"}
           </button>
-          <Link
-            href="/inbound/new"
-            className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
-          >
-            <Plus className="w-4 h-4" /> Lập phiếu nhập
-          </Link>
+          <Can action="receipt.create">
+            <Link
+              href="/inbound/new"
+              className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
+            >
+              <Plus className="w-4 h-4" /> Lập phiếu nhập
+            </Link>
+          </Can>
         </div>
       </div>
 

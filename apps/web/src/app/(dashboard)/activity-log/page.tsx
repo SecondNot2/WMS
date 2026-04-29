@@ -116,10 +116,88 @@ function formatTime(value: string) {
   }).format(new Date(value));
 }
 
-function getDetail(log: ActivityLog) {
-  if (log.detail) return log.detail;
-  if (log.targetCode) return `${getActionLabel(log.action)} ${log.targetCode}`;
-  return log.action;
+const currencyFmt = new Intl.NumberFormat("vi-VN");
+
+const DETAIL_KEY_LABELS: Record<string, string> = {
+  itemCount: "sản phẩm",
+  totalAmount: "tổng",
+  quantity: "số lượng",
+  stockBefore: "tồn trước",
+  stockAfter: "tồn sau",
+  reason: "lý do",
+  name: "tên",
+  sku: "SKU",
+  email: "email",
+  phone: "điện thoại",
+  purpose: "mục đích",
+  note: "ghi chú",
+  isActive: "trạng thái",
+  status: "trạng thái",
+};
+
+const SKIP_KEYS = new Set([
+  "supplierId",
+  "recipientId",
+  "categoryId",
+  "productId",
+  "userId",
+  "roleId",
+  "id",
+]);
+
+function formatDetailValue(key: string, value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  if (key === "itemCount") return `${value} sản phẩm`;
+  if (key === "totalAmount" || key === "stockValue") {
+    return `tổng ${currencyFmt.format(Number(value))}đ`;
+  }
+  if (key === "stockBefore" || key === "stockAfter") {
+    return `${DETAIL_KEY_LABELS[key]}: ${currencyFmt.format(Number(value))}`;
+  }
+  if (key === "isActive") return value ? "kích hoạt" : "vô hiệu";
+  if (typeof value === "boolean") return value ? "có" : "không";
+  if (typeof value === "object") return null;
+  const label = DETAIL_KEY_LABELS[key] ?? key;
+  return `${label}: ${String(value)}`;
+}
+
+function parseDetail(raw: string | null): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return trimmed;
+  try {
+    const parsed = JSON.parse(trimmed) as Record<string, unknown>;
+    if (parsed === null || typeof parsed !== "object") return trimmed;
+
+    // stockBefore + stockAfter → "tồn: A → B"
+    const entries = Object.entries(parsed).filter(([k]) => !SKIP_KEYS.has(k));
+    if (entries.length === 0) return null;
+
+    if ("stockBefore" in parsed && "stockAfter" in parsed) {
+      const before = currencyFmt.format(Number(parsed.stockBefore));
+      const after = currencyFmt.format(Number(parsed.stockAfter));
+      const others = entries
+        .filter(([k]) => k !== "stockBefore" && k !== "stockAfter")
+        .map(([k, v]) => formatDetailValue(k, v))
+        .filter((s): s is string => Boolean(s));
+      return [`tồn: ${before} → ${after}`, ...others].join(" • ");
+    }
+
+    const parts = entries
+      .map(([k, v]) => formatDetailValue(k, v))
+      .filter((s): s is string => Boolean(s));
+    return parts.length > 0 ? parts.join(" • ") : null;
+  } catch {
+    return trimmed;
+  }
+}
+
+function getDetail(log: ActivityLog): string {
+  const parsed = parseDetail(log.detail);
+  if (log.targetCode && parsed) return `${log.targetCode} • ${parsed}`;
+  if (log.targetCode) return log.targetCode;
+  if (parsed) return parsed;
+  return getActionLabel(log.action);
 }
 
 export default function GlobalActivityLogPage() {

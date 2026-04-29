@@ -22,16 +22,11 @@ import {
   useUser,
 } from "@/lib/hooks/use-users";
 import { useAuthStore } from "@/lib/store";
+import { ROLE_LABELS } from "@/lib/permissions";
 
 interface UserDetailViewProps {
   id: string;
 }
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Quản trị viên",
-  WAREHOUSE_STAFF: "Thủ kho",
-  ACCOUNTANT: "Kế toán",
-};
 
 const formatDateTime = (iso?: string) => {
   if (!iso) return "—";

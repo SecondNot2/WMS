@@ -17,13 +17,8 @@ import { useRoles } from "@/lib/hooks/use-roles";
 import { useCreateUser, useUpdateUser } from "@/lib/hooks/use-users";
 import { useToast } from "@/components/Toast";
 import { getApiErrorMessage } from "@/lib/api/client";
+import { ROLE_LABELS } from "@/lib/permissions";
 import type { User } from "@wms/types";
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Quản trị viên",
-  WAREHOUSE_STAFF: "Thủ kho",
-  ACCOUNTANT: "Kế toán",
-};
 
 interface UserFormProps {
   initialData?: User;

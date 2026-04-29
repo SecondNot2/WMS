@@ -45,7 +45,8 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
-    const isAuthEndpoint = original?.url?.includes("/auth/login") ||
+    const isAuthEndpoint =
+      original?.url?.includes("/auth/login") ||
       original?.url?.includes("/auth/refresh");
 
     if (
@@ -72,15 +73,39 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
+const ROLE_LABELS_VI: Record<string, string> = {
+  ADMIN: "Quản trị viên",
+  WAREHOUSE_STAFF: "Thủ kho",
+  ACCOUNTANT: "Kế toán",
+};
+
 // Helper extract error message from API
-export function getApiErrorMessage(error: unknown, fallback = "Đã xảy ra lỗi"): string {
+export function getApiErrorMessage(
+  error: unknown,
+  fallback = "Đã xảy ra lỗi",
+): string {
   if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
     const data = error.response?.data as
-      | { error?: { message?: string } }
+      | { error?: { message?: string; code?: string } }
       | undefined;
+
+    // 403 — làm giàu message với role hiện tại + gợi ý liên hệ Admin
+    if (status === 403 || data?.error?.code === "FORBIDDEN") {
+      const role = useAuthStore.getState().user?.role;
+      const roleLabel = role ? (ROLE_LABELS_VI[role] ?? role) : null;
+      const base =
+        data?.error?.message ?? "Bạn không có quyền thực hiện thao tác này";
+      const suffix = roleLabel
+        ? ` (vai trò ${roleLabel}). Vui lòng liên hệ Quản trị viên nếu bạn cần quyền này.`
+        : ". Vui lòng liên hệ Quản trị viên nếu bạn cần quyền này.";
+      // Tránh double-suffix nếu backend đã trả message dài
+      return base.endsWith(".") || base.length > 60 ? base : base + suffix;
+    }
+
     return data?.error?.message ?? error.message ?? fallback;
   }
   if (error instanceof Error) return error.message;

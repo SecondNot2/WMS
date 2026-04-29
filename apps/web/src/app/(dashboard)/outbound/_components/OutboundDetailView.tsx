@@ -26,6 +26,7 @@ import {
 import { getApiErrorMessage } from "@/lib/api/client";
 import { ConfirmDialog, PromptDialog } from "@/components/Dialog";
 import { useToast } from "@/components/Toast";
+import { Can } from "@/components/Can";
 import type { OutboundStatus } from "@wms/types";
 
 interface OutboundDetailViewProps {
@@ -175,39 +176,47 @@ export function OutboundDetailView({ id }: OutboundDetailViewProps) {
 
         {issue.status === "PENDING" && (
           <div className="flex items-center gap-2 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setConfirmType("approve")}
-              disabled={isPending}
-              className="flex items-center gap-2 bg-success hover:bg-success/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
-            >
-              <CheckCircle2 className="w-4 h-4" /> Duyệt xuất
-            </button>
-            <button
-              type="button"
-              onClick={() => setConfirmType("reject")}
-              disabled={isPending}
-              className="flex items-center gap-2 bg-danger hover:bg-danger/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
-            >
-              <XCircle className="w-4 h-4" /> Từ chối
-            </button>
+            <Can action="issue.approve">
+              <button
+                type="button"
+                onClick={() => setConfirmType("approve")}
+                disabled={isPending}
+                className="flex items-center gap-2 bg-success hover:bg-success/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+              >
+                <CheckCircle2 className="w-4 h-4" /> Duyệt xuất
+              </button>
+            </Can>
+            <Can action="issue.reject">
+              <button
+                type="button"
+                onClick={() => setConfirmType("reject")}
+                disabled={isPending}
+                className="flex items-center gap-2 bg-danger hover:bg-danger/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+              >
+                <XCircle className="w-4 h-4" /> Từ chối
+              </button>
+            </Can>
             <div className="w-px h-8 bg-border-ui mx-1" />
-            <button
-              type="button"
-              onClick={() => router.push(`/outbound/${id}/edit`)}
-              disabled={isPending}
-              className="flex items-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
-            >
-              <Pencil className="w-4 h-4" /> Sửa
-            </button>
-            <button
-              type="button"
-              onClick={() => setConfirmType("delete")}
-              disabled={isPending}
-              className="flex items-center gap-2 bg-card-white border border-danger/20 text-danger hover:bg-danger/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
-            >
-              <Trash2 className="w-4 h-4" /> Xóa
-            </button>
+            <Can action="issue.update">
+              <button
+                type="button"
+                onClick={() => router.push(`/outbound/${id}/edit`)}
+                disabled={isPending}
+                className="flex items-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+              >
+                <Pencil className="w-4 h-4" /> Sửa
+              </button>
+            </Can>
+            <Can action="issue.delete">
+              <button
+                type="button"
+                onClick={() => setConfirmType("delete")}
+                disabled={isPending}
+                className="flex items-center gap-2 bg-card-white border border-danger/20 text-danger hover:bg-danger/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+              >
+                <Trash2 className="w-4 h-4" /> Xóa
+              </button>
+            </Can>
           </div>
         )}
       </div>
@@ -463,8 +472,8 @@ export function OutboundDetailView({ id }: OutboundDetailViewProps) {
         message={
           <>
             Sau khi duyệt phiếu{" "}
-            <strong className="text-text-primary">{issue.code}</strong>, tồn
-            kho của các sản phẩm sẽ tự động bị trừ tương ứng.
+            <strong className="text-text-primary">{issue.code}</strong>, tồn kho
+            của các sản phẩm sẽ tự động bị trừ tương ứng.
           </>
         }
         variant="success"

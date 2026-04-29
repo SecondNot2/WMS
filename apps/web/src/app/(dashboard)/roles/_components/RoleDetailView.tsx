@@ -6,16 +6,11 @@ import { Pencil, Shield, Users } from "lucide-react";
 import { PermissionMatrix, countPermissions } from "./PermissionMatrix";
 import { useRole } from "@/lib/hooks/use-roles";
 import { getApiErrorMessage } from "@/lib/api/client";
+import { ROLE_LABELS } from "@/lib/permissions";
 
 interface RoleDetailViewProps {
   id: string;
 }
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Quản trị viên",
-  WAREHOUSE_STAFF: "Thủ kho",
-  ACCOUNTANT: "Kế toán",
-};
 
 const ROLE_DESCRIPTIONS: Record<string, string> = {
   ADMIN: "Toàn quyền hệ thống, duyệt phiếu và quản lý người dùng",

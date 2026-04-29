@@ -14,13 +14,8 @@ import {
   useUsers,
 } from "@/lib/hooks/use-users";
 import { useAuthStore } from "@/lib/store";
+import { ROLE_LABELS } from "@/lib/permissions";
 import type { User } from "@wms/types";
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Quản trị viên",
-  WAREHOUSE_STAFF: "Thủ kho",
-  ACCOUNTANT: "Kế toán",
-};
 
 const ROLE_STYLES: Record<string, string> = {
   ADMIN: "bg-info/10 text-info",

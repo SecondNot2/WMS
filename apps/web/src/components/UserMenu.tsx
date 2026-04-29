@@ -6,12 +6,7 @@ import { ChevronDown, KeyRound, LogOut, UserRound } from "lucide-react";
 import { useLogout } from "@/lib/hooks/use-auth";
 import type { AuthUser } from "@wms/types";
 import { cn } from "@/lib/utils";
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Quản trị viên",
-  WAREHOUSE_STAFF: "Thủ kho",
-  ACCOUNTANT: "Kế toán",
-};
+import { ROLE_LABELS } from "@/lib/permissions";
 
 interface UserMenuProps {
   user: AuthUser | null;
@@ -52,7 +47,7 @@ export function UserMenu({
   }, [open]);
 
   const displayName = user?.name ?? "Đang tải...";
-  const roleLabel = user ? ROLE_LABELS[user.role] ?? user.role : "—";
+  const roleLabel = user ? (ROLE_LABELS[user.role] ?? user.role) : "—";
   const email = user?.email ?? "—";
   const avatar = avatarUrl(user);
 

@@ -1,68 +1,102 @@
-# Warehouse Management System (WMS) Frontend
+# Warehouse Management System (WMS)
 
-A modern, responsive frontend dashboard for the Warehouse Management System, built with Next.js 16, React 19, and Tailwind CSS 4.
+Hệ thống quản lý kho (WMS) hiện đại, hiệu năng cao dành cho logistics cửa khẩu. Dự án được xây dựng dưới dạng **Monorepo** giúp quản lý đồng bộ cả Backend, Frontend và các gói thư viện dùng chung.
 
-## Features
+---
 
-- **Dashboard Overview**: Real-time statistics and data visualization using Recharts.
-- **Inventory Management**: Track and manage warehouse stock (WIP).
-- **Responsive Design**: Fully optimized for both desktop and mobile devices.
-- **State Management**: Robust state management using Zustand.
-- **Form Handling**: Efficient form validation with React Hook Form and Zod.
+## 🏗️ Cấu trúc dự án (Monorepo)
 
-## Technology Stack
+Dự án sử dụng `pnpm workspaces` để quản lý các gói:
 
-- **Framework**: [Next.js 16](https://nextjs.org/)
-- **UI Library**: [React 19](https://react.dev/)
-- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Charts**: [Recharts](https://recharts.org/)
-- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/)
-- **Validation**: [Zod](https://zod.dev/) & [React Hook Form](https://react-hook-form.com/)
+- **`apps/web`**: Frontend dashboard xây dựng bằng Next.js 16 (App Router).
+- **`apps/api`**: Backend RESTful API xây dựng bằng Express, Prisma và PostgreSQL.
+- **`packages/types`**: Chứa các TypeScript interface/types dùng chung cho cả Web và API.
+- **`packages/validations`**: Định nghĩa các schema Zod để validate dữ liệu ở cả hai đầu.
+- **`packages/config`**: Các cấu hình dùng chung (ESLint, Prettier, Shared Config).
 
-## Getting Started
+---
 
-### Prerequisites
+## 🚀 Công nghệ sử dụng
 
-- Node.js (Latest LTS recommended)
-- npm or pnpm
+### Frontend (`apps/web`)
+- **Framework**: Next.js 16 (App Router) + React 19
+- **Styling**: Tailwind CSS 4 (với hệ thống `@theme` variables)
+- **State Management**: Zustand v5
+- **Data Fetching**: TanStack Query v5 (React Query)
+- **Form**: React Hook Form + Zod
+- **Visualization**: Recharts v3
+- **Icons**: Lucide React
 
-### Installation
+### Backend (`apps/api`)
+- **Runtime**: Node.js v20+
+- **Framework**: Express.js
+- **ORM**: Prisma v5 (PostgreSQL)
+- **Authentication**: JWT (Access Token & Refresh Token)
+- **Logger**: Winston + Morgan
+- **File Handling**: Multer (Upload ảnh) & XLSX (Xử lý Excel)
 
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   ```
+---
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+## 🛠️ Hướng dẫn cài đặt
 
-### Development
+### 1. Yêu cầu hệ thống
+- **Node.js**: >= 20.x
+- **pnpm**: >= 10.x (Bắt buộc để quản lý Monorepo)
 
-Run the development server:
-
+### 2. Cài đặt Dependencies
+Từ thư mục gốc của dự án, chạy:
 ```bash
-npm run dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Cấu hình biến môi trường
+Tạo file `.env` từ các file mẫu trong từng folder ứng dụng:
+- Tại `apps/api/.env`: Cấu hình `DATABASE_URL` (PostgreSQL) và `JWT_SECRET`.
+- Tại `apps/web/.env`: Cấu hình `NEXT_PUBLIC_API_URL` trỏ về Backend.
 
-### Production
-
-Build the application for production:
-
+### 4. Thiết lập Cơ sở dữ liệu (Backend)
 ```bash
-npm run build
+cd apps/api
+pnpm db:generate  # Tạo Prisma Client
+pnpm db:push      # Đẩy schema lên database
+pnpm db:seed      # Khởi tạo dữ liệu mẫu (Admin, Roles, v.v.)
 ```
 
-Start the production server:
+---
 
-```bash
-npm run start
-```
+## 💻 Lệnh phát triển
 
-## License
+Chạy các lệnh sau tại thư mục gốc:
 
-Private / Internal Project.
+- **Phát triển toàn bộ dự án (cả Web & API):**
+  ```bash
+  pnpm dev
+  ```
+
+- **Chỉ chạy Frontend:**
+  ```bash
+  pnpm dev:web
+  ```
+
+- **Chỉ chạy Backend:**
+  ```bash
+  pnpm dev:api
+  ```
+
+- **Kiểm tra lỗi TypeScript:**
+  ```bash
+  pnpm type-check
+  ```
+
+---
+
+## 🎨 Quy chuẩn Design (Frontend)
+Dự án tuân thủ nghiêm ngặt hệ thống thiết kế tại `docs/DESIGN.md`:
+- Sử dụng màu sắc qua **CSS Variables** của Tailwind 4 (VD: `bg-card-white`, `text-text-primary`).
+- Tuyệt đối không hardcode mã màu Hex trong component.
+- Ưu tiên tái sử dụng các Shared Components trong `src/components/`.
+
+---
+
+## 📄 Giấy phép
+Dự án nội bộ / Bản quyền thuộc về SecondNot2.

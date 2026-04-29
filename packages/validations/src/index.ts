@@ -687,3 +687,132 @@ export const getActivityLogsQuerySchema = z.object({
 export type GetActivityLogsQuerySchemaInput = z.infer<
   typeof getActivityLogsQuerySchema
 >;
+
+// ─────────────────────────────────────────
+// SYSTEM SETTINGS
+// ─────────────────────────────────────────
+
+export const settingsKeySchema = z.enum([
+  "general",
+  "alerts",
+  "security",
+  "integrations",
+]);
+export type SettingsKeyInput = z.infer<typeof settingsKeySchema>;
+
+export const settingsKeyParamsSchema = z.object({
+  key: settingsKeySchema,
+});
+
+const optionalNullableUrl = z
+  .union([z.string().trim().url("URL không hợp lệ"), z.literal("")])
+  .nullable()
+  .optional()
+  .transform((v) => (v === "" || v === undefined ? null : v));
+
+const optionalNullableEmail = z
+  .union([
+    z.string().trim().toLowerCase().email("Email không hợp lệ"),
+    z.literal(""),
+  ])
+  .nullable()
+  .optional()
+  .transform((v) => (v === "" || v === undefined ? null : v));
+
+const optionalNullableString = (max = 255) =>
+  z
+    .union([z.string().trim().max(max), z.literal("")])
+    .nullable()
+    .optional()
+    .transform((v) => (v === "" || v === undefined ? null : v));
+
+export const generalSettingsSchema = z.object({
+  systemName: z
+    .string()
+    .trim()
+    .min(1, "Tên hệ thống không được để trống")
+    .max(100),
+  warehouseCode: z.string().trim().min(1, "Mã kho không được để trống").max(50),
+  warehouseName: z
+    .string()
+    .trim()
+    .min(1, "Tên kho không được để trống")
+    .max(150),
+  adminEmail: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Email quản trị không hợp lệ"),
+  address: z.string().trim().max(500).default(""),
+});
+export type GeneralSettingsInput = z.infer<typeof generalSettingsSchema>;
+
+export const updateGeneralSettingsSchema = generalSettingsSchema.partial();
+export type UpdateGeneralSettingsSchemaInput = z.infer<
+  typeof updateGeneralSettingsSchema
+>;
+
+export const alertSettingsSchema = z.object({
+  lowStockPercent: z.coerce
+    .number()
+    .int("Phải là số nguyên")
+    .min(0, "Không được nhỏ hơn 0")
+    .max(1000, "Giá trị quá lớn"),
+  pendingHours: z.coerce
+    .number()
+    .int("Phải là số nguyên")
+    .min(0)
+    .max(720, "Tối đa 720 giờ"),
+  summaryFrequency: z.enum(["realtime", "daily", "weekly"]),
+  emailLowStock: z.boolean(),
+  emailPendingOverdue: z.boolean(),
+  emailIssueRejected: z.boolean(),
+});
+export type AlertSettingsInput = z.infer<typeof alertSettingsSchema>;
+
+export const updateAlertSettingsSchema = alertSettingsSchema.partial();
+export type UpdateAlertSettingsSchemaInput = z.infer<
+  typeof updateAlertSettingsSchema
+>;
+
+export const securitySettingsSchema = z.object({
+  accessTokenMinutes: z.coerce
+    .number()
+    .int()
+    .min(1, "Tối thiểu 1 phút")
+    .max(1440, "Tối đa 1440 phút"),
+  refreshTokenDays: z.coerce
+    .number()
+    .int()
+    .min(1, "Tối thiểu 1 ngày")
+    .max(365, "Tối đa 365 ngày"),
+  maxFailedLogin: z.coerce
+    .number()
+    .int()
+    .min(1, "Tối thiểu 1 lần")
+    .max(20, "Tối đa 20 lần"),
+  requirePeriodicReset: z.boolean(),
+  autoLockInactive: z.boolean(),
+});
+export type SecuritySettingsInput = z.infer<typeof securitySettingsSchema>;
+
+export const updateSecuritySettingsSchema = securitySettingsSchema.partial();
+export type UpdateSecuritySettingsSchemaInput = z.infer<
+  typeof updateSecuritySettingsSchema
+>;
+
+export const integrationSettingsSchema = z.object({
+  webhookUrl: optionalNullableUrl,
+  defaultReportFormat: z.enum(["xlsx", "pdf", "csv"]),
+  smtpHost: optionalNullableString(255),
+  notificationEmail: optionalNullableEmail,
+});
+export type IntegrationSettingsInput = z.infer<
+  typeof integrationSettingsSchema
+>;
+
+export const updateIntegrationSettingsSchema =
+  integrationSettingsSchema.partial();
+export type UpdateIntegrationSettingsSchemaInput = z.infer<
+  typeof updateIntegrationSettingsSchema
+>;

@@ -867,3 +867,73 @@ export interface GetActivityLogsQuery {
   from?: string;
   to?: string;
 }
+
+// ─────────────────────────────────────────
+// SYSTEM SETTINGS
+// ─────────────────────────────────────────
+
+export type SettingsKey = "general" | "alerts" | "security" | "integrations";
+
+export type SummaryFrequency = "realtime" | "daily" | "weekly";
+export type ReportFormat = "xlsx" | "pdf" | "csv";
+
+export interface GeneralSettings {
+  systemName: string;
+  warehouseCode: string;
+  warehouseName: string;
+  adminEmail: string;
+  address: string;
+}
+
+export interface AlertSettings {
+  lowStockPercent: number;
+  pendingHours: number;
+  summaryFrequency: SummaryFrequency;
+  emailLowStock: boolean;
+  emailPendingOverdue: boolean;
+  emailIssueRejected: boolean;
+}
+
+export interface SecuritySettings {
+  accessTokenMinutes: number;
+  refreshTokenDays: number;
+  maxFailedLogin: number;
+  requirePeriodicReset: boolean;
+  autoLockInactive: boolean;
+}
+
+export interface IntegrationSettings {
+  webhookUrl: string | null;
+  defaultReportFormat: ReportFormat;
+  smtpHost: string | null;
+  notificationEmail: string | null;
+}
+
+export interface SystemSettings {
+  general: GeneralSettings;
+  alerts: AlertSettings;
+  security: SecuritySettings;
+  integrations: IntegrationSettings;
+}
+
+export type UpdateGeneralSettingsInput = Partial<GeneralSettings>;
+export type UpdateAlertSettingsInput = Partial<AlertSettings>;
+export type UpdateSecuritySettingsInput = Partial<SecuritySettings>;
+export type UpdateIntegrationSettingsInput = Partial<IntegrationSettings>;
+
+export interface SystemSettingMeta {
+  updatedAt: string | null;
+  updatedBy: { id: string; name: string; email: string } | null;
+}
+
+export interface SystemSettingsMetaMap {
+  general: SystemSettingMeta;
+  alerts: SystemSettingMeta;
+  security: SystemSettingMeta;
+  integrations: SystemSettingMeta;
+}
+
+export interface SystemSettingsResponse {
+  values: SystemSettings;
+  meta: SystemSettingsMetaMap;
+}

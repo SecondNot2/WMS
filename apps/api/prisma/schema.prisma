@@ -36,9 +36,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  goodsReceipts GoodsReceipt[] @relation("ReceiptCreatedBy")
-  goodsIssues   GoodsIssue[]   @relation("IssueCreatedBy")
-  activityLogs  ActivityLog[]
+  goodsReceipts        GoodsReceipt[]  @relation("ReceiptCreatedBy")
+  goodsIssues          GoodsIssue[]    @relation("IssueCreatedBy")
+  activityLogs         ActivityLog[]
+  updatedSystemSettings SystemSetting[] @relation("SystemSettingUpdatedBy")
 
   @@index([roleId])
   @@index([isActive])
@@ -265,6 +266,22 @@ enum StockType {
   IN
   OUT
   ADJUST
+}
+
+// ─────────────────────────────────────────
+// SYSTEM SETTINGS
+// ─────────────────────────────────────────
+
+model SystemSetting {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  value         Json
+  updatedById   String?
+  updatedBy     User?    @relation("SystemSettingUpdatedBy", fields: [updatedById], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("system_settings")
 }
 
 // ─────────────────────────────────────────

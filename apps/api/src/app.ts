@@ -21,6 +21,7 @@ import alertsRoutes from "./routes/alerts.routes";
 import reportsRoutes from "./routes/reports.routes";
 import statisticsRoutes from "./routes/statistics.routes";
 import activityLogRoutes from "./routes/activityLog.routes";
+import settingsRoutes from "./routes/settings.routes";
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use("/alerts", alertsRoutes);
 app.use("/reports", reportsRoutes);
 app.use("/statistics", statisticsRoutes);
 app.use("/activity-log", activityLogRoutes);
+app.use("/settings", settingsRoutes);
 
 // 404 handler
 app.use((req, res) => {

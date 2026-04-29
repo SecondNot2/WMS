@@ -2,19 +2,24 @@
 
 import React from "react";
 import {
+  AlertTriangle,
   Bell,
-  Building2,
   Database,
-  KeyRound,
-  Mail,
-  Save,
-  Settings,
+  Loader2,
+  RotateCcw,
   ShieldCheck,
-  SlidersHorizontal,
   Warehouse,
 } from "lucide-react";
-import { Combobox } from "@/components/ui/Combobox";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/Toast";
+import { ConfirmDialog } from "@/components/Dialog";
+import { useAuthStore } from "@/lib/store";
+import { getApiErrorMessage } from "@/lib/api/client";
+import { useResetSettings, useSettings } from "@/lib/hooks/use-settings";
+import { GeneralSettingsForm } from "./_components/GeneralSettingsForm";
+import { AlertSettingsForm } from "./_components/AlertSettingsForm";
+import { SecuritySettingsForm } from "./_components/SecuritySettingsForm";
+import { IntegrationSettingsForm } from "./_components/IntegrationSettingsForm";
 
 const tabs = [
   { id: "general", label: "Thông tin kho", icon: Warehouse },
@@ -25,17 +30,69 @@ const tabs = [
 
 type SettingsTab = (typeof tabs)[number]["id"];
 
-const inputClassName =
-  "w-full px-3 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors";
-const labelClassName = "text-xs text-text-secondary font-semibold";
+type DirtyMap = Record<SettingsTab, boolean>;
+
+const INITIAL_DIRTY: DirtyMap = {
+  general: false,
+  alerts: false,
+  security: false,
+  integrations: false,
+};
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = React.useState<SettingsTab>("general");
-  const [frequency, setFrequency] = React.useState<string>("daily");
-  const [reportFormat, setReportFormat] = React.useState<string>("xlsx");
+  const [dirtyMap, setDirtyMap] = React.useState<DirtyMap>(INITIAL_DIRTY);
+  const [pendingTab, setPendingTab] = React.useState<SettingsTab | null>(null);
+  const [resetOpen, setResetOpen] = React.useState(false);
+
+  const role = useAuthStore((s) => s.user?.role);
+  const canEdit = role === "ADMIN";
+  const toast = useToast();
+
+  const { data, isLoading, error, refetch } = useSettings();
+  const resetMutation = useResetSettings();
+
+  const handleDirtyChange = React.useCallback(
+    (tab: SettingsTab) => (dirty: boolean) =>
+      setDirtyMap((prev) =>
+        prev[tab] === dirty ? prev : { ...prev, [tab]: dirty },
+      ),
+    [],
+  );
+
+  const requestSwitchTab = (next: SettingsTab) => {
+    if (next === activeTab) return;
+    if (dirtyMap[activeTab]) {
+      setPendingTab(next);
+      return;
+    }
+    setActiveTab(next);
+  };
+
+  const confirmDiscardSwitch = () => {
+    if (pendingTab) {
+      // Reset dirty flag của tab cũ — form sẽ remount với defaults từ server
+      setDirtyMap((prev) => ({ ...prev, [activeTab]: false }));
+      setActiveTab(pendingTab);
+      setPendingTab(null);
+    }
+  };
+
+  const handleReset = async () => {
+    try {
+      await resetMutation.mutateAsync();
+      setDirtyMap(INITIAL_DIRTY);
+      setResetOpen(false);
+      toast.success("Đã khôi phục cấu hình mặc định");
+    } catch (e) {
+      toast.error(getApiErrorMessage(e, "Không thể khôi phục cấu hình"));
+    }
+  };
+
+  const hasAnyDirty = Object.values(dirtyMap).some(Boolean);
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-text-primary">
@@ -45,20 +102,38 @@ export default function SettingsPage() {
             Cấu hình thông tin kho, cảnh báo, bảo mật và tích hợp dữ liệu
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20">
-          <Save className="w-4 h-4" /> Lưu cấu hình
-        </button>
+        {hasAnyDirty && (
+          <span className="inline-flex items-center gap-2 text-xs font-medium text-warning bg-warning/10 border border-warning/20 px-3 py-1.5 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-warning" />
+            Có thay đổi chưa lưu
+          </span>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
-        <aside className="xl:col-span-3 bg-card-white rounded-xl border border-border-ui shadow-sm p-3 h-fit">
-          <nav className="space-y-1">
+      {!canEdit && (
+        <div className="flex items-start gap-3 rounded-xl border border-warning/20 bg-warning/5 p-4">
+          <AlertTriangle className="w-5 h-5 text-warning mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-text-primary">
+              Chế độ chỉ xem
+            </p>
+            <p className="text-xs text-text-secondary mt-1">
+              Chỉ Quản trị viên (ADMIN) mới có quyền chỉnh sửa cấu hình hệ thống.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <aside className="xl:col-span-3 bg-card-white rounded-xl border border-border-ui shadow-sm p-4 h-fit">
+          <nav className="space-y-1.5">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
+              const isDirty = dirtyMap[tab.id];
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => requestSwitchTab(tab.id)}
                   className={cn(
                     "w-full flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-semibold transition-colors",
                     isActive
@@ -67,284 +142,131 @@ export default function SettingsPage() {
                   )}
                 >
                   <tab.icon className="w-4 h-4" />
-                  {tab.label}
+                  <span className="flex-1 truncate">{tab.label}</span>
+                  {isDirty && (
+                    <span
+                      title="Có thay đổi chưa lưu"
+                      className={cn(
+                        "w-2 h-2 rounded-full shrink-0",
+                        isActive ? "bg-white" : "bg-warning",
+                      )}
+                    />
+                  )}
                 </button>
               );
             })}
           </nav>
         </aside>
 
-        <main className="xl:col-span-9 space-y-5">
-          {activeTab === "general" && (
-            <section className="bg-card-white rounded-xl border border-border-ui shadow-sm p-6 space-y-6">
-              <div>
-                <h2 className="text-base font-bold text-text-primary flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-accent" /> Thông tin kho
-                  vận
-                </h2>
-                <p className="text-xs text-text-secondary mt-1">
-                  Dữ liệu này dùng cho header phiếu nhập/xuất và báo cáo in ấn.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>Tên hệ thống</label>
-                  <input defaultValue="WMS System" className={inputClassName} />
-                </div>
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>Mã kho</label>
-                  <input defaultValue="WMS-LS-001" className={inputClassName} />
-                </div>
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>Tên kho</label>
-                  <input
-                    defaultValue="Kho cửa khẩu Lạng Sơn"
-                    className={inputClassName}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>Email quản trị</label>
-                  <input
-                    defaultValue="admin@wms.com"
-                    className={inputClassName}
-                  />
-                </div>
-                <div className="md:col-span-2 space-y-1.5">
-                  <label className={labelClassName}>Địa chỉ kho</label>
-                  <textarea
-                    defaultValue="Khu logistics cửa khẩu, Lạng Sơn"
-                    rows={3}
-                    className={cn(inputClassName, "resize-none")}
-                  />
-                </div>
-              </div>
-            </section>
+        <main className="xl:col-span-9 space-y-6">
+          {isLoading && (
+            <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-12 flex items-center justify-center">
+              <Loader2 className="w-6 h-6 animate-spin text-accent" />
+              <span className="ml-3 text-sm text-text-secondary">
+                Đang tải cấu hình...
+              </span>
+            </div>
           )}
 
-          {activeTab === "alerts" && (
-            <section className="bg-card-white rounded-xl border border-border-ui shadow-sm p-6 space-y-6">
-              <div>
-                <h2 className="text-base font-bold text-text-primary flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-warning" /> Thiết lập cảnh báo
-                </h2>
-                <p className="text-xs text-text-secondary mt-1">
-                  Cấu hình ngưỡng thông báo cho tồn kho, phiếu chờ duyệt và
-                  email vận hành.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>
-                    Cảnh báo tồn thấp trước
-                  </label>
-                  <input
-                    defaultValue="100"
-                    type="number"
-                    className={inputClassName}
-                  />
-                  <p className="text-[11px] text-text-secondary">
-                    Tính theo phần trăm so với minStock
-                  </p>
-                </div>
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>
-                    Phiếu chờ duyệt quá hạn
-                  </label>
-                  <input
-                    defaultValue="24"
-                    type="number"
-                    className={inputClassName}
-                  />
-                  <p className="text-[11px] text-text-secondary">Đơn vị: giờ</p>
-                </div>
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>Tần suất tổng hợp</label>
-                  <Combobox<string>
-                    value={frequency}
-                    onChange={(next) => setFrequency(next || "daily")}
-                    options={[
-                      { value: "realtime", label: "Realtime" },
-                      { value: "daily", label: "Hằng ngày" },
-                      { value: "weekly", label: "Hằng tuần" },
-                    ]}
-                    searchable={false}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {[
-                  "Gửi email khi hàng hết tồn",
-                  "Gửi thông báo khi phiếu nhập quá hạn",
-                  "Gửi thông báo khi phiếu xuất bị từ chối",
-                ].map((label) => (
-                  <label
-                    key={label}
-                    className="flex items-center justify-between gap-4 p-4 rounded-xl border border-border-ui bg-background-app/40"
-                  >
-                    <span className="text-sm font-semibold text-text-primary">
-                      {label}
-                    </span>
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="rounded border-border-ui accent-accent"
-                    />
-                  </label>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {activeTab === "security" && (
-            <section className="bg-card-white rounded-xl border border-border-ui shadow-sm p-6 space-y-6">
-              <div>
-                <h2 className="text-base font-bold text-text-primary flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-success" /> Bảo mật truy
-                  cập
-                </h2>
-                <p className="text-xs text-text-secondary mt-1">
-                  Các thiết lập này áp dụng cho phiên đăng nhập và chính sách
-                  mật khẩu.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>
-                    Thời hạn access token
-                  </label>
-                  <input
-                    defaultValue="15"
-                    type="number"
-                    className={inputClassName}
-                  />
-                  <p className="text-[11px] text-text-secondary">
-                    Đơn vị: phút
-                  </p>
-                </div>
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>
-                    Thời hạn refresh token
-                  </label>
-                  <input
-                    defaultValue="7"
-                    type="number"
-                    className={inputClassName}
-                  />
-                  <p className="text-[11px] text-text-secondary">
-                    Đơn vị: ngày
-                  </p>
-                </div>
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>Số lần đăng nhập sai</label>
-                  <input
-                    defaultValue="5"
-                    type="number"
-                    className={inputClassName}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl border border-border-ui bg-background-app/40">
-                  <KeyRound className="w-5 h-5 text-warning mb-3" />
-                  <p className="text-sm font-bold text-text-primary">
-                    Yêu cầu đổi mật khẩu định kỳ
-                  </p>
-                  <p className="text-xs text-text-secondary mt-1">
-                    Nhắc người dùng đổi mật khẩu sau 90 ngày.
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl border border-border-ui bg-background-app/40">
-                  <ShieldCheck className="w-5 h-5 text-success mb-3" />
-                  <p className="text-sm font-bold text-text-primary">
-                    Khóa phiên khi không hoạt động
-                  </p>
-                  <p className="text-xs text-text-secondary mt-1">
-                    Tự động đăng xuất sau thời gian không thao tác.
-                  </p>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {activeTab === "integrations" && (
-            <section className="bg-card-white rounded-xl border border-border-ui shadow-sm p-6 space-y-6">
-              <div>
-                <h2 className="text-base font-bold text-text-primary flex items-center gap-2">
-                  <SlidersHorizontal className="w-5 h-5 text-info" /> Tích hợp
-                  và xuất dữ liệu
-                </h2>
-                <p className="text-xs text-text-secondary mt-1">
-                  Thiết lập webhook, email SMTP và định dạng export mặc định.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>Webhook URL</label>
-                  <input
-                    placeholder="https://example.com/webhook/wms"
-                    className={inputClassName}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>
-                    Định dạng báo cáo mặc định
-                  </label>
-                  <Combobox<string>
-                    value={reportFormat}
-                    onChange={(next) => setReportFormat(next || "xlsx")}
-                    options={[
-                      { value: "xlsx", label: "Excel (.xlsx)" },
-                      { value: "pdf", label: "PDF" },
-                      { value: "csv", label: "CSV" },
-                    ]}
-                    searchable={false}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>SMTP Host</label>
-                  <input
-                    placeholder="smtp.company.vn"
-                    className={inputClassName}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className={labelClassName}>Email gửi thông báo</label>
-                  <input
-                    placeholder="no-reply@wms.com"
-                    className={inputClassName}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 rounded-xl border border-info/20 bg-info/5 p-4">
-                <Mail className="w-5 h-5 text-info mt-0.5" />
+          {error && !isLoading && (
+            <div className="bg-card-white rounded-xl border border-danger/30 shadow-sm p-6 space-y-3">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-danger mt-0.5" />
                 <div>
                   <p className="text-sm font-bold text-text-primary">
-                    Lưu ý bảo mật
+                    Không thể tải cấu hình
                   </p>
                   <p className="text-xs text-text-secondary mt-1">
-                    Không hardcode API key hoặc SMTP password trong frontend; dữ
-                    liệu nhạy cảm phải nằm ở backend hoặc biến môi trường
-                    server-side.
+                    {getApiErrorMessage(error, "Đã xảy ra lỗi khi tải dữ liệu")}
                   </p>
                 </div>
               </div>
-            </section>
+              <button
+                onClick={() => refetch()}
+                className="text-xs font-medium text-accent hover:underline"
+              >
+                Thử lại
+              </button>
+            </div>
           )}
 
-          <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-5 flex items-center justify-end gap-3">
-            <button className="px-4 py-2 border border-border-ui rounded-lg text-sm font-medium text-text-primary hover:bg-background-app transition-colors">
-              Khôi phục mặc định
-            </button>
-          </div>
+          {data && !isLoading && (
+            <>
+              {activeTab === "general" && (
+                <GeneralSettingsForm
+                  defaults={data.values.general}
+                  meta={data.meta.general}
+                  canEdit={canEdit}
+                  onDirtyChange={handleDirtyChange("general")}
+                />
+              )}
+              {activeTab === "alerts" && (
+                <AlertSettingsForm
+                  defaults={data.values.alerts}
+                  meta={data.meta.alerts}
+                  canEdit={canEdit}
+                  onDirtyChange={handleDirtyChange("alerts")}
+                />
+              )}
+              {activeTab === "security" && (
+                <SecuritySettingsForm
+                  defaults={data.values.security}
+                  meta={data.meta.security}
+                  canEdit={canEdit}
+                  onDirtyChange={handleDirtyChange("security")}
+                />
+              )}
+              {activeTab === "integrations" && (
+                <IntegrationSettingsForm
+                  defaults={data.values.integrations}
+                  meta={data.meta.integrations}
+                  canEdit={canEdit}
+                  onDirtyChange={handleDirtyChange("integrations")}
+                />
+              )}
+
+              {canEdit && (
+                <div className="bg-card-white rounded-xl border border-border-ui shadow-sm px-6 py-5 flex items-center justify-end gap-3">
+                  <button
+                    onClick={() => setResetOpen(true)}
+                    disabled={resetMutation.isPending}
+                    className="flex items-center gap-2 px-4 py-2 border border-border-ui rounded-lg text-sm font-medium text-text-primary hover:bg-background-app transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {resetMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RotateCcw className="w-4 h-4" />
+                    )}
+                    Khôi phục mặc định
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </main>
       </div>
+
+      <ConfirmDialog
+        open={pendingTab !== null}
+        onClose={() => setPendingTab(null)}
+        title="Bỏ qua thay đổi chưa lưu?"
+        message="Tab hiện tại có thay đổi chưa được lưu. Tiếp tục sẽ làm mất các thay đổi này."
+        variant="warning"
+        confirmLabel="Bỏ qua thay đổi"
+        cancelLabel="Ở lại"
+        onConfirm={confirmDiscardSwitch}
+      />
+
+      <ConfirmDialog
+        open={resetOpen}
+        onClose={() => !resetMutation.isPending && setResetOpen(false)}
+        title="Khôi phục cấu hình mặc định?"
+        message="Toàn bộ 4 nhóm cấu hình sẽ được đặt lại về giá trị gốc. Hành động này được ghi vào nhật ký hoạt động và không thể hoàn tác."
+        variant="danger"
+        confirmLabel="Khôi phục"
+        loading={resetMutation.isPending}
+        onConfirm={handleReset}
+      />
     </div>
   );
 }

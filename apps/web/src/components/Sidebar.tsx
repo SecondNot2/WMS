@@ -25,9 +25,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuthStore, useLayoutStore } from "@/lib/store";
+import { can, type PermissionAction } from "@/lib/permissions";
+import { useSettings } from "@/lib/hooks/use-settings";
 import { UserMenu } from "./UserMenu";
 
-const menuGroups = [
+interface MenuItem {
+  name: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href: string;
+  /** Action key để check quyền — không có nghĩa là tất cả role đều thấy */
+  permission?: PermissionAction;
+}
+
+interface MenuGroup {
+  label: string;
+  items: MenuItem[];
+}
+
+const menuGroups: MenuGroup[] = [
   {
     label: "TỔNG QUAN",
     items: [{ name: "Tổng quan", icon: LayoutGrid, href: "/" }],
@@ -35,34 +50,99 @@ const menuGroups = [
   {
     label: "QUẢN LÝ KHO",
     items: [
-      { name: "Sản phẩm", icon: Box, href: "/products" },
-      { name: "Danh mục", icon: Tag, href: "/categories" },
-      { name: "Nhập kho", icon: Download, href: "/inbound" },
-      { name: "Xuất kho", icon: Upload, href: "/outbound" },
-      { name: "Tồn kho realtime", icon: Activity, href: "/inventory" },
-      { name: "Cảnh báo", icon: Bell, href: "/alerts" },
+      {
+        name: "Sản phẩm",
+        icon: Box,
+        href: "/products",
+        permission: "product.view",
+      },
+      {
+        name: "Danh mục",
+        icon: Tag,
+        href: "/categories",
+        permission: "category.view",
+      },
+      {
+        name: "Nhập kho",
+        icon: Download,
+        href: "/inbound",
+        permission: "receipt.view",
+      },
+      {
+        name: "Xuất kho",
+        icon: Upload,
+        href: "/outbound",
+        permission: "issue.view",
+      },
+      {
+        name: "Tồn kho realtime",
+        icon: Activity,
+        href: "/inventory",
+        permission: "stock.view",
+      },
+      {
+        name: "Cảnh báo",
+        icon: Bell,
+        href: "/alerts",
+        permission: "stock.view",
+      },
     ],
   },
   {
     label: "BÁO CÁO",
     items: [
-      { name: "Thống kê", icon: BarChart, href: "/statistics" },
-      { name: "Báo cáo", icon: FileText, href: "/reports" },
+      {
+        name: "Thống kê",
+        icon: BarChart,
+        href: "/statistics",
+        permission: "report.view",
+      },
+      {
+        name: "Báo cáo",
+        icon: FileText,
+        href: "/reports",
+        permission: "report.view",
+      },
     ],
   },
   {
     label: "QUẢN LÝ",
     items: [
-      { name: "Nhà cung cấp", icon: Truck, href: "/suppliers" },
-      { name: "Đơn vị nhận hàng", icon: Building, href: "/receivers" },
+      {
+        name: "Nhà cung cấp",
+        icon: Truck,
+        href: "/suppliers",
+        permission: "supplier.view",
+      },
+      {
+        name: "Đơn vị nhận hàng",
+        icon: Building,
+        href: "/receivers",
+        permission: "recipient.view",
+      },
     ],
   },
   {
     label: "HỆ THỐNG",
     items: [
-      { name: "Người dùng", icon: Users, href: "/users" },
-      { name: "Vai trò & phân quyền", icon: Shield, href: "/roles" },
-      { name: "Nhật ký hoạt động", icon: Clock, href: "/activity-log" },
+      {
+        name: "Người dùng",
+        icon: Users,
+        href: "/users",
+        permission: "user.view",
+      },
+      {
+        name: "Vai trò & phân quyền",
+        icon: Shield,
+        href: "/roles",
+        permission: "role.view",
+      },
+      {
+        name: "Nhật ký hoạt động",
+        icon: Clock,
+        href: "/activity-log",
+        permission: "activityLog.view",
+      },
       { name: "Cài đặt", icon: Settings, href: "/settings" },
     ],
   },
@@ -72,6 +152,23 @@ export function Sidebar() {
   const pathname = usePathname();
   const { sidebarCollapsed, toggleSidebar } = useLayoutStore();
   const user = useAuthStore((s) => s.user);
+  const role = user?.role ?? null;
+  const { data: settings } = useSettings();
+  const brandName = settings?.values.general.systemName ?? "WMS System";
+
+  // Lọc theo quyền — item không có `permission` thì luôn hiển thị
+  const visibleGroups = React.useMemo(
+    () =>
+      menuGroups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter(
+            (item) => !item.permission || can(role, item.permission),
+          ),
+        }))
+        .filter((group) => group.items.length > 0),
+    [role],
+  );
 
   return (
     <aside
@@ -107,7 +204,7 @@ export function Sidebar() {
       </div>
 
       <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 scrollbar-hide">
-        {menuGroups.map((group) => (
+        {visibleGroups.map((group) => (
           <div key={group.label}>
             {!sidebarCollapsed && (
               <h3 className="px-3 text-[10px] font-semibold text-white/50 tracking-[1.5px] mb-2 uppercase">

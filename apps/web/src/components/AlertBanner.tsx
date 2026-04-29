@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { AlertTriangle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -9,9 +10,22 @@ interface BannerProps {
   count: number;
   message?: string;
   linkText?: string;
+  href?: string;
 }
 
-export function AlertBanner({ type, count, message, linkText }: BannerProps) {
+const HREF_MAP: Record<BannerProps["type"], string> = {
+  inventory: "/alerts",
+  inbound: "/inbound",
+  outbound: "/outbound",
+};
+
+export function AlertBanner({
+  type,
+  count,
+  message,
+  linkText,
+  href,
+}: BannerProps) {
   const configs = {
     inventory: {
       bg: "bg-danger/5",
@@ -42,9 +56,11 @@ export function AlertBanner({ type, count, message, linkText }: BannerProps) {
   const config = configs[type];
   const text = message ?? config.defaultText;
   const link = linkText ?? config.defaultLink;
+  const targetHref = href ?? HREF_MAP[type];
 
   return (
-    <div
+    <Link
+      href={targetHref}
       className={cn(
         "flex items-center justify-between px-3 py-2.5 rounded-lg border shadow-sm transition-all hover:shadow-md cursor-pointer group",
         config.bg,
@@ -57,14 +73,14 @@ export function AlertBanner({ type, count, message, linkText }: BannerProps) {
           {text}
         </span>
       </div>
-      <button
+      <span
         className={cn(
-          "text-[11px] font-bold flex items-center hover:underline opacity-80 group-hover:opacity-100",
+          "text-[11px] font-bold flex items-center group-hover:underline opacity-80 group-hover:opacity-100",
           config.linkColor,
         )}
       >
         {link}
-      </button>
-    </div>
+      </span>
+    </Link>
   );
 }

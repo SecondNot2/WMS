@@ -11,20 +11,35 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { Loader2, TrendingDown, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Combobox } from "@/components/ui/Combobox";
-
-const data = [
-  { name: "T2", inbound: 400, outbound: 240, stock: 1200 },
-  { name: "T3", inbound: 300, outbound: 139, stock: 1361 },
-  { name: "T4", inbound: 200, outbound: 980, stock: 581 },
-  { name: "T5", inbound: 278, outbound: 390, stock: 469 },
-  { name: "T6", inbound: 189, outbound: 480, stock: 178 },
-  { name: "T7", inbound: 239, outbound: 380, stock: 37 },
-  { name: "CN", inbound: 349, outbound: 430, stock: -44 },
-];
+import { usePerformance } from "@/lib/hooks/use-statistics";
+import { getApiErrorMessage } from "@/lib/api/client";
+import type { StatisticsRange } from "@wms/types";
 
 export function ShipmentComboChart() {
-  const [range, setRange] = React.useState<string>("7d");
+  const [range, setRange] = React.useState<StatisticsRange>("7d");
+  const {
+    data: performance,
+    isLoading,
+    isError,
+    error,
+  } = usePerformance({ range });
+
+  const data = React.useMemo(
+    () =>
+      performance?.flowSeries.map((p) => ({
+        name: p.label,
+        inbound: p.inbound,
+        outbound: p.outbound,
+      })) ?? [],
+    [performance],
+  );
+
+  const totalInbound = performance?.summary.totalInbound;
+  const totalOutbound = performance?.summary.totalOutbound;
+
   return (
     <div className="bg-card-white p-4 rounded-xl border border-border-ui shadow-sm h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
@@ -32,98 +47,142 @@ export function ShipmentComboChart() {
           Biểu đồ nhập / xuất kho
         </h3>
         <div className="min-w-32">
-          <Combobox<string>
+          <Combobox<StatisticsRange>
             value={range}
-            onChange={(next) => setRange(next || "7d")}
+            onChange={(next) => setRange((next as StatisticsRange) || "7d")}
             options={[
               { value: "7d", label: "7 ngày qua" },
               { value: "30d", label: "30 ngày qua" },
               { value: "3m", label: "3 tháng qua" },
+              { value: "1y", label: "1 năm qua" },
             ]}
             searchable={false}
           />
         </div>
       </div>
 
-      <div className="h-36 flex-1">
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart
-            data={data}
-            margin={{ top: 10, right: 10, bottom: 0, left: -20 }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              vertical={false}
-              stroke="#f1f5f9"
-            />
-            <XAxis
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10, fill: "#64748b" }}
-              dy={8}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10, fill: "#64748b" }}
-            />
-            <Tooltip
-              cursor={{ fill: "#f8fafc" }}
-              contentStyle={{
-                borderRadius: "8px",
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                fontSize: "11px",
-              }}
-            />
-            <Legend
-              verticalAlign="top"
-              align="center"
-              iconType="circle"
-              iconSize={8}
-              wrapperStyle={{
-                paddingTop: "0",
-                paddingBottom: "15px",
-                fontSize: "10px",
-              }}
-            />
-            <Bar
-              name="Nhập kho"
-              dataKey="inbound"
-              barSize={24}
-              fill="#2d7dd2"
-              radius={[3, 3, 0, 0]}
-            />
-            <Bar
-              name="Xuất kho"
-              dataKey="outbound"
-              barSize={24}
-              fill="#f59e0b"
-              radius={[3, 3, 0, 0]}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
+      <div className="h-36 flex-1 relative">
+        {isLoading ? (
+          <div className="absolute inset-0 flex items-center justify-center text-text-secondary">
+            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+            <span className="text-xs">Đang tải...</span>
+          </div>
+        ) : isError ? (
+          <div className="absolute inset-0 flex items-center justify-center text-danger text-xs px-4 text-center">
+            {getApiErrorMessage(error, "Không thể tải biểu đồ")}
+          </div>
+        ) : data.length === 0 ? (
+          <div className="absolute inset-0 flex items-center justify-center text-text-secondary text-xs">
+            Không có dữ liệu trong khoảng đã chọn
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart
+              data={data}
+              margin={{ top: 10, right: 10, bottom: 0, left: -20 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#f1f5f9"
+              />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 10, fill: "#64748b" }}
+                dy={8}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 10, fill: "#64748b" }}
+              />
+              <Tooltip
+                cursor={{ fill: "#f8fafc" }}
+                contentStyle={{
+                  borderRadius: "8px",
+                  border: "1px solid #e2e8f0",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                  fontSize: "11px",
+                }}
+              />
+              <Legend
+                verticalAlign="top"
+                align="center"
+                iconType="circle"
+                iconSize={8}
+                wrapperStyle={{
+                  paddingTop: "0",
+                  paddingBottom: "15px",
+                  fontSize: "10px",
+                }}
+              />
+              <Bar
+                name="Nhập kho"
+                dataKey="inbound"
+                barSize={24}
+                fill="#2d7dd2"
+                radius={[3, 3, 0, 0]}
+              />
+              <Bar
+                name="Xuất kho"
+                dataKey="outbound"
+                barSize={24}
+                fill="#f59e0b"
+                radius={[3, 3, 0, 0]}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
       </div>
 
       <div className="mt-4 pt-4 border-t border-border-ui flex items-center justify-center space-x-8">
         <div className="flex items-center space-x-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-accent/20 border border-accent/40" />
-          <span className="text-[11px] text-text-secondary">
-            Tuần trước:{" "}
-            <span className="font-bold text-text-primary">1,450</span>
-          </span>
-        </div>
-        <div className="flex items-center space-x-2">
           <span className="w-2.5 h-2.5 rounded-full bg-accent border border-accent" />
           <span className="text-[11px] text-text-secondary">
-            Tuần này: <span className="font-bold text-text-primary">1,820</span>
+            Nhập kho:{" "}
+            <span className="font-bold text-text-primary">
+              {totalInbound
+                ? new Intl.NumberFormat("vi-VN").format(totalInbound.value)
+                : "-"}
+            </span>
           </span>
-          <span className="text-[10px] font-bold text-success flex items-center">
-            +12%
+          {totalInbound && <TrendBadge value={totalInbound.trend} />}
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-warning border border-warning" />
+          <span className="text-[11px] text-text-secondary">
+            Xuất kho:{" "}
+            <span className="font-bold text-text-primary">
+              {totalOutbound
+                ? new Intl.NumberFormat("vi-VN").format(totalOutbound.value)
+                : "-"}
+            </span>
           </span>
+          {totalOutbound && <TrendBadge value={totalOutbound.trend} />}
         </div>
       </div>
     </div>
+  );
+}
+
+function TrendBadge({ value }: { value: number }) {
+  const isUp = value >= 0;
+  return (
+    <span
+      className={cn(
+        "text-[10px] font-bold flex items-center gap-0.5",
+        isUp ? "text-success" : "text-danger",
+      )}
+    >
+      {isUp ? (
+        <TrendingUp className="w-3 h-3" />
+      ) : (
+        <TrendingDown className="w-3 h-3" />
+      )}
+      {isUp ? "+" : ""}
+      {value.toFixed(0)}%
+    </span>
   );
 }

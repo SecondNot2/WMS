@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ interface StatsCardProps {
     value: string;
     isUp: boolean;
   };
+  href?: string;
 }
 
 export function StatsCard({
@@ -21,9 +23,15 @@ export function StatsCard({
   icon: Icon,
   iconBg,
   trend,
+  href,
 }: StatsCardProps) {
+  const Wrapper = href ? Link : "div";
+  const wrapperProps = href ? { href } : {};
   return (
-    <div className="bg-card-white p-3.5 rounded-xl border border-border-ui shadow-sm hover:shadow-md transition-all group cursor-pointer">
+    <Wrapper
+      {...(wrapperProps as { href: string })}
+      className="bg-card-white p-3.5 rounded-xl border border-border-ui shadow-sm hover:shadow-md transition-all group cursor-pointer block"
+    >
       <div className="flex justify-between items-start">
         <div className="space-y-0.5">
           <p className="text-[11px] text-text-secondary uppercase tracking-wider font-medium">
@@ -65,6 +73,6 @@ export function StatsCard({
           </span>
         </div>
       )}
-    </div>
+    </Wrapper>
   );
 }

@@ -20,6 +20,22 @@ import { ROLE_LABELS } from "@/lib/permissions";
 type TabKey = "info" | "password";
 
 export default function ProfilePage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="p-5">
+          <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-10 text-center text-sm text-text-secondary">
+            Đang tải...
+          </div>
+        </div>
+      }
+    >
+      <ProfilePageContent />
+    </React.Suspense>
+  );
+}
+
+function ProfilePageContent() {
   const { data: user, isLoading, isError, error } = useMe();
   const searchParams = useSearchParams();
   const initialTab: TabKey =

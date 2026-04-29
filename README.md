@@ -1,102 +1,110 @@
 # Warehouse Management System (WMS)
 
-Hệ thống quản lý kho (WMS) hiện đại, hiệu năng cao dành cho logistics cửa khẩu. Dự án được xây dựng dưới dạng **Monorepo** giúp quản lý đồng bộ cả Backend, Frontend và các gói thư viện dùng chung.
+Hệ thống quản lý kho (WMS) hiện đại dành cho logistics cửa khẩu. Dự án dùng monorepo `pnpm workspaces`, với Next.js frontend và backend API được merge vào Next.js Route Handlers để deploy một app duy nhất trên Vercel.
 
 ---
 
-## 🏗️ Cấu trúc dự án (Monorepo)
+## Cấu trúc dự án
 
-Dự án sử dụng `pnpm workspaces` để quản lý các gói:
-
-- **`apps/web`**: Frontend dashboard xây dựng bằng Next.js 16 (App Router).
-- **`apps/api`**: Backend RESTful API xây dựng bằng Express, Prisma và PostgreSQL.
-- **`packages/types`**: Chứa các TypeScript interface/types dùng chung cho cả Web và API.
-- **`packages/validations`**: Định nghĩa các schema Zod để validate dữ liệu ở cả hai đầu.
-- **`packages/config`**: Các cấu hình dùng chung (ESLint, Prettier, Shared Config).
+- **`apps/web`**: Next.js 16 dashboard + API Route Handlers tại `/api`.
+- **`apps/web/prisma`**: Prisma schema và migrations cho Supabase PostgreSQL.
+- **`packages/types`**: TypeScript types dùng chung.
+- **`packages/validations`**: Zod schemas dùng chung.
+- **`packages/config`**: Cấu hình dùng chung.
 
 ---
 
-## 🚀 Công nghệ sử dụng
+## Công nghệ sử dụng
 
-### Frontend (`apps/web`)
-- **Framework**: Next.js 16 (App Router) + React 19
-- **Styling**: Tailwind CSS 4 (với hệ thống `@theme` variables)
+### App (`apps/web`)
+
+- **Framework**: Next.js 16 App Router + React 19
+- **API**: Next.js Route Handlers
+- **Styling**: Tailwind CSS 4
 - **State Management**: Zustand v5
-- **Data Fetching**: TanStack Query v5 (React Query)
+- **Data Fetching**: TanStack Query v5
 - **Form**: React Hook Form + Zod
-- **Visualization**: Recharts v3
-- **Icons**: Lucide React
-
-### Backend (`apps/api`)
-- **Runtime**: Node.js v20+
-- **Framework**: Express.js
-- **ORM**: Prisma v5 (PostgreSQL)
-- **Authentication**: JWT (Access Token & Refresh Token)
-- **Logger**: Winston + Morgan
-- **File Handling**: Multer (Upload ảnh) & XLSX (Xử lý Excel)
+- **ORM**: Prisma v5 + Supabase PostgreSQL
+- **Auth**: JWT access token + refresh token
+- **Realtime**: Supabase Realtime Broadcast
+- **Excel**: XLSX export endpoints
 
 ---
 
-## 🛠️ Hướng dẫn cài đặt
+## Cài đặt
 
 ### 1. Yêu cầu hệ thống
-- **Node.js**: >= 20.x
-- **pnpm**: >= 10.x (Bắt buộc để quản lý Monorepo)
 
-### 2. Cài đặt Dependencies
-Từ thư mục gốc của dự án, chạy:
+- **Node.js**: >= 20.x
+- **pnpm**: >= 10.x
+
+### 2. Cài dependencies
+
 ```bash
 pnpm install
 ```
 
-### 3. Cấu hình biến môi trường
-Tạo file `.env` từ các file mẫu trong từng folder ứng dụng:
-- Tại `apps/api/.env`: Cấu hình `DATABASE_URL` (PostgreSQL) và `JWT_SECRET`.
-- Tại `apps/web/.env`: Cấu hình `NEXT_PUBLIC_API_URL` trỏ về Backend.
+### 3. Cấu hình môi trường
 
-### 4. Thiết lập Cơ sở dữ liệu (Backend)
+Tạo `apps/web/.env.local` từ `apps/web/.env.example`, sau đó điền:
+
+- **Database**: `DATABASE_URL`, `DIRECT_URL`
+- **JWT**: `JWT_SECRET`, `JWT_REFRESH_SECRET`
+- **Supabase client**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- **Supabase server**: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+
+Không cần `NEXT_PUBLIC_API_URL` trong local/production nếu dùng API cùng domain. Client mặc định gọi `/api`.
+
+### 4. Prisma
+
 ```bash
-cd apps/api
-pnpm db:generate  # Tạo Prisma Client
-pnpm db:push      # Đẩy schema lên database
-pnpm db:seed      # Khởi tạo dữ liệu mẫu (Admin, Roles, v.v.)
+pnpm db:generate
+pnpm db:push
 ```
 
 ---
 
-## 💻 Lệnh phát triển
+## Lệnh phát triển
 
-Chạy các lệnh sau tại thư mục gốc:
-
-- **Phát triển toàn bộ dự án (cả Web & API):**
-  ```bash
-  pnpm dev
-  ```
-
-- **Chỉ chạy Frontend:**
-  ```bash
-  pnpm dev:web
-  ```
-
-- **Chỉ chạy Backend:**
-  ```bash
-  pnpm dev:api
-  ```
-
-- **Kiểm tra lỗi TypeScript:**
-  ```bash
-  pnpm type-check
-  ```
+```bash
+pnpm dev
+pnpm build
+pnpm type-check
+pnpm lint
+```
 
 ---
 
-## 🎨 Quy chuẩn Design (Frontend)
-Dự án tuân thủ nghiêm ngặt hệ thống thiết kế tại `docs/DESIGN.md`:
-- Sử dụng màu sắc qua **CSS Variables** của Tailwind 4 (VD: `bg-card-white`, `text-text-primary`).
-- Tuyệt đối không hardcode mã màu Hex trong component.
-- Ưu tiên tái sử dụng các Shared Components trong `src/components/`.
+## Deploy Vercel
+
+Dự án deploy một app duy nhất lên Vercel. Backend nằm trong `apps/web/src/app/api`, không cần Render/Railway riêng.
+
+1. Import repo vào Vercel.
+2. Giữ **Root Directory** là `./`.
+3. Thêm env vars theo `apps/web/.env.production.example`.
+4. Deploy. `vercel.json` sẽ chạy Prisma migrate trước khi build.
+
+Chi tiết xem `docs/DEPLOY_VERCEL.md`.
 
 ---
 
-## 📄 Giấy phép
-Dự án nội bộ / Bản quyền thuộc về SecondNot2.
+## API
+
+API nội bộ nằm dưới prefix `/api`.
+
+- `POST /api/auth/login`
+- `GET /api/products`
+- `POST /api/inbound/:id/approve`
+- `GET /api/reports/export`
+
+Danh sách đầy đủ xem `docs/API_ENDPOINTS.md`.
+
+---
+
+## Design
+
+Dự án tuân thủ hệ thống thiết kế tại `docs/DESIGN.md`.
+
+- Sử dụng màu sắc qua CSS variables của Tailwind 4.
+- Ưu tiên tái sử dụng shared components trong `apps/web/src/components`.
+- Data fetching dùng TanStack Query, không fetch trực tiếp trong component bằng `useEffect`.

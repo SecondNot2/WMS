@@ -3,7 +3,9 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/lib/store";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+// Sau migration: API là Next.js Route Handlers tại /api (cùng domain)
+// Giữ NEXT_PUBLIC_API_URL nếu muốn override (vd: gọi backend riêng), mặc định trỏ /api
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "/api";
 
 export const apiClient = axios.create({
   baseURL: API_URL,
@@ -32,6 +34,7 @@ async function refreshAccessToken(): Promise<string> {
     success: true;
     data: { accessToken: string };
   }>(`${API_URL}/auth/refresh`, { refreshToken });
+  // ↑ Lưu ý: nếu API_URL là path tương đối ('/api'), axios sẽ resolve theo origin hiện tại
 
   const newToken = res.data.data.accessToken;
   useAuthStore.getState().setAccessToken(newToken);

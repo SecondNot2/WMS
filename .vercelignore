@@ -1,0 +1,6 @@
+# Vercel sẽ chỉ build apps/web — bỏ qua các thư mục không cần thiết
+apps/api
+.github
+docs
+*.md
+!apps/web/**

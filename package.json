@@ -2,16 +2,17 @@
   "name": "wms",
   "version": "0.1.0",
   "private": true,
-  "description": "Warehouse Management System monorepo (web + api)",
+  "description": "Warehouse Management System monorepo with Next.js web and API route handlers",
   "scripts": {
-    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev": "pnpm --filter @wms/web dev",
     "dev:web": "pnpm --filter @wms/web dev",
-    "dev:api": "pnpm --filter @wms/api dev",
-    "build": "pnpm --recursive build",
+    "build": "pnpm --filter @wms/web build",
     "build:web": "pnpm --filter @wms/web build",
-    "build:api": "pnpm --filter @wms/api build",
-    "type-check": "pnpm --recursive type-check",
-    "lint": "pnpm --recursive lint"
+    "type-check": "pnpm --filter @wms/web type-check",
+    "lint": "pnpm --filter @wms/web lint",
+    "db:generate": "pnpm --filter @wms/web db:generate",
+    "db:migrate": "pnpm --filter @wms/web db:migrate",
+    "db:push": "pnpm --filter @wms/web db:push"
   },
   "engines": {
     "node": ">=20",

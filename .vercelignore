@@ -1,4 +1,4 @@
-# Vercel upload ignore
+# Vercel upload ignore — only ship apps/web + packages/* to Vercel
 
 # Dependencies / build output
 node_modules
@@ -16,18 +16,28 @@ coverage
 .env.*.local
 *.log
 
-# Legacy backend archive
-apps/api
-apps/api.legacy
-
 # Tooling / local metadata
 .git
 .github
+.husky
+.vscode
+.idea
 .vercel
 .windsurf
+.windsurfrules
 .agents
-docs
 
-# Large or non-deploy docs
+# Test & format config (not needed at runtime)
+.prettierrc.json
+.prettierignore
+commitlint.config.mjs
+**/vitest.config.ts
+**/vitest.setup.ts
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Docs
+docs/
 *.md
-progress.txt

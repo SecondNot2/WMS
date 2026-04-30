@@ -1,5 +1,5 @@
 # Dependencies
-node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -8,40 +8,43 @@ node_modules
 !.yarn/releases
 !.yarn/versions
 
-# Next.js / Build
+# Build outputs
 .next/
 out/
 build/
 dist/
-coverage/
 *.tsbuildinfo
 
-# Test artifacts
-lint-errors.json
+# Test & coverage
+coverage/
 .vitest-cache/
+lint-errors.json
 
-# Prisma
-apps/api/prisma/migrations/dev.db*
+# Tooling caches
+.turbo/
+.husky/_/
 
-# IDEs & System
-.vscode
-.idea
+# IDEs & OS
+.vscode/
+.idea/
 .DS_Store
+Thumbs.db
 *.pem
 *.log
 
-# Environment Files
+# Environment files (keep examples tracked)
 .env*
 !.env.example
+!.env.production.example
 
 # Deployment
-.vercel
+.vercel/
 
-# WMS / Antigravity Specific
-CLAUDE.md
-AGENTS.md
-.agents
-docs/
+# AI agents / local notes
+.agents/
 .windsurf/
 .windsurfrules
-.vercel
+CLAUDE.md
+AGENTS.md
+docs/
+progress.txt

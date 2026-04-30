@@ -20,12 +20,15 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 [![pnpm](https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
 
+![Dashboard preview](docs/screens/tong_quan.png)
+
 </div>
 
 ---
 
 ## 📑 Mục lục
 
+- [Quick demo](#-quick-demo)
 - [Highlights](#-highlights)
 - [Kiến trúc](#%EF%B8%8F-kiến-trúc)
 - [Tech stack](#-tech-stack)
@@ -37,19 +40,30 @@
 - [Testing & chất lượng code](#-testing--chất-lượng-code)
 - [CI/CD](#-cicd)
 - [Deploy](#-deploy)
-- [Roadmap](#%EF%B8%8F-roadmap)
 - [License](#-license)
+
+---
+
+## 🚀 Quick demo
+
+> **3 cách trải nghiệm WMS** — chọn cách phù hợp:
+
+| Cách                        | Lệnh                                          | Yêu cầu                        |
+| --------------------------- | --------------------------------------------- | ------------------------------ |
+| **🐳 Docker self-host**     | `docker compose --env-file .env.docker up -d` | Docker Desktop                 |
+| **💻 Dev local**            | `pnpm install && pnpm dev`                    | Node 20, pnpm 10, Supabase URL |
+| **📖 Interactive API docs** | Mở `/api-docs` sau khi server chạy            | Trình duyệt                    |
 
 ---
 
 ## ✨ Highlights
 
 - 🏗️ **Monorepo**: pnpm workspaces + Turborepo 2 với cached pipeline (lint/type-check/test/build)
-- ⚡ **Single-deploy**: Backend (Express) merge vào Next.js Route Handlers — chỉ deploy 1 app lên Vercel
+- ⚡ **Single-deploy**: API Route Handlers chạy chung Next.js app — không cần backend server riêng, deploy 1 lần lên Vercel hoặc Docker
 - 🔒 **Auth**: JWT access (15m) + refresh (7d) với rotation, RBAC 3 roles
 - 📦 **Stock realtime**: Mọi thay đổi tồn kho đẩy qua Supabase Broadcast, UI cập nhật tức thì không cần refresh
 - 💎 **Type-safe end-to-end**: Zod schemas dùng chung giữa client validation, server validation, và TypeScript types
-- 🧪 **Tested**: 46 unit tests (Vitest) — services, utilities, RBAC, JWT lifecycle
+- 🧪 **Tested**: 62 unit tests (Vitest) — services, utilities, RBAC, JWT lifecycle, URL safety
 - ✅ **Quality gates**: Husky + lint-staged + Prettier + ESLint + Commitlint, 4 GitHub Actions workflows
 - 🛡️ **Secure-by-default**: Gitleaks secret scanning, CodeQL SAST, Dependabot, Next.js Middleware route protection
 - 📖 **Interactive API docs**: OpenAPI 3.1 auto-generated từ Zod schemas, served qua Scalar UI tại `/api-docs`
@@ -167,8 +181,8 @@ sequenceDiagram
 | **Activity log** | `/api/activity-logs`                         | Mọi thao tác mutation đều được audit                        |
 | **Settings**     | `/api/settings`                              | Per-key system settings, Admin only                         |
 
-> 📋 Đầy đủ 62 endpoints được liệt kê ở `docs/API_ENDPOINTS.md`.
-> 🔍 **Interactive API docs**: [`/api-docs`](/api-docs) — OpenAPI 3.1 auto-generated từ Zod schemas, render với [Scalar](https://scalar.com).
+> 📋 Đầy đủ ~53 route handlers được liệt kê ở `docs/API_ENDPOINTS.md`.
+> 🔍 **Interactive API docs**: [`/api-docs`](/api-docs) — OpenAPI 3.1 auto-generated từ Zod schemas (13 endpoints chính, dễ mở rộng), render với [Scalar](https://scalar.com).
 
 ---
 
@@ -290,17 +304,17 @@ pnpm dev
 
 ## 🧪 Testing & chất lượng code
 
-### Test suite (46 tests, ~7s)
+### Test suite (62 tests, ~8s)
 
 ```text
-✓ src/lib/utils.test.ts                       (6 tests)  cn() class merging
+✓ src/lib/utils.test.ts                       (22 tests) cn() merging + isSafeImageUrl XSS guard
 ✓ src/lib/permissions.test.ts                 (11 tests) RBAC matrix
 ✓ src/lib/hooks/use-is-mounted.test.ts        (1 test)   SSR-safe mount
 ✓ src/server/lib/errors.test.ts               (10 tests) AppError code → HTTP mapping
 ✓ src/server/lib/jwt.test.ts                  (7 tests)  Sign/verify, tampering rejection
 ✓ src/server/services/auth.service.test.ts    (11 tests) login/refresh/getMe/changePassword
                                               ─────────
-                                              46 passed
+                                              62 passed
 ```
 
 Pattern dùng cho service tests: **mock Prisma client với `vi.mock()` ở top-level**, không cần test container DB.
@@ -423,23 +437,6 @@ Dự án deploy **một app duy nhất** lên Vercel. Backend (Route Handlers) c
 ```
 
 `ignoreCommand` skip rebuild nếu PR chỉ thay đổi `docs/`, `*.md`, `.github/` — tiết kiệm build minutes.
-
----
-
-## 🗺️ Roadmap
-
-- [x] Monorepo structure with pnpm workspaces
-- [x] JWT auth + RBAC + Next.js Middleware route protection
-- [x] 12 module CRUD endpoints (62 routes)
-- [x] Realtime stock updates via Supabase Broadcast
-- [x] CI/CD with GitHub Actions (4 workflows)
-- [x] Vitest unit tests (46 tests)
-- [x] Husky + Prettier + Commitlint + Gitleaks
-- [ ] Playwright E2E tests
-- [x] Dockerfile + docker-compose for self-hosting
-- [x] OpenAPI 3.1 spec from Zod + Scalar API Reference UI
-- [ ] Sentry error tracking + Lighthouse CI
-- [x] Turborepo for build cache (~40-100x speedup on cache hit)
 
 ---
 

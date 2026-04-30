@@ -11,7 +11,7 @@ import {
   removeStorageFileByUrl,
 } from "@/lib/supabase";
 import { processImage, formatBytes } from "@/lib/image-utils";
-import { cn } from "@/lib/utils";
+import { cn, isSafeImageUrl } from "@/lib/utils";
 
 /**
  * Imperative API expose qua ref. Form cha gọi `commit()` trước khi submit.
@@ -240,7 +240,7 @@ export const ImageUpload = React.forwardRef<
             const res = await removeStorageFileByUrl(value);
             if (!res.ok && res.error) {
               // Best-effort: log warning nhưng không block save
-              // eslint-disable-next-line no-console
+               
               console.warn("Không xóa được file cũ:", res.error);
             }
           }
@@ -290,7 +290,7 @@ export const ImageUpload = React.forwardRef<
           if (oldPath && oldPath !== newPath) {
             const res = await removeStorageFileByUrl(value);
             if (!res.ok && res.error) {
-              // eslint-disable-next-line no-console
+               
               console.warn("Không xóa được file cũ:", res.error);
             }
           }
@@ -309,12 +309,15 @@ export const ImageUpload = React.forwardRef<
   );
 
   // ── Display logic ────────────────────────────────────────────────
-  const displayUrl =
+  const rawDisplayUrl =
     pending.kind === "replace"
       ? pending.previewUrl
       : pending.kind === "remove"
         ? null
         : value;
+  // Guard against URL schemes that can execute scripts (`javascript:`,
+  // `data:text/html`, ...). Only image-safe schemes reach the <img src>.
+  const displayUrl = isSafeImageUrl(rawDisplayUrl) ? rawDisplayUrl : null;
   const busy = uploading || processing;
 
   return (

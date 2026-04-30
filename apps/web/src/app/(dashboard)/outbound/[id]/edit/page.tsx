@@ -66,6 +66,7 @@ export default function EditOutboundPage() {
                 productId: item.product.id,
                 quantity: item.quantity,
                 unitPrice: item.unitPrice,
+                taxRate: item.taxRate,
               })),
             }}
             isEdit

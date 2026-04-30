@@ -16,6 +16,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useSupplier, useSuppliers } from "@/lib/hooks/use-suppliers";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
+import { useProducts } from "@/lib/hooks/use-products";
 import { useCreateInbound, useUpdateInbound } from "@/lib/hooks/use-inbound";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { useToast } from "@/components/Toast";
@@ -31,6 +32,10 @@ const inboundItemSchema = z.object({
     .int()
     .min(1, "Tối thiểu 1"),
   unitPrice: z.number({ error: "Đơn giá không hợp lệ" }).min(0, "Giá không âm"),
+  taxRate: z
+    .number({ error: "Thuế suất không hợp lệ" })
+    .min(0, "Thuế không âm")
+    .max(100, "Tối đa 100%"),
 });
 
 const inboundSchema = z.object({
@@ -64,6 +69,14 @@ export function InboundForm({
   });
   const suppliers = suppliersData?.data ?? [];
 
+  // Load products để hiển thị giá gợi ý và auto-fill cost/tax khi chọn sản phẩm
+  const { data: productsData } = useProducts({ limit: 200, isActive: true });
+  const productsList = productsData?.data ?? [];
+  const productMap = React.useMemo(
+    () => new Map(productsList.map((p) => [p.id, p])),
+    [productsList],
+  );
+
   const createMutation = useCreateInbound();
   const updateMutation = useUpdateInbound(inboundId ?? "");
   const toast = useToast();
@@ -90,7 +103,7 @@ export function InboundForm({
     defaultValues: initialData ?? {
       supplierId: "",
       note: "",
-      items: [{ productId: "", quantity: 1, unitPrice: 0 }],
+      items: [{ productId: "", quantity: 1, unitPrice: 0, taxRate: 0 }],
     },
   });
 
@@ -101,11 +114,18 @@ export function InboundForm({
 
   const watchItems = useWatch({ control, name: "items" });
 
-  const totalAmount =
+  const subtotalAmount =
     watchItems?.reduce(
       (sum, item) => sum + (item.quantity * item.unitPrice || 0),
       0,
     ) || 0;
+  const taxTotalAmount =
+    watchItems?.reduce(
+      (sum, item) =>
+        sum + ((item.quantity * item.unitPrice * item.taxRate) / 100 || 0),
+      0,
+    ) || 0;
+  const totalAmount = subtotalAmount + taxTotalAmount;
 
   const onSubmit = async (data: InboundFormValues) => {
     const payload = {
@@ -115,6 +135,7 @@ export function InboundForm({
         productId: item.productId,
         quantity: Number(item.quantity),
         unitPrice: Number(item.unitPrice),
+        taxRate: Number(item.taxRate),
       })),
     };
 
@@ -208,7 +229,12 @@ export function InboundForm({
                 <button
                   type="button"
                   onClick={() =>
-                    append({ productId: "", quantity: 1, unitPrice: 0 })
+                    append({
+                      productId: "",
+                      quantity: 1,
+                      unitPrice: 0,
+                      taxRate: 0,
+                    })
                   }
                   className="flex items-center gap-2 px-4 py-2 bg-card-white border border-accent text-accent rounded-lg font-medium text-xs hover:bg-accent/5 transition-all"
                 >
@@ -232,6 +258,9 @@ export function InboundForm({
                       <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-40">
                         Đơn giá nhập
                       </th>
+                      <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-24">
+                        Thuế (%)
+                      </th>
                       <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-40 text-right">
                         Thành tiền
                       </th>
@@ -239,84 +268,142 @@ export function InboundForm({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-ui">
-                    {fields.map((field, index) => (
-                      <tr key={field.id} className="group">
-                        <td className="px-6 py-4 text-sm text-text-secondary">
-                          {index + 1}
-                        </td>
-                        <td className="px-6 py-4">
-                          <Controller
-                            control={control}
-                            name={`items.${index}.productId` as const}
-                            render={({ field: ctrl }) => (
-                              <ProductCombobox
-                                value={ctrl.value}
-                                onChange={(id) => ctrl.onChange(id)}
-                                hasError={Boolean(
-                                  errors.items?.[index]?.productId,
-                                )}
-                                excludeIds={(watchItems ?? [])
-                                  .map((it, i) =>
-                                    i !== index ? it?.productId : null,
-                                  )
-                                  .filter((id): id is string => Boolean(id))}
-                                placeholder="Tìm sản phẩm theo SKU/tên..."
-                                onCreateNew={(search) =>
-                                  setProductQuickAdd({
-                                    open: true,
-                                    name: search,
-                                    rowIndex: index,
-                                  })
-                                }
-                              />
+                    {fields.map((field, index) => {
+                      const productId = watchItems?.[index]?.productId;
+                      const selectedProduct = productId
+                        ? productMap.get(productId)
+                        : undefined;
+                      const productCost =
+                        selectedProduct?.costPrice != null
+                          ? Number(selectedProduct.costPrice)
+                          : null;
+                      return (
+                        <tr key={field.id} className="group">
+                          <td className="px-6 py-4 text-sm text-text-secondary">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4">
+                            <Controller
+                              control={control}
+                              name={`items.${index}.productId` as const}
+                              render={({ field: ctrl }) => (
+                                <ProductCombobox
+                                  value={ctrl.value}
+                                  onChange={(id) => {
+                                    ctrl.onChange(id);
+                                    const p = productMap.get(id);
+                                    if (!p) return;
+                                    const currentPrice =
+                                      watchItems?.[index]?.unitPrice ?? 0;
+                                    if (
+                                      currentPrice === 0 &&
+                                      p.costPrice != null
+                                    ) {
+                                      setValue(
+                                        `items.${index}.unitPrice`,
+                                        Number(p.costPrice),
+                                        { shouldValidate: true },
+                                      );
+                                    }
+                                    const currentTax =
+                                      watchItems?.[index]?.taxRate ?? 0;
+                                    if (currentTax === 0 && p.taxRate != null) {
+                                      setValue(
+                                        `items.${index}.taxRate`,
+                                        Number(p.taxRate),
+                                        { shouldValidate: true },
+                                      );
+                                    }
+                                  }}
+                                  hasError={Boolean(
+                                    errors.items?.[index]?.productId,
+                                  )}
+                                  excludeIds={(watchItems ?? [])
+                                    .map((it, i) =>
+                                      i !== index ? it?.productId : null,
+                                    )
+                                    .filter((id): id is string => Boolean(id))}
+                                  placeholder="Tìm sản phẩm theo SKU/tên..."
+                                  onCreateNew={(search) =>
+                                    setProductQuickAdd({
+                                      open: true,
+                                      name: search,
+                                      rowIndex: index,
+                                    })
+                                  }
+                                />
+                              )}
+                            />
+                            {errors.items?.[index]?.productId && (
+                              <p className="text-[10px] text-danger mt-1">
+                                {errors.items[index]?.productId?.message}
+                              </p>
                             )}
-                          />
-                          {errors.items?.[index]?.productId && (
-                            <p className="text-[10px] text-danger mt-1">
-                              {errors.items[index]?.productId?.message}
-                            </p>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <input
-                            type="number"
-                            min={1}
-                            {...register(`items.${index}.quantity` as const, {
-                              valueAsNumber: true,
-                            })}
-                            className="w-full px-3 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-center"
-                          />
-                        </td>
-                        <td className="px-6 py-4">
-                          <input
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            {...register(`items.${index}.unitPrice` as const, {
-                              valueAsNumber: true,
-                            })}
-                            className="w-full px-3 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-right font-medium"
-                          />
-                        </td>
-                        <td className="px-6 py-4 text-sm font-bold text-text-primary text-right">
-                          {new Intl.NumberFormat("vi-VN").format(
-                            (watchItems?.[index]?.quantity || 0) *
-                              (watchItems?.[index]?.unitPrice || 0),
-                          )}{" "}
-                          đ
-                        </td>
-                        <td className="px-6 py-4">
-                          <button
-                            type="button"
-                            onClick={() => remove(index)}
-                            disabled={fields.length === 1}
-                            className="p-2 text-text-secondary hover:text-danger transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-30"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="px-6 py-4">
+                            <input
+                              type="number"
+                              min={1}
+                              {...register(`items.${index}.quantity` as const, {
+                                valueAsNumber: true,
+                              })}
+                              className="w-full px-3 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-center"
+                            />
+                          </td>
+                          <td className="px-6 py-4">
+                            <input
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              {...register(
+                                `items.${index}.unitPrice` as const,
+                                { valueAsNumber: true },
+                              )}
+                              className="w-full px-3 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-right font-medium"
+                            />
+                            {productCost !== null && (
+                              <p className="mt-1 text-[10px] text-text-secondary">
+                                Giá vốn SP:{" "}
+                                {new Intl.NumberFormat("vi-VN").format(
+                                  productCost,
+                                )}
+                                 đ
+                              </p>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              step="0.01"
+                              {...register(`items.${index}.taxRate` as const, {
+                                valueAsNumber: true,
+                              })}
+                              className="w-full px-3 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-center"
+                            />
+                          </td>
+                          <td className="px-6 py-4 text-sm font-bold text-text-primary text-right">
+                            {new Intl.NumberFormat("vi-VN").format(
+                              (watchItems?.[index]?.quantity || 0) *
+                                (watchItems?.[index]?.unitPrice || 0) *
+                                (1 + (watchItems?.[index]?.taxRate || 0) / 100),
+                            )}{" "}
+                            đ
+                          </td>
+                          <td className="px-6 py-4">
+                            <button
+                              type="button"
+                              onClick={() => remove(index)}
+                              disabled={fields.length === 1}
+                              className="p-2 text-text-secondary hover:text-danger transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-30"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
                 {errors.items?.root && (
@@ -356,6 +443,25 @@ export function InboundForm({
                     (sum, item) => sum + (item.quantity || 0),
                     0,
                   ) || 0}
+                </span>
+              </div>
+
+              <hr className="border-border-ui/50 my-2" />
+
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-text-secondary font-medium">
+                  Tạm tính:
+                </span>
+                <span className="text-text-primary font-bold">
+                  {new Intl.NumberFormat("vi-VN").format(subtotalAmount)} đ
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-text-secondary font-medium">
+                  Tổng VAT:
+                </span>
+                <span className="text-text-primary font-bold">
+                  {new Intl.NumberFormat("vi-VN").format(taxTotalAmount)} đ
                 </span>
               </div>
 

@@ -90,7 +90,7 @@ function assertItemsValid(items: InboundItemSchemaInput[]) {
 async function loadActiveProducts(productIds: string[]) {
   const products = await prisma.product.findMany({
     where: { id: { in: productIds }, isActive: true },
-    select: { id: true },
+    select: { id: true, taxRate: true },
   });
   if (products.length !== productIds.length) {
     throw new AppError(
@@ -98,6 +98,7 @@ async function loadActiveProducts(productIds: string[]) {
       "Một hoặc nhiều sản phẩm không tồn tại hoặc đã ngừng hoạt động",
     );
   }
+  return new Map(products.map((p) => [p.id, p]));
 }
 
 async function assertSupplierActive(supplierId: string) {
@@ -110,23 +111,80 @@ async function assertSupplierActive(supplierId: string) {
   }
 }
 
-function computeTotalAmount(items: InboundItemSchemaInput[]) {
-  return items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+type ResolvedItem = {
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate: number;
+  taxAmount: number;
+  lineSubtotal: number;
+  totalPrice: number;
+};
+
+function round2(n: number) {
+  return Math.round(n * 100) / 100;
+}
+
+/**
+ * Resolve effective taxRate per item (client value > product default > 0)
+ * và tính subtotal/tax/total cho từng dòng + cho cả phiếu.
+ */
+function resolveItemsAndAmounts(
+  items: InboundItemSchemaInput[],
+  productTaxMap: Map<string, { taxRate: Prisma.Decimal | null }>,
+): {
+  resolved: ResolvedItem[];
+  subtotal: number;
+  taxTotal: number;
+  total: number;
+} {
+  let subtotal = 0;
+  let taxTotal = 0;
+  const resolved: ResolvedItem[] = items.map((item) => {
+    const product = productTaxMap.get(item.productId);
+    const fallback = product?.taxRate ? Number(product.taxRate) : 0;
+    const taxRate =
+      typeof item.taxRate === "number" && item.taxRate >= 0
+        ? item.taxRate
+        : fallback;
+    const lineSubtotal = round2(item.quantity * item.unitPrice);
+    const taxAmount = round2((lineSubtotal * taxRate) / 100);
+    const totalPrice = round2(lineSubtotal + taxAmount);
+    subtotal += lineSubtotal;
+    taxTotal += taxAmount;
+    return {
+      productId: item.productId,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      taxRate,
+      taxAmount,
+      lineSubtotal,
+      totalPrice,
+    };
+  });
+  subtotal = round2(subtotal);
+  taxTotal = round2(taxTotal);
+  return { resolved, subtotal, taxTotal, total: round2(subtotal + taxTotal) };
 }
 
 function serializeListItem(receipt: {
   id: string;
   code: string;
   status: string;
+  subtotalAmount: Prisma.Decimal;
+  taxTotalAmount: Prisma.Decimal;
   totalAmount: Prisma.Decimal;
   createdAt: Date;
   supplier: { id: string; name: string };
   createdBy: { id: string; name: string };
   _count: { items: number };
 }) {
-  const { _count, totalAmount, ...rest } = receipt;
+  const { _count, subtotalAmount, taxTotalAmount, totalAmount, ...rest } =
+    receipt;
   return {
     ...rest,
+    subtotalAmount: Number(subtotalAmount),
+    taxTotalAmount: Number(taxTotalAmount),
     totalAmount: Number(totalAmount),
     itemCount: _count.items,
   };
@@ -221,6 +279,8 @@ export async function getInboundById(id: string) {
     supplier: receipt.supplier,
     status: receipt.status,
     note: receipt.note,
+    subtotalAmount: Number(receipt.subtotalAmount),
+    taxTotalAmount: Number(receipt.taxTotalAmount),
     totalAmount: Number(receipt.totalAmount),
     createdBy: receipt.createdBy,
     approvedBy,
@@ -233,6 +293,8 @@ export async function getInboundById(id: string) {
       product: item.product,
       quantity: item.quantity,
       unitPrice: Number(item.unitPrice),
+      taxRate: Number(item.taxRate),
+      taxAmount: Number(item.taxAmount),
       totalPrice: Number(item.totalPrice),
     })),
   };
@@ -248,9 +310,14 @@ export async function createInbound(
 ) {
   assertItemsValid(input.items);
   await assertSupplierActive(input.supplierId);
-  await loadActiveProducts(input.items.map((i) => i.productId));
+  const productMap = await loadActiveProducts(
+    input.items.map((i) => i.productId),
+  );
 
-  const totalAmount = computeTotalAmount(input.items);
+  const { resolved, subtotal, taxTotal, total } = resolveItemsAndAmounts(
+    input.items,
+    productMap,
+  );
 
   const created = await prisma.$transaction(async (tx) => {
     const code = await generateInboundCode(tx);
@@ -260,13 +327,17 @@ export async function createInbound(
         supplierId: input.supplierId,
         createdById: userId,
         note: input.note ?? null,
-        totalAmount,
+        subtotalAmount: subtotal,
+        taxTotalAmount: taxTotal,
+        totalAmount: total,
         items: {
-          create: input.items.map((item) => ({
+          create: resolved.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
-            totalPrice: item.quantity * item.unitPrice,
+            taxRate: item.taxRate,
+            taxAmount: item.taxAmount,
+            totalPrice: item.totalPrice,
           })),
         },
       },
@@ -297,35 +368,41 @@ export async function updateInbound(
   }
 
   if (input.supplierId) await assertSupplierActive(input.supplierId);
+  let computed: ReturnType<typeof resolveItemsAndAmounts> | null = null;
   if (input.items) {
     assertItemsValid(input.items);
-    await loadActiveProducts(input.items.map((i) => i.productId));
+    const productMap = await loadActiveProducts(
+      input.items.map((i) => i.productId),
+    );
+    computed = resolveItemsAndAmounts(input.items, productMap);
   }
 
   const updated = await prisma.$transaction(async (tx) => {
-    if (input.items) {
+    if (computed) {
       await tx.goodsReceiptItem.deleteMany({ where: { goodsReceiptId: id } });
       await tx.goodsReceiptItem.createMany({
-        data: input.items.map((item) => ({
+        data: computed.resolved.map((item) => ({
           goodsReceiptId: id,
           productId: item.productId,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
-          totalPrice: item.quantity * item.unitPrice,
+          taxRate: item.taxRate,
+          taxAmount: item.taxAmount,
+          totalPrice: item.totalPrice,
         })),
       });
     }
-
-    const totalAmount = input.items
-      ? computeTotalAmount(input.items)
-      : undefined;
 
     return tx.goodsReceipt.update({
       where: { id },
       data: {
         ...(input.supplierId !== undefined && { supplierId: input.supplierId }),
         ...(input.note !== undefined && { note: input.note }),
-        ...(totalAmount !== undefined && { totalAmount }),
+        ...(computed && {
+          subtotalAmount: computed.subtotal,
+          taxTotalAmount: computed.taxTotal,
+          totalAmount: computed.total,
+        }),
       },
       include: inboundListInclude,
     });

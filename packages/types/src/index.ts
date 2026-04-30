@@ -397,6 +397,8 @@ export interface InboundListItem {
   code: string;
   supplier: InboundSupplierSummary;
   status: InboundStatus;
+  subtotalAmount: number;
+  taxTotalAmount: number;
   totalAmount: number;
   itemCount: number;
   createdBy: InboundUserSummary;
@@ -416,6 +418,8 @@ export interface InboundDetailItem {
   product: InboundDetailItemProduct;
   quantity: number;
   unitPrice: number;
+  taxRate: number;
+  taxAmount: number;
   totalPrice: number;
 }
 
@@ -432,6 +436,8 @@ export interface InboundDetail {
   supplier: InboundSupplierDetail;
   status: InboundStatus;
   note: string | null;
+  subtotalAmount: number;
+  taxTotalAmount: number;
   totalAmount: number;
   createdBy: InboundUserSummary;
   approvedBy: InboundUserSummary | null;
@@ -446,6 +452,7 @@ export interface InboundItemInput {
   productId: string;
   quantity: number;
   unitPrice: number;
+  taxRate?: number;
 }
 
 export interface CreateInboundInput {
@@ -503,6 +510,8 @@ export interface OutboundListItem {
   recipient: OutboundRecipientSummary;
   status: OutboundStatus;
   purpose: string | null;
+  subtotalAmount: number;
+  taxTotalAmount: number;
   totalAmount: number;
   itemCount: number;
   createdBy: OutboundUserSummary;
@@ -522,6 +531,8 @@ export interface OutboundDetailItem {
   product: OutboundDetailItemProduct;
   quantity: number;
   unitPrice: number;
+  taxRate: number;
+  taxAmount: number;
   totalPrice: number;
 }
 
@@ -538,6 +549,8 @@ export interface OutboundDetail {
   status: OutboundStatus;
   purpose: string | null;
   note: string | null;
+  subtotalAmount: number;
+  taxTotalAmount: number;
   totalAmount: number;
   createdBy: OutboundUserSummary;
   approvedBy: OutboundUserSummary | null;
@@ -552,6 +565,7 @@ export interface OutboundItemInput {
   productId: string;
   quantity: number;
   unitPrice: number;
+  taxRate?: number;
 }
 
 export interface CreateOutboundInput {

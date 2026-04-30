@@ -323,6 +323,12 @@ export function InboundDetailView({ id }: InboundDetailViewProps) {
                       Đơn giá
                     </th>
                     <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider text-right">
+                      Thuế (%)
+                    </th>
+                    <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider text-right">
+                      Tiền thuế
+                    </th>
+                    <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider text-right">
                       Thành tiền
                     </th>
                   </tr>
@@ -345,16 +351,44 @@ export function InboundDetailView({ id }: InboundDetailViewProps) {
                       <td className="px-6 py-4 text-sm text-text-primary text-right">
                         {formatNumber(item.unitPrice)} đ
                       </td>
+                      <td className="px-6 py-4 text-sm text-text-secondary text-right">
+                        {item.taxRate}%
+                      </td>
+                      <td className="px-6 py-4 text-sm text-text-secondary text-right">
+                        {formatNumber(item.taxAmount)} đ
+                      </td>
                       <td className="px-6 py-4 text-sm font-bold text-text-primary text-right">
                         {formatNumber(item.totalPrice)} đ
                       </td>
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-background-app/30 font-bold">
+                <tfoot className="bg-background-app/30">
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={6}
+                      className="px-6 py-3 text-sm text-text-secondary text-right border-t border-border-ui"
+                    >
+                      Tạm tính (chưa thuế):
+                    </td>
+                    <td className="px-6 py-3 text-sm font-medium text-text-primary text-right border-t border-border-ui">
+                      {formatNumber(receipt.subtotalAmount)} đ
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-6 py-3 text-sm text-text-secondary text-right"
+                    >
+                      Tổng VAT:
+                    </td>
+                    <td className="px-6 py-3 text-sm font-medium text-text-primary text-right">
+                      {formatNumber(receipt.taxTotalAmount)} đ
+                    </td>
+                  </tr>
+                  <tr className="font-bold">
+                    <td
+                      colSpan={6}
                       className="px-6 py-5 text-sm text-text-primary text-right border-t border-border-ui"
                     >
                       Tổng giá trị phiếu nhập:

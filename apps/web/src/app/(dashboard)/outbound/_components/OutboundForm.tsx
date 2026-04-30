@@ -33,6 +33,10 @@ const outboundItemSchema = z.object({
     .int()
     .min(1, "Tối thiểu 1"),
   unitPrice: z.number({ error: "Đơn giá không hợp lệ" }).min(0, "Giá không âm"),
+  taxRate: z
+    .number({ error: "Thuế suất không hợp lệ" })
+    .min(0, "Thuế không âm")
+    .max(100, "Tối đa 100%"),
 });
 
 const outboundSchema = z.object({
@@ -102,7 +106,7 @@ export function OutboundForm({
       recipientId: "",
       purpose: "",
       note: "",
-      items: [{ productId: "", quantity: 1, unitPrice: 0 }],
+      items: [{ productId: "", quantity: 1, unitPrice: 0, taxRate: 0 }],
     },
   });
 
@@ -113,11 +117,18 @@ export function OutboundForm({
 
   const watchItems = useWatch({ control, name: "items" });
 
-  const totalAmount =
+  const subtotalAmount =
     watchItems?.reduce(
       (sum, item) => sum + (item.quantity * item.unitPrice || 0),
       0,
     ) || 0;
+  const taxTotalAmount =
+    watchItems?.reduce(
+      (sum, item) =>
+        sum + ((item.quantity * item.unitPrice * item.taxRate) / 100 || 0),
+      0,
+    ) || 0;
+  const totalAmount = subtotalAmount + taxTotalAmount;
 
   const onSubmit = async (data: OutboundFormValues) => {
     const payload = {
@@ -128,6 +139,7 @@ export function OutboundForm({
         productId: item.productId,
         quantity: Number(item.quantity),
         unitPrice: Number(item.unitPrice),
+        taxRate: Number(item.taxRate),
       })),
     };
 
@@ -239,7 +251,12 @@ export function OutboundForm({
                 <button
                   type="button"
                   onClick={() =>
-                    append({ productId: "", quantity: 1, unitPrice: 0 })
+                    append({
+                      productId: "",
+                      quantity: 1,
+                      unitPrice: 0,
+                      taxRate: 0,
+                    })
                   }
                   className="flex items-center gap-2 px-4 py-2 bg-card-white border border-accent text-accent rounded-lg font-medium text-xs hover:bg-accent/5 transition-all"
                 >
@@ -263,6 +280,9 @@ export function OutboundForm({
                       <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-40">
                         Đơn giá xuất
                       </th>
+                      <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-24">
+                        Thuế (%)
+                      </th>
                       <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-40 text-right">
                         Thành tiền
                       </th>
@@ -279,6 +299,10 @@ export function OutboundForm({
                       const isOverStock =
                         selectedProduct &&
                         quantity > selectedProduct.currentStock;
+                      const productSale =
+                        selectedProduct?.salePrice != null
+                          ? Number(selectedProduct.salePrice)
+                          : null;
 
                       return (
                         <tr key={field.id} className="group">
@@ -292,7 +316,32 @@ export function OutboundForm({
                               render={({ field: ctrl }) => (
                                 <ProductCombobox
                                   value={ctrl.value}
-                                  onChange={(id) => ctrl.onChange(id)}
+                                  onChange={(id) => {
+                                    ctrl.onChange(id);
+                                    const p = productMap.get(id);
+                                    if (!p) return;
+                                    const currentPrice =
+                                      watchItems?.[index]?.unitPrice ?? 0;
+                                    if (
+                                      currentPrice === 0 &&
+                                      p.salePrice != null
+                                    ) {
+                                      setValue(
+                                        `items.${index}.unitPrice`,
+                                        Number(p.salePrice),
+                                        { shouldValidate: true },
+                                      );
+                                    }
+                                    const currentTax =
+                                      watchItems?.[index]?.taxRate ?? 0;
+                                    if (currentTax === 0 && p.taxRate != null) {
+                                      setValue(
+                                        `items.${index}.taxRate`,
+                                        Number(p.taxRate),
+                                        { shouldValidate: true },
+                                      );
+                                    }
+                                  }}
                                   hasError={Boolean(
                                     errors.items?.[index]?.productId,
                                   )}
@@ -362,10 +411,33 @@ export function OutboundForm({
                               )}
                               className="w-full px-3 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-right font-medium"
                             />
+                            {productSale !== null && (
+                              <p className="mt-1 text-[10px] text-text-secondary">
+                                Giá bán SP:{" "}
+                                {new Intl.NumberFormat("vi-VN").format(
+                                  productSale,
+                                )}
+                                 đ
+                              </p>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              step="0.01"
+                              {...register(`items.${index}.taxRate` as const, {
+                                valueAsNumber: true,
+                              })}
+                              className="w-full px-3 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-center"
+                            />
                           </td>
                           <td className="px-6 py-4 text-sm font-bold text-text-primary text-right">
                             {new Intl.NumberFormat("vi-VN").format(
-                              quantity * (watchItems?.[index]?.unitPrice || 0),
+                              quantity *
+                                (watchItems?.[index]?.unitPrice || 0) *
+                                (1 + (watchItems?.[index]?.taxRate || 0) / 100),
                             )}{" "}
                             đ
                           </td>
@@ -409,6 +481,25 @@ export function OutboundForm({
                 </span>
                 <span className="text-text-primary font-bold">
                   {fields.length}
+                </span>
+              </div>
+
+              <hr className="border-border-ui/50 my-2" />
+
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-text-secondary font-medium">
+                  Tạm tính:
+                </span>
+                <span className="text-text-primary font-bold">
+                  {new Intl.NumberFormat("vi-VN").format(subtotalAmount)} đ
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-text-secondary font-medium">
+                  Tổng VAT:
+                </span>
+                <span className="text-text-primary font-bold">
+                  {new Intl.NumberFormat("vi-VN").format(taxTotalAmount)} đ
                 </span>
               </div>
 

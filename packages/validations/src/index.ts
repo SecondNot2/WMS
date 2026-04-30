@@ -408,6 +408,11 @@ export const inboundItemSchema = z.object({
     .int("Số lượng phải là số nguyên")
     .positive("Số lượng phải lớn hơn 0"),
   unitPrice: z.coerce.number().nonnegative("Đơn giá không được âm"),
+  taxRate: z.coerce
+    .number()
+    .min(0, "Thuế suất không được âm")
+    .max(100, "Thuế suất tối đa 100%")
+    .default(0),
 });
 export type InboundItemSchemaInput = z.infer<typeof inboundItemSchema>;
 
@@ -490,6 +495,11 @@ export const outboundItemSchema = z.object({
     .int("Số lượng phải là số nguyên")
     .positive("Số lượng phải lớn hơn 0"),
   unitPrice: z.coerce.number().nonnegative("Đơn giá không được âm"),
+  taxRate: z.coerce
+    .number()
+    .min(0, "Thuế suất không được âm")
+    .max(100, "Thuế suất tối đa 100%")
+    .default(0),
 });
 export type OutboundItemSchemaInput = z.infer<typeof outboundItemSchema>;
 

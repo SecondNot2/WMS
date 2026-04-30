@@ -22,6 +22,8 @@ export const GET = handle(
       "Lý do xuất": r.purpose ?? "",
       "Trạng thái": STATUS_LABEL[r.status] ?? r.status,
       "Số mặt hàng": r.items.length,
+      "Tạm tính (VND)": Number(r.subtotalAmount),
+      "Tổng VAT (VND)": Number(r.taxTotalAmount),
       "Tổng tiền (VND)": Number(r.totalAmount),
       "Người lập": r.createdBy.name,
       "Ngày lập": r.createdAt.toISOString(),
@@ -40,16 +42,32 @@ export const GET = handle(
         ĐVT: item.product.unit,
         "Số lượng": item.quantity,
         "Đơn giá": Number(item.unitPrice),
+        "Thuế (%)": Number(item.taxRate),
+        "Tiền thuế": Number(item.taxAmount),
         "Thành tiền": Number(item.totalPrice),
         "Ngày lập": r.createdAt.toISOString(),
       })),
     );
 
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), "Tổng hợp");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailRows), "Chi tiết");
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.json_to_sheet(summaryRows),
+      "Tổng hợp",
+    );
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.json_to_sheet(detailRows),
+      "Chi tiết",
+    );
 
-    const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
-    return excelResponse(buffer, `outbound-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    const buffer = XLSX.write(wb, {
+      type: "buffer",
+      bookType: "xlsx",
+    }) as Buffer;
+    return excelResponse(
+      buffer,
+      `outbound-${new Date().toISOString().slice(0, 10)}.xlsx`,
+    );
   },
 );

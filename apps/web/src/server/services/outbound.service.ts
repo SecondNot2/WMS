@@ -112,6 +112,7 @@ async function loadProductsForOutbound(
       name: true,
       unit: true,
       currentStock: true,
+      taxRate: true,
     },
   });
   if (products.length !== productIds.length) {
@@ -135,8 +136,56 @@ async function loadProductsForOutbound(
   return map;
 }
 
-function computeTotalAmount(items: OutboundItemSchemaInput[]) {
-  return items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+type ResolvedOutboundItem = {
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate: number;
+  taxAmount: number;
+  lineSubtotal: number;
+  totalPrice: number;
+};
+
+function round2(n: number) {
+  return Math.round(n * 100) / 100;
+}
+
+function resolveItemsAndAmounts(
+  items: OutboundItemSchemaInput[],
+  productTaxMap: Map<string, { taxRate: Prisma.Decimal | null }>,
+): {
+  resolved: ResolvedOutboundItem[];
+  subtotal: number;
+  taxTotal: number;
+  total: number;
+} {
+  let subtotal = 0;
+  let taxTotal = 0;
+  const resolved: ResolvedOutboundItem[] = items.map((item) => {
+    const product = productTaxMap.get(item.productId);
+    const fallback = product?.taxRate ? Number(product.taxRate) : 0;
+    const taxRate =
+      typeof item.taxRate === "number" && item.taxRate >= 0
+        ? item.taxRate
+        : fallback;
+    const lineSubtotal = round2(item.quantity * item.unitPrice);
+    const taxAmount = round2((lineSubtotal * taxRate) / 100);
+    const totalPrice = round2(lineSubtotal + taxAmount);
+    subtotal += lineSubtotal;
+    taxTotal += taxAmount;
+    return {
+      productId: item.productId,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      taxRate,
+      taxAmount,
+      lineSubtotal,
+      totalPrice,
+    };
+  });
+  subtotal = round2(subtotal);
+  taxTotal = round2(taxTotal);
+  return { resolved, subtotal, taxTotal, total: round2(subtotal + taxTotal) };
 }
 
 function serializeListItem(issue: {
@@ -144,15 +193,20 @@ function serializeListItem(issue: {
   code: string;
   status: string;
   purpose: string | null;
+  subtotalAmount: Prisma.Decimal;
+  taxTotalAmount: Prisma.Decimal;
   totalAmount: Prisma.Decimal;
   createdAt: Date;
   recipient: { id: string; name: string };
   createdBy: { id: string; name: string };
   _count: { items: number };
 }) {
-  const { _count, totalAmount, ...rest } = issue;
+  const { _count, subtotalAmount, taxTotalAmount, totalAmount, ...rest } =
+    issue;
   return {
     ...rest,
+    subtotalAmount: Number(subtotalAmount),
+    taxTotalAmount: Number(taxTotalAmount),
     totalAmount: Number(totalAmount),
     itemCount: _count.items,
   };
@@ -249,6 +303,8 @@ export async function getOutboundById(id: string) {
     status: issue.status,
     purpose: issue.purpose,
     note: issue.note,
+    subtotalAmount: Number(issue.subtotalAmount),
+    taxTotalAmount: Number(issue.taxTotalAmount),
     totalAmount: Number(issue.totalAmount),
     createdBy: issue.createdBy,
     approvedBy,
@@ -261,6 +317,8 @@ export async function getOutboundById(id: string) {
       product: item.product,
       quantity: item.quantity,
       unitPrice: Number(item.unitPrice),
+      taxRate: Number(item.taxRate),
+      taxAmount: Number(item.taxAmount),
       totalPrice: Number(item.totalPrice),
     })),
   };
@@ -276,9 +334,12 @@ export async function createOutbound(
 ) {
   assertItemsValid(input.items);
   await assertRecipientActive(input.recipientId);
-  await loadProductsForOutbound(input.items);
+  const productMap = await loadProductsForOutbound(input.items);
 
-  const totalAmount = computeTotalAmount(input.items);
+  const { resolved, subtotal, taxTotal, total } = resolveItemsAndAmounts(
+    input.items,
+    productMap,
+  );
 
   const created = await prisma.$transaction(async (tx) => {
     const code = await generateOutboundCode(tx);
@@ -289,13 +350,17 @@ export async function createOutbound(
         createdById: userId,
         purpose: input.purpose,
         note: input.note ?? null,
-        totalAmount,
+        subtotalAmount: subtotal,
+        taxTotalAmount: taxTotal,
+        totalAmount: total,
         items: {
-          create: input.items.map((item) => ({
+          create: resolved.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
-            totalPrice: item.quantity * item.unitPrice,
+            taxRate: item.taxRate,
+            taxAmount: item.taxAmount,
+            totalPrice: item.totalPrice,
           })),
         },
       },
@@ -309,7 +374,7 @@ export async function createOutbound(
     targetType: "GoodsIssue",
     targetId: created.id,
     targetCode: created.code,
-    detail: { itemCount: input.items.length, totalAmount },
+    detail: { itemCount: input.items.length, totalAmount: total },
   });
 
   return serializeListItem(created);
@@ -335,28 +400,28 @@ export async function updateOutbound(
   }
 
   if (input.recipientId) await assertRecipientActive(input.recipientId);
+  let computed: ReturnType<typeof resolveItemsAndAmounts> | null = null;
   if (input.items) {
     assertItemsValid(input.items);
-    await loadProductsForOutbound(input.items);
+    const productMap = await loadProductsForOutbound(input.items);
+    computed = resolveItemsAndAmounts(input.items, productMap);
   }
 
   const updated = await prisma.$transaction(async (tx) => {
-    if (input.items) {
+    if (computed) {
       await tx.goodsIssueItem.deleteMany({ where: { goodsIssueId: id } });
       await tx.goodsIssueItem.createMany({
-        data: input.items.map((item) => ({
+        data: computed.resolved.map((item) => ({
           goodsIssueId: id,
           productId: item.productId,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
-          totalPrice: item.quantity * item.unitPrice,
+          taxRate: item.taxRate,
+          taxAmount: item.taxAmount,
+          totalPrice: item.totalPrice,
         })),
       });
     }
-
-    const totalAmount = input.items
-      ? computeTotalAmount(input.items)
-      : undefined;
 
     return tx.goodsIssue.update({
       where: { id },
@@ -366,7 +431,11 @@ export async function updateOutbound(
         }),
         ...(input.purpose !== undefined && { purpose: input.purpose }),
         ...(input.note !== undefined && { note: input.note }),
-        ...(totalAmount !== undefined && { totalAmount }),
+        ...(computed && {
+          subtotalAmount: computed.subtotal,
+          taxTotalAmount: computed.taxTotal,
+          totalAmount: computed.total,
+        }),
       },
       include: outboundListInclude,
     });
@@ -432,6 +501,7 @@ export async function approveOutbound(id: string, userId: string) {
         productId: i.productId,
         quantity: i.quantity,
         unitPrice: Number(i.unitPrice),
+        taxRate: Number(i.taxRate),
       })),
       tx,
     );

@@ -152,6 +152,8 @@ model GoodsReceipt {
   createdBy      User               @relation("ReceiptCreatedBy", fields: [createdById], references: [id])
   status         GoodsReceiptStatus @default(PENDING)
   note           String?
+  subtotalAmount Decimal            @default(0) @db.Decimal(15, 2)
+  taxTotalAmount Decimal            @default(0) @db.Decimal(15, 2)
   totalAmount    Decimal            @default(0) @db.Decimal(15, 2)
   approvedById   String?
   rejectedReason String?
@@ -175,6 +177,8 @@ model GoodsReceiptItem {
   product        Product      @relation(fields: [productId], references: [id])
   quantity       Int
   unitPrice      Decimal      @db.Decimal(15, 2)
+  taxRate        Decimal      @default(0) @db.Decimal(5, 2)
+  taxAmount      Decimal      @default(0) @db.Decimal(15, 2)
   totalPrice     Decimal      @db.Decimal(15, 2)
 
   @@index([goodsReceiptId])
@@ -202,6 +206,8 @@ model GoodsIssue {
   status         GoodsIssueStatus @default(PENDING)
   purpose        String?
   note           String?
+  subtotalAmount Decimal          @default(0) @db.Decimal(15, 2)
+  taxTotalAmount Decimal          @default(0) @db.Decimal(15, 2)
   totalAmount    Decimal          @default(0) @db.Decimal(15, 2)
   approvedById   String?
   rejectedReason String?
@@ -225,6 +231,8 @@ model GoodsIssueItem {
   product      Product    @relation(fields: [productId], references: [id])
   quantity     Int
   unitPrice    Decimal    @db.Decimal(15, 2)
+  taxRate      Decimal    @default(0) @db.Decimal(5, 2)
+  taxAmount    Decimal    @default(0) @db.Decimal(15, 2)
   totalPrice   Decimal    @db.Decimal(15, 2)
 
   @@index([goodsIssueId])

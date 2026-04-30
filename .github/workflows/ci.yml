@@ -65,6 +65,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Cache Turborepo
+        uses: actions/cache@v5
+        with:
+          path: .turbo
+          key: turbo-lint-${{ github.sha }}
+          restore-keys: |
+            turbo-lint-
+
       - name: Check Prettier formatting
         run: pnpm format:check
 
@@ -92,6 +100,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Cache Turborepo
+        uses: actions/cache@v5
+        with:
+          path: .turbo
+          key: turbo-typecheck-${{ github.sha }}
+          restore-keys: |
+            turbo-typecheck-
+
       - name: Generate Prisma client
         run: pnpm db:generate
 
@@ -118,6 +134,14 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Cache Turborepo
+        uses: actions/cache@v5
+        with:
+          path: .turbo
+          key: turbo-test-${{ github.sha }}
+          restore-keys: |
+            turbo-test-
 
       - name: Run unit tests with coverage
         run: pnpm test:coverage
@@ -150,6 +174,14 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Cache Turborepo
+        uses: actions/cache@v5
+        with:
+          path: .turbo
+          key: turbo-build-${{ github.sha }}
+          restore-keys: |
+            turbo-build-
 
       - name: Cache Next.js build
         uses: actions/cache@v5

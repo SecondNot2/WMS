@@ -44,7 +44,7 @@
 
 ## ✨ Highlights
 
-- 🏗️ **Monorepo**: pnpm workspaces với 3 shared packages (`types`, `validations`, `config`)
+- 🏗️ **Monorepo**: pnpm workspaces + Turborepo 2 với cached pipeline (lint/type-check/test/build)
 - ⚡ **Single-deploy**: Backend (Express) merge vào Next.js Route Handlers — chỉ deploy 1 app lên Vercel
 - 🔒 **Auth**: JWT access (15m) + refresh (7d) với rotation, RBAC 3 roles
 - 📦 **Stock realtime**: Mọi thay đổi tồn kho đẩy qua Supabase Broadcast, UI cập nhật tức thì không cần refresh
@@ -126,26 +126,26 @@ sequenceDiagram
 
 ## 🧰 Tech stack
 
-| Layer         | Tech                                                 | Notes                                                     |
-| ------------- | ---------------------------------------------------- | --------------------------------------------------------- |
-| **Runtime**   | Node 20 LTS, pnpm 10                                 | Single package manager, frozen lockfile in CI             |
-| **Framework** | Next.js 16 App Router, React 19                      | Server Components by default, `"use client"` opt-in       |
-| **Styling**   | Tailwind CSS 4                                       | `@theme` CSS variables, no hardcoded hex                  |
-| **State**     | Zustand 5 (UI), TanStack Query 5 (server cache)      | Strict separation, no `useEffect` for fetching            |
-| **Forms**     | React Hook Form + Zod 4                              | Schemas shared with backend via `@wms/validations`        |
-| **Backend**   | Next.js Route Handlers                               | Single deployment, no separate Express server             |
-| **ORM**       | Prisma 5                                             | `prisma migrate deploy` runs automatically on Vercel      |
-| **Database**  | Supabase Postgres                                    | Pooled (`6543`) for app, direct (`5432`) for migrations   |
-| **Auth**      | JWT access (15m) + refresh (7d)                      | bcryptjs, custom token rotation, Next.js Middleware guard |
-| **Realtime**  | Supabase Realtime Broadcast                          | `stock:updated` channel after every inventory mutation    |
-| **Logging**   | Winston                                              | Structured JSON logs, no `console.log` in services        |
-| **Charts**    | Recharts 3                                           | Inventory donut, shipment combo, performance trends       |
-| **Icons**     | Lucide React                                         | Tree-shakeable, ~1KB per icon                             |
-| **Excel**     | xlsx                                                 | Server-side generation for reports                        |
-| **Testing**   | Vitest 4 + jsdom + @testing-library/react            | 46 tests, v8 coverage, mocked Prisma client               |
-| **Quality**   | ESLint, Prettier 3, Commitlint, lint-staged, Husky 9 | Auto-format on commit, conventional commits enforced      |
-| **CI/CD**     | GitHub Actions, Vercel                               | install → lint+type-check+test → build, parallel jobs     |
-| **Security**  | CodeQL, Gitleaks, Dependabot                         | Weekly SAST + secret scan + dep updates                   |
+| Layer         | Tech                                                 | Notes                                                          |
+| ------------- | ---------------------------------------------------- | -------------------------------------------------------------- |
+| **Runtime**   | Node 20 LTS, pnpm 10                                 | Single package manager, frozen lockfile in CI                  |
+| **Framework** | Next.js 16 App Router, React 19                      | Server Components by default, `"use client"` opt-in            |
+| **Styling**   | Tailwind CSS 4                                       | `@theme` CSS variables, no hardcoded hex                       |
+| **State**     | Zustand 5 (UI), TanStack Query 5 (server cache)      | Strict separation, no `useEffect` for fetching                 |
+| **Forms**     | React Hook Form + Zod 4                              | Schemas shared with backend via `@wms/validations`             |
+| **Backend**   | Next.js Route Handlers                               | Single deployment, no separate Express server                  |
+| **ORM**       | Prisma 5                                             | `prisma migrate deploy` runs automatically on Vercel           |
+| **Database**  | Supabase Postgres                                    | Pooled (`6543`) for app, direct (`5432`) for migrations        |
+| **Auth**      | JWT access (15m) + refresh (7d)                      | bcryptjs, custom token rotation, Next.js Middleware guard      |
+| **Realtime**  | Supabase Realtime Broadcast                          | `stock:updated` channel after every inventory mutation         |
+| **Logging**   | Winston                                              | Structured JSON logs, no `console.log` in services             |
+| **Charts**    | Recharts 3                                           | Inventory donut, shipment combo, performance trends            |
+| **Icons**     | Lucide React                                         | Tree-shakeable, ~1KB per icon                                  |
+| **Excel**     | xlsx                                                 | Server-side generation for reports                             |
+| **Testing**   | Vitest 4 + jsdom + @testing-library/react            | 46 tests, v8 coverage, mocked Prisma client                    |
+| **Quality**   | ESLint, Prettier 3, Commitlint, lint-staged, Husky 9 | Auto-format on commit, conventional commits enforced           |
+| **CI/CD**     | GitHub Actions, Vercel, Turborepo 2                  | Cached pipeline, parallel jobs, FULL TURBO replay on cache hit |
+| **Security**  | CodeQL, Gitleaks, Dependabot                         | Weekly SAST + secret scan + dep updates                        |
 
 ---
 

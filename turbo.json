@@ -1,0 +1,81 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "stream",
+  "globalDependencies": [
+    "**/.env.*local",
+    "tsconfig.json",
+    ".prettierrc.json",
+    ".prettierignore"
+  ],
+  "globalEnv": ["NODE_ENV", "CI"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "prisma/**",
+        "public/**",
+        "next.config.*",
+        "postcss.config.*",
+        "tsconfig.json",
+        "package.json"
+      ],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": [
+        "DATABASE_URL",
+        "DIRECT_URL",
+        "JWT_SECRET",
+        "JWT_REFRESH_SECRET",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ]
+    },
+    "lint": {
+      "inputs": ["src/**", "eslint.config.*", ".eslintrc.*", "package.json"],
+      "outputs": []
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "tsconfig.json", "package.json"],
+      "outputs": ["*.tsbuildinfo"]
+    },
+    "test": {
+      "inputs": [
+        "src/**",
+        "vitest.config.*",
+        "vitest.setup.*",
+        "tsconfig.json",
+        "package.json"
+      ],
+      "outputs": []
+    },
+    "test:coverage": {
+      "inputs": [
+        "src/**",
+        "vitest.config.*",
+        "vitest.setup.*",
+        "tsconfig.json",
+        "package.json"
+      ],
+      "outputs": ["coverage/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "db:generate": {
+      "inputs": ["prisma/schema.prisma"],
+      "outputs": ["node_modules/.prisma/**", "node_modules/@prisma/client/**"]
+    },
+    "db:push": {
+      "cache": false,
+      "interactive": true
+    },
+    "db:migrate": {
+      "cache": false,
+      "interactive": true
+    }
+  }
+}

@@ -4,20 +4,18 @@
   "private": true,
   "description": "Warehouse Management System monorepo with Next.js web and API route handlers",
   "scripts": {
-    "dev": "pnpm --filter @wms/web dev",
-    "dev:web": "pnpm --filter @wms/web dev",
-    "build": "pnpm --filter @wms/web build",
-    "build:web": "pnpm --filter @wms/web build",
-    "type-check": "pnpm --filter @wms/web type-check",
-    "lint": "pnpm --filter @wms/web lint",
-    "test": "pnpm --filter @wms/web test",
-    "test:coverage": "pnpm --filter @wms/web test:coverage",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "db:generate": "pnpm --filter @wms/web db:generate",
-    "db:migrate": "pnpm --filter @wms/web db:migrate",
-    "db:push": "pnpm --filter @wms/web db:push"
+    "db:generate": "turbo run db:generate",
+    "db:migrate": "turbo run db:migrate",
+    "db:push": "turbo run db:push"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": [
@@ -39,6 +37,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "next": "16.2.4",
-    "prettier": "^3.8.3"
+    "prettier": "^3.8.3",
+    "turbo": "^2.9.6"
   }
 }

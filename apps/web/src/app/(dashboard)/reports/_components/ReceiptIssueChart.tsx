@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   AreaChart,
   Area,
@@ -12,17 +12,14 @@ import {
   Legend,
 } from "recharts";
 import { useReceiptIssueReport } from "@/lib/hooks/use-reports";
+import { useIsMounted } from "@/lib/hooks/use-is-mounted";
 
 export function ReceiptIssueChart() {
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useIsMounted();
   const { data, isLoading, error } = useReceiptIssueReport({
     page: 1,
     limit: 20,
   });
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   if (!isMounted || isLoading)
     return (

@@ -49,20 +49,33 @@ export function ProductCombobox({
     React.useState<Product | null>(null);
 
   const selectedFromList = listQuery.data?.data.find((p) => p.id === value);
-  React.useEffect(() => {
+
+  // Sync snapshot từ list query (pattern React 19 — không setState trong effect)
+  const [prevFromListId, setPrevFromListId] = React.useState<string | null>(
+    selectedFromList?.id ?? null,
+  );
+  if ((selectedFromList?.id ?? null) !== prevFromListId) {
+    setPrevFromListId(selectedFromList?.id ?? null);
     if (selectedFromList) setSelectedSnapshot(selectedFromList);
-  }, [selectedFromList]);
+  }
 
   const detailQuery = useProduct(
     value && !selectedFromList && !selectedSnapshot ? value : "",
   );
-  React.useEffect(() => {
-    if (!detailQuery.data) return;
-    if (selectedFromList || selectedSnapshot) return;
-    const { recentStockHistory: _ignored, ...productLike } = detailQuery.data;
-    void _ignored;
-    setSelectedSnapshot(productLike as Product);
-  }, [detailQuery.data, selectedFromList, selectedSnapshot]);
+
+  // Sync snapshot từ detail query khi product không nằm trong list
+  const detailId = detailQuery.data?.id ?? null;
+  const [prevDetailId, setPrevDetailId] = React.useState<string | null>(
+    detailId,
+  );
+  if (detailId !== prevDetailId) {
+    setPrevDetailId(detailId);
+    if (detailQuery.data && !selectedFromList && !selectedSnapshot) {
+      const { recentStockHistory: _ignored, ...productLike } = detailQuery.data;
+      void _ignored;
+      setSelectedSnapshot(productLike as Product);
+    }
+  }
 
   const options: ComboboxOption<string>[] = React.useMemo(() => {
     const list = listQuery.data?.data ?? [];

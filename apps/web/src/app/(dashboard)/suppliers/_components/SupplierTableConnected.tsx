@@ -41,9 +41,11 @@ export function SupplierTableConnected({
   const toast = useToast();
 
   const filtersKey = JSON.stringify(filters ?? {});
-  React.useEffect(() => {
+  const [prevFiltersKey, setPrevFiltersKey] = React.useState(filtersKey);
+  if (prevFiltersKey !== filtersKey) {
+    setPrevFiltersKey(filtersKey);
     setCurrentPage(1);
-  }, [filtersKey]);
+  }
 
   const { data, isLoading, error } = useSuppliers({
     page: currentPage,

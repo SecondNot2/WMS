@@ -4,15 +4,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle, CheckCircle2, Info, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-/**
- * Hook nhỏ — chỉ trả true sau khi mount để portal an toàn với SSR.
- */
-function useMounted() {
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
-  return mounted;
-}
+import { useIsMounted } from "@/lib/hooks/use-is-mounted";
 
 export type DialogVariant = "danger" | "warning" | "success" | "info";
 
@@ -88,7 +80,7 @@ function DialogShell({
     return () => document.removeEventListener("keydown", handler);
   }, [open, loading, onClose]);
 
-  const mounted = useMounted();
+  const mounted = useIsMounted();
 
   if (!open || !mounted) return null;
 
@@ -225,12 +217,15 @@ export function PromptDialog({
   const [value, setValue] = React.useState(initialValue);
   const [error, setError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
+  // Reset state mỗi lần dialog mở (pattern React 19 — không setState trong effect)
+  const [prevOpen, setPrevOpen] = React.useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setValue(initialValue);
       setError(null);
     }
-  }, [open, initialValue]);
+  }
 
   const handleConfirm = async () => {
     const trimmed = value.trim();
@@ -342,7 +337,7 @@ export function FormDialog({
     return () => document.removeEventListener("keydown", handler);
   }, [open, loading, onClose]);
 
-  const mounted = useMounted();
+  const mounted = useIsMounted();
 
   if (!open || !mounted) return null;
 

@@ -39,6 +39,7 @@ export function ProfileInfoForm({ user }: ProfileInfoFormProps) {
     },
   });
 
+  // eslint-disable-next-line react-hooks/refs -- ref.current is read inside async submit handler, not during render
   const onSubmit = handleSubmit(async (raw) => {
     setServerError(null);
     setSuccess(false);

@@ -51,9 +51,12 @@ export function UserTable({ search, roleId, isActive }: UserTableProps) {
     [page, limit, search, roleId, isActive],
   );
 
-  React.useEffect(() => {
+  const filtersKey = `${search}|${roleId}|${isActive}|${limit}`;
+  const [prevFiltersKey, setPrevFiltersKey] = React.useState(filtersKey);
+  if (prevFiltersKey !== filtersKey) {
+    setPrevFiltersKey(filtersKey);
     setPage(1);
-  }, [search, roleId, isActive, limit]);
+  }
 
   const { data, isLoading, isError, error, refetch } = useUsers(params);
   const toggleMutation = useToggleUserActive();

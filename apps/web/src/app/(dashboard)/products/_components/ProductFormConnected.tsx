@@ -162,8 +162,11 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
     );
   }
 
+  // eslint-disable-next-line react-hooks/refs -- handleSubmit returns event handler; ref.current is read inside async submit, not during render
+  const submitHandler = handleSubmit(onSubmit);
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={submitHandler} className="space-y-6">
       {submitError && (
         <div className="bg-danger/5 border border-danger/20 text-danger text-sm rounded-xl p-4">
           {submitError}

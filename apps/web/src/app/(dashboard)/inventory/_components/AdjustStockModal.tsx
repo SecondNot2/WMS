@@ -39,16 +39,20 @@ export function AdjustStockModal({
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [submitError, setSubmitError] = React.useState<string | null>(null);
 
-  // Reset state mỗi lần mở modal
-  React.useEffect(() => {
-    if (!isOpen) return;
-    setSelected(product ?? null);
-    setNewStockText(product ? String(product.currentStock) : "");
-    setReason("");
-    setSearchTerm("");
-    setDebouncedSearch("");
-    setSubmitError(null);
-  }, [isOpen, product]);
+  // Reset state mỗi lần mở modal (pattern React 19 — không setState trong effect)
+  const openKey = `${isOpen ? 1 : 0}|${product?.productId ?? ""}`;
+  const [prevOpenKey, setPrevOpenKey] = React.useState(openKey);
+  if (prevOpenKey !== openKey) {
+    setPrevOpenKey(openKey);
+    if (isOpen) {
+      setSelected(product ?? null);
+      setNewStockText(product ? String(product.currentStock) : "");
+      setReason("");
+      setSearchTerm("");
+      setDebouncedSearch("");
+      setSubmitError(null);
+    }
+  }
 
   // Debounce search
   React.useEffect(() => {

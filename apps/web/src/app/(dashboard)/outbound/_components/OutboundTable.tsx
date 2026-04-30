@@ -46,9 +46,13 @@ export function OutboundTable({ filters }: OutboundTableProps) {
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(10);
 
-  React.useEffect(() => {
+  // Reset trang khi đổi filter
+  const filtersKey = JSON.stringify(filters);
+  const [prevFiltersKey, setPrevFiltersKey] = React.useState(filtersKey);
+  if (prevFiltersKey !== filtersKey) {
+    setPrevFiltersKey(filtersKey);
     setPage(1);
-  }, [filters]);
+  }
 
   const query = React.useMemo(
     () => ({

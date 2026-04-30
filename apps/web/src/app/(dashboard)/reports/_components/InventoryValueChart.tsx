@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   PieChart,
   Pie,
@@ -10,16 +10,13 @@ import {
   Legend,
 } from "recharts";
 import { useInventoryReport } from "@/lib/hooks/use-reports";
+import { useIsMounted } from "@/lib/hooks/use-is-mounted";
 
 const COLORS = ["#2d7dd2", "#34d399", "#f39c12"];
 
 export function InventoryValueChart() {
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useIsMounted();
   const { data, isLoading, error } = useInventoryReport({ page: 1, limit: 20 });
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   if (!isMounted || isLoading)
     return (

@@ -172,10 +172,13 @@ export function Combobox<TValue extends string = string>({
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  // Reset highlight khi danh sách đổi
-  React.useEffect(() => {
+  // Reset highlight khi danh sách đổi (pattern React 19 — không setState trong effect)
+  const highlightKey = `${filtered.length}|${open}`;
+  const [prevHighlightKey, setPrevHighlightKey] = React.useState(highlightKey);
+  if (prevHighlightKey !== highlightKey) {
+    setPrevHighlightKey(highlightKey);
     setHighlight(0);
-  }, [filtered.length, open]);
+  }
 
   // Focus input khi mở
   React.useEffect(() => {

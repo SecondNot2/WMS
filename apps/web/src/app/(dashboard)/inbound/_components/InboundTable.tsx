@@ -47,9 +47,12 @@ export function InboundTable({ filters }: InboundTableProps) {
   const [limit, setLimit] = React.useState(10);
 
   // Reset trang khi đổi filter
-  React.useEffect(() => {
+  const filtersKey = JSON.stringify(filters);
+  const [prevFiltersKey, setPrevFiltersKey] = React.useState(filtersKey);
+  if (prevFiltersKey !== filtersKey) {
+    setPrevFiltersKey(filtersKey);
     setPage(1);
-  }, [filters]);
+  }
 
   const query = React.useMemo(
     () => ({

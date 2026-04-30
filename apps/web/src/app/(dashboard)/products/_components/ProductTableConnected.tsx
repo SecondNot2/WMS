@@ -66,10 +66,12 @@ export function ProductTableConnected({
   const toast = useToast();
 
   const filtersKey = JSON.stringify(filters ?? {});
-  React.useEffect(() => {
+  const [prevFiltersKey, setPrevFiltersKey] = React.useState(filtersKey);
+  if (prevFiltersKey !== filtersKey) {
+    setPrevFiltersKey(filtersKey);
     setCurrentPage(1);
     setSelectedIds([]);
-  }, [filtersKey]);
+  }
 
   const { data, isLoading, error } = useProducts({
     page: currentPage,

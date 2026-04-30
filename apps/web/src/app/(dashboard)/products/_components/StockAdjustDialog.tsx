@@ -36,14 +36,17 @@ export function StockAdjustDialog({
   const adjust = useAdjustProductStock(productId);
   const toast = useToast();
 
-  React.useEffect(() => {
+  // Reset state mỗi lần dialog mở
+  const [prevOpen, setPrevOpen] = React.useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setDirection("in");
       setAmount("");
       setNote("");
       setError(null);
     }
-  }, [open]);
+  }
 
   React.useEffect(() => {
     if (!open) return;

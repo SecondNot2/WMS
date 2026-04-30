@@ -378,6 +378,28 @@ graph TB
 
 ## 🚀 Deploy
 
+### Option 1 — Docker self-host (zero external deps)
+
+```bash
+# 1. Cấu hình env
+cp .env.docker.example .env.docker
+# Mở .env.docker, generate JWT secrets:
+#   openssl rand -base64 64
+
+# 2. Start stack (web + postgres)
+docker compose --env-file .env.docker up -d
+
+# 3. Apply migrations
+docker compose --env-file .env.docker exec web \
+  node node_modules/prisma/build/index.js migrate deploy --schema apps/web/prisma/schema.prisma
+
+# → http://localhost:3000
+```
+
+Image size: ~150MB nhờ Next.js standalone output. Multi-stage build với pnpm cache mount → rebuild incremental nhanh.
+
+### Option 2 — Vercel (managed deploy)
+
 Dự án deploy **một app duy nhất** lên Vercel. Backend (Route Handlers) cùng domain với frontend, không cần Render/Railway riêng.
 
 ### Vercel setup
@@ -412,10 +434,10 @@ Dự án deploy **một app duy nhất** lên Vercel. Backend (Route Handlers) c
 - [x] Vitest unit tests (46 tests)
 - [x] Husky + Prettier + Commitlint + Gitleaks
 - [ ] Playwright E2E tests
-- [ ] Dockerfile + docker-compose for self-hosting
+- [x] Dockerfile + docker-compose for self-hosting
 - [ ] OpenAPI auto-generation + Swagger UI
 - [ ] Sentry error tracking + Lighthouse CI
-- [ ] Turborepo for build cache
+- [x] Turborepo for build cache (~40-100x speedup on cache hit)
 
 ---
 

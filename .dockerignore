@@ -1,0 +1,68 @@
+# Docker build context ignore — keep the image lean & secure.
+
+# Version control
+.git
+.github
+.gitignore
+.gitattributes
+
+# Node
+**/node_modules
+**/.pnpm-store
+
+# Build outputs
+**/.next
+**/.turbo
+**/dist
+**/build
+**/coverage
+**/*.tsbuildinfo
+
+# Env files (NEVER bake into image)
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.production.example
+
+# IDEs / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# AI / agents / docs
+.agents
+.windsurf
+.windsurfrules
+AGENTS.md
+CLAUDE.md
+docs
+
+# Tests / quality (not needed inside image)
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/vitest.config.ts
+**/vitest.setup.ts
+.husky
+.prettierrc.json
+.prettierignore
+.gitleaks.toml
+commitlint.config.mjs
+
+# CI artifacts
+**/lint-errors.json
+**/*.log
+
+# Docker artifacts
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# Misc
+README.md
+LICENSE
+.vercel
+.vercelignore

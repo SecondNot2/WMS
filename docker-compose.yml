@@ -1,0 +1,73 @@
+# =============================================================================
+# WMS — local self-host stack (web + postgres)
+# Usage:
+#   cp .env.docker.example .env.docker
+#   docker compose --env-file .env.docker up -d
+#   docker compose --env-file .env.docker exec web pnpm --filter @wms/web db:migrate
+# Then: http://localhost:3000
+# =============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-wms}
+      POSTGRES_USER: ${POSTGRES_USER:-wms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wms_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-wms} -d ${POSTGRES_DB:-wms}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    image: wms-web:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-wms}:${POSTGRES_PASSWORD:-wms_dev_password}@postgres:5432/${POSTGRES_DB:-wms}?schema=public"
+      DIRECT_URL: "postgresql://${POSTGRES_USER:-wms}:${POSTGRES_PASSWORD:-wms_dev_password}@postgres:5432/${POSTGRES_DB:-wms}?schema=public"
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET is required - run: openssl rand -base64 64}"
+      JWT_REFRESH_SECRET: "${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}"
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      SUPABASE_REALTIME_CHANNEL: ${SUPABASE_REALTIME_CHANNEL:-wms}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+
+  # Optional: pgAdmin for DB inspection. Uncomment to enable.
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@wms.local
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #     PGADMIN_CONFIG_SERVER_MODE: "False"
+  #   ports:
+  #     - "5050:80"
+  #   depends_on:
+  #     - postgres
+
+volumes:
+  postgres_data:
+    driver: local

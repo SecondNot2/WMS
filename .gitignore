@@ -16,6 +16,10 @@ dist/
 coverage/
 *.tsbuildinfo
 
+# Test artifacts
+lint-errors.json
+.vitest-cache/
+
 # Prisma
 apps/api/prisma/migrations/dev.db*
 

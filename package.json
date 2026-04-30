@@ -10,6 +10,8 @@
     "build:web": "pnpm --filter @wms/web build",
     "type-check": "pnpm --filter @wms/web type-check",
     "lint": "pnpm --filter @wms/web lint",
+    "test": "pnpm --filter @wms/web test",
+    "test:coverage": "pnpm --filter @wms/web test:coverage",
     "db:generate": "pnpm --filter @wms/web db:generate",
     "db:migrate": "pnpm --filter @wms/web db:migrate",
     "db:push": "pnpm --filter @wms/web db:push"

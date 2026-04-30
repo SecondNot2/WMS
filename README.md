@@ -52,6 +52,7 @@
 - 🧪 **Tested**: 46 unit tests (Vitest) — services, utilities, RBAC, JWT lifecycle
 - ✅ **Quality gates**: Husky + lint-staged + Prettier + ESLint + Commitlint, 4 GitHub Actions workflows
 - 🛡️ **Secure-by-default**: Gitleaks secret scanning, CodeQL SAST, Dependabot, Next.js Middleware route protection
+- 📖 **Interactive API docs**: OpenAPI 3.1 auto-generated từ Zod schemas, served qua Scalar UI tại `/api-docs`
 - 🌐 **Vietnamese UI**: Tất cả label, error messages tiếng Việt; designed cho user thực tế
 
 ---
@@ -167,6 +168,7 @@ sequenceDiagram
 | **Settings**     | `/api/settings`                              | Per-key system settings, Admin only                         |
 
 > 📋 Đầy đủ 62 endpoints được liệt kê ở `docs/API_ENDPOINTS.md`.
+> 🔍 **Interactive API docs**: [`/api-docs`](/api-docs) — OpenAPI 3.1 auto-generated từ Zod schemas, render với [Scalar](https://scalar.com).
 
 ---
 
@@ -435,7 +437,7 @@ Dự án deploy **một app duy nhất** lên Vercel. Backend (Route Handlers) c
 - [x] Husky + Prettier + Commitlint + Gitleaks
 - [ ] Playwright E2E tests
 - [x] Dockerfile + docker-compose for self-hosting
-- [ ] OpenAPI auto-generation + Swagger UI
+- [x] OpenAPI 3.1 spec from Zod + Scalar API Reference UI
 - [ ] Sentry error tracking + Lighthouse CI
 - [x] Turborepo for build cache (~40-100x speedup on cache hit)
 

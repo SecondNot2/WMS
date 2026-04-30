@@ -1,0 +1,31 @@
+## Custom gitleaks config — extends default ruleset
+## See: https://github.com/gitleaks/gitleaks#configuration
+
+# Use the built-in rules as the baseline
+[extend]
+useDefault = true
+
+# Project-specific allowlist for files that intentionally contain placeholder
+# secrets (env examples, test fixtures, etc.).
+[allowlist]
+description = "Allow well-known placeholder values & example files"
+paths = [
+  '''(?i)(^|/)\.env\.example$''',
+  '''(?i)(^|/)\.env\.production\.example$''',
+  '''(?i)(^|/)\.env\.test$''',
+  '''(?i)(^|/)\.env\.example\..+$''',
+  '''(?i)(^|/)docs/''',
+  '''(?i)(^|/)README\.md$''',
+  '''(?i)pnpm-lock\.yaml$''',
+]
+
+# String allowlist — common placeholders we use in examples & tests.
+regexes = [
+  '''change-me-(access|refresh)-secret''',
+  '''test-(access|refresh)-secret-min-32-chars-long''',
+  '''YOUR-PASSWORD''',
+  '''postgres\.xxxxx''',
+  '''localhost''',
+  '''127\.0\.0\.1''',
+  '''example\.com''',
+]

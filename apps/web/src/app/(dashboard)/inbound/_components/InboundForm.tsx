@@ -243,7 +243,7 @@ export function InboundForm({
               </div>
 
               <div className="overflow-x-auto -mx-6 md:-mx-8">
-                <table className="w-full text-left min-w-200">
+                <table className="w-full text-left min-w-240">
                   <thead className="bg-background-app/50 border-b border-border-ui">
                     <tr>
                       <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-12">
@@ -444,6 +444,48 @@ export function InboundForm({
                     0,
                   ) || 0}
                 </span>
+              </div>
+
+              <hr className="border-border-ui/50 my-2" />
+
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">
+                  Chi tiết hàng hóa
+                </p>
+                <div className="space-y-2 max-h-72 overflow-y-auto pr-1 -mr-1">
+                  {(watchItems ?? []).map((item, i) => {
+                    const product = item.productId
+                      ? productMap.get(item.productId)
+                      : null;
+                    const qty = item.quantity || 0;
+                    const price = item.unitPrice || 0;
+                    const tax = item.taxRate || 0;
+                    const lineTotal = qty * price * (1 + tax / 100);
+                    return (
+                      <div
+                        key={i}
+                        className="text-xs p-2.5 bg-background-app/40 rounded-lg border border-border-ui/40"
+                      >
+                        <p className="font-bold text-text-primary truncate">
+                          {i + 1}.{" "}
+                          {product
+                            ? `${product.sku} — ${product.name}`
+                            : "Chưa chọn sản phẩm"}
+                        </p>
+                        <div className="flex justify-between items-baseline mt-1.5 gap-2">
+                          <span className="text-text-secondary text-[11px]">
+                            {qty} ×{" "}
+                            {new Intl.NumberFormat("vi-VN").format(price)}đ
+                            {tax > 0 ? ` + ${tax}%` : ""}
+                          </span>
+                          <span className="font-bold text-text-primary whitespace-nowrap">
+                            {new Intl.NumberFormat("vi-VN").format(lineTotal)} đ
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               <hr className="border-border-ui/50 my-2" />

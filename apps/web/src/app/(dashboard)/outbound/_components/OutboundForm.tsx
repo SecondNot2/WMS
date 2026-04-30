@@ -265,7 +265,7 @@ export function OutboundForm({
               </div>
 
               <div className="overflow-x-auto -mx-6 md:-mx-8">
-                <table className="w-full text-left min-w-200">
+                <table className="w-full text-left min-w-240">
                   <thead className="bg-background-app/50 border-b border-border-ui">
                     <tr>
                       <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-12">
@@ -482,6 +482,73 @@ export function OutboundForm({
                 <span className="text-text-primary font-bold">
                   {fields.length}
                 </span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-text-secondary font-medium">
+                  Tổng số lượng SP:
+                </span>
+                <span className="text-text-primary font-bold">
+                  {watchItems?.reduce(
+                    (sum, item) => sum + (item.quantity || 0),
+                    0,
+                  ) || 0}
+                </span>
+              </div>
+
+              <hr className="border-border-ui/50 my-2" />
+
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">
+                  Chi tiết hàng hóa
+                </p>
+                <div className="space-y-2 max-h-72 overflow-y-auto pr-1 -mr-1">
+                  {(watchItems ?? []).map((item, i) => {
+                    const product = item.productId
+                      ? productMap.get(item.productId)
+                      : null;
+                    const qty = item.quantity || 0;
+                    const price = item.unitPrice || 0;
+                    const tax = item.taxRate || 0;
+                    const lineTotal = qty * price * (1 + tax / 100);
+                    const overStock = product && qty > product.currentStock;
+                    return (
+                      <div
+                        key={i}
+                        className={`text-xs p-2.5 rounded-lg border ${
+                          overStock
+                            ? "bg-danger/5 border-danger/20"
+                            : "bg-background-app/40 border-border-ui/40"
+                        }`}
+                      >
+                        <p className="font-bold text-text-primary truncate">
+                          {i + 1}.{" "}
+                          {product
+                            ? `${product.sku} — ${product.name}`
+                            : "Chưa chọn sản phẩm"}
+                        </p>
+                        <div className="flex justify-between items-baseline mt-1.5 gap-2">
+                          <span
+                            className={`text-[11px] ${
+                              overStock ? "text-danger" : "text-text-secondary"
+                            }`}
+                          >
+                            {qty} ×{" "}
+                            {new Intl.NumberFormat("vi-VN").format(price)}đ
+                            {tax > 0 ? ` + ${tax}%` : ""}
+                            {product && (
+                              <span className="block text-[10px] mt-0.5 text-text-secondary">
+                                Tồn: {product.currentStock} {product.unit}
+                              </span>
+                            )}
+                          </span>
+                          <span className="font-bold text-text-primary whitespace-nowrap">
+                            {new Intl.NumberFormat("vi-VN").format(lineTotal)} đ
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               <hr className="border-border-ui/50 my-2" />

@@ -264,29 +264,29 @@ export function OutboundForm({
                 </button>
               </div>
 
-              <div className="overflow-x-auto -mx-6 md:-mx-8">
-                <table className="w-full text-left min-w-240">
+              <div className="-mx-6 md:-mx-8">
+                <table className="w-full text-left table-fixed">
                   <thead className="bg-background-app/50 border-b border-border-ui">
                     <tr>
-                      <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-12">
+                      <th className="px-2 py-3 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-10">
                         STT
                       </th>
-                      <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider">
+                      <th className="px-2 py-3 text-[11px] font-bold text-text-secondary uppercase tracking-wider">
                         Sản phẩm / Tồn kho
                       </th>
-                      <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-32">
+                      <th className="px-2 py-3 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-20">
                         Số lượng
                       </th>
-                      <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-40">
+                      <th className="px-2 py-3 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-32">
                         Đơn giá xuất
                       </th>
-                      <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-24">
+                      <th className="px-2 py-3 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-20">
                         Thuế (%)
                       </th>
-                      <th className="px-6 py-4 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-40 text-right">
+                      <th className="px-2 py-3 text-[11px] font-bold text-text-secondary uppercase tracking-wider w-32 text-right">
                         Thành tiền
                       </th>
-                      <th className="px-6 py-4 w-12"></th>
+                      <th className="px-2 py-3 w-10"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-ui">
@@ -305,11 +305,11 @@ export function OutboundForm({
                           : null;
 
                       return (
-                        <tr key={field.id} className="group">
-                          <td className="px-6 py-4 text-sm text-text-secondary">
+                        <tr key={field.id} className="group align-top">
+                          <td className="px-2 py-3 text-sm text-text-secondary">
                             {index + 1}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-2 py-3">
                             <Controller
                               control={control}
                               name={`items.${index}.productId` as const}
@@ -385,7 +385,7 @@ export function OutboundForm({
                               </p>
                             )}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-2 py-3">
                             <input
                               type="number"
                               min={1}
@@ -393,14 +393,14 @@ export function OutboundForm({
                                 valueAsNumber: true,
                               })}
                               className={cn(
-                                "w-full px-3 py-2 text-sm bg-card-white border rounded-lg outline-none focus:border-accent transition-all text-center",
+                                "w-full px-2 py-2 text-sm bg-card-white border rounded-lg outline-none focus:border-accent transition-all text-center",
                                 isOverStock
                                   ? "border-danger text-danger"
                                   : "border-border-ui",
                               )}
                             />
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-2 py-3">
                             <input
                               type="number"
                               min={0}
@@ -409,11 +409,11 @@ export function OutboundForm({
                                 `items.${index}.unitPrice` as const,
                                 { valueAsNumber: true },
                               )}
-                              className="w-full px-3 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-right font-medium"
+                              className="w-full px-2 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-right font-medium"
                             />
                             {productSale !== null && (
-                              <p className="mt-1 text-[10px] text-text-secondary">
-                                Giá bán SP:{" "}
+                              <p className="mt-1 text-[10px] text-text-secondary truncate">
+                                Bán:{" "}
                                 {new Intl.NumberFormat("vi-VN").format(
                                   productSale,
                                 )}
@@ -421,7 +421,7 @@ export function OutboundForm({
                               </p>
                             )}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-2 py-3">
                             <input
                               type="number"
                               min={0}
@@ -430,10 +430,10 @@ export function OutboundForm({
                               {...register(`items.${index}.taxRate` as const, {
                                 valueAsNumber: true,
                               })}
-                              className="w-full px-3 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-center"
+                              className="w-full px-2 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-center"
                             />
                           </td>
-                          <td className="px-6 py-4 text-sm font-bold text-text-primary text-right">
+                          <td className="px-2 py-3 text-sm font-bold text-text-primary text-right whitespace-nowrap">
                             {new Intl.NumberFormat("vi-VN").format(
                               quantity *
                                 (watchItems?.[index]?.unitPrice || 0) *
@@ -441,12 +441,12 @@ export function OutboundForm({
                             )}{" "}
                             đ
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-2 py-3">
                             <button
                               type="button"
                               onClick={() => remove(index)}
                               disabled={fields.length === 1}
-                              className="p-2 text-text-secondary hover:text-danger transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-30"
+                              className="p-1.5 text-text-secondary hover:text-danger transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-30"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>

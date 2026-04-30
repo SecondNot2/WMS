@@ -1,6 +1,15 @@
 # Warehouse Management System (WMS)
 
+[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/OWNER/REPO/actions/workflows/codeql.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/codeql.yml)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Hệ thống quản lý kho (WMS) hiện đại dành cho logistics cửa khẩu. Dự án dùng monorepo `pnpm workspaces`, với Next.js frontend và backend API được merge vào Next.js Route Handlers để deploy một app duy nhất trên Vercel.
+
+> **Lưu ý**: Thay `OWNER/REPO` trong các badge ở trên bằng `<github-username>/<repo-name>` thực tế sau khi push lên GitHub.
 
 ---
 

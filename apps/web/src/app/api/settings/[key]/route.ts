@@ -27,7 +27,8 @@ function parseKey(rawKey: string): SettingsKeyInput {
 
 export const GET = handle<{ key: string }>(
   { roles: ["ADMIN", "WAREHOUSE_STAFF", "ACCOUNTANT"] },
-  async (_req, { params }) => ok(await service.getSettingsByKey(parseKey(params.key))),
+  async (_req, { params }) =>
+    ok(await service.getSettingsByKey(parseKey(params.key))),
 );
 
 export const PATCH = handle<{ key: string }>(

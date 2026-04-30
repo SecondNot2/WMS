@@ -13,10 +13,9 @@ import type {
 export const categoriesApi = {
   getAll: (params?: GetCategoriesQuery) =>
     apiClient
-      .get<ApiSuccessResponse<Category[]> & { meta: PaginationMeta }>(
-        "/categories",
-        { params },
-      )
+      .get<
+        ApiSuccessResponse<Category[]> & { meta: PaginationMeta }
+      >("/categories", { params })
       .then((r) => r.data),
 
   getById: (id: string) =>
@@ -43,11 +42,9 @@ export const categoriesApi = {
     const formData = new FormData();
     formData.append("file", file);
     return apiClient
-      .post<ApiSuccessResponse<ImportCategoriesResult>>(
-        "/categories/import",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } },
-      )
+      .post<
+        ApiSuccessResponse<ImportCategoriesResult>
+      >("/categories/import", formData, { headers: { "Content-Type": "multipart/form-data" } })
       .then((r) => r.data.data);
   },
 };

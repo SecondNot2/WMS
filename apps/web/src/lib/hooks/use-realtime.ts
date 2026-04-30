@@ -10,8 +10,7 @@ import { INBOUND_KEYS } from "./use-inbound";
 import { OUTBOUND_KEYS } from "./use-outbound";
 import { ACTIVITY_LOG_KEYS } from "./use-activity-log";
 
-const CHANNEL =
-  process.env.NEXT_PUBLIC_SUPABASE_REALTIME_CHANNEL ?? "wms";
+const CHANNEL = process.env.NEXT_PUBLIC_SUPABASE_REALTIME_CHANNEL ?? "wms";
 
 /**
  * Subscribe Supabase Realtime broadcast channel `wms` để invalidate

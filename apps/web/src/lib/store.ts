@@ -82,6 +82,6 @@ export const useAuthStore = create<AuthState>()(
         // Sync cookie từ localStorage khi rehydrate (refresh trang)
         if (state?.accessToken) setAuthCookie(state.accessToken);
       },
-    }
-  )
+    },
+  ),
 );

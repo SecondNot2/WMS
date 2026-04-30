@@ -1,16 +1,16 @@
-import { Prisma } from '@prisma/client'
+import { Prisma } from "@prisma/client";
 import type {
   InventoryAlertLevel,
   InventoryItem,
   InventorySummaryData,
-} from '@wms/types'
+} from "@wms/types";
 import type {
   AdjustStockSchemaInput,
   GetInventoryQuerySchemaInput,
-} from '@wms/validations'
-import { prisma } from '../lib/prisma'
-import { AppError } from '../lib/errors'
-import { emitStockUpdated } from '../lib/websocket'
+} from "@wms/validations";
+import { prisma } from "../lib/prisma";
+import { AppError } from "../lib/errors";
+import { emitStockUpdated } from "../lib/websocket";
 
 const inventoryProductSelect = {
   id: true,
@@ -22,23 +22,24 @@ const inventoryProductSelect = {
   costPrice: true,
   updatedAt: true,
   category: { select: { id: true, name: true } },
-} satisfies Prisma.ProductSelect
+} satisfies Prisma.ProductSelect;
 
 type InventoryProduct = Prisma.ProductGetPayload<{
-  select: typeof inventoryProductSelect
-}>
+  select: typeof inventoryProductSelect;
+}>;
 
 function getAlertLevel(
-  product: Pick<InventoryProduct, 'currentStock' | 'minStock'>,
+  product: Pick<InventoryProduct, "currentStock" | "minStock">,
 ): InventoryAlertLevel {
-  if (product.currentStock <= 0) return 'CRITICAL'
-  if (product.currentStock <= product.minStock) return 'WARNING'
-  return 'OK'
+  if (product.currentStock <= 0) return "CRITICAL";
+  if (product.currentStock <= product.minStock) return "WARNING";
+  return "OK";
 }
 
 function toInventoryItem(product: InventoryProduct): InventoryItem {
-  const costPrice = product.costPrice === null ? null : Number(product.costPrice)
-  const stockValue = product.currentStock * (costPrice ?? 0)
+  const costPrice =
+    product.costPrice === null ? null : Number(product.costPrice);
+  const stockValue = product.currentStock * (costPrice ?? 0);
 
   return {
     productId: product.id,
@@ -52,13 +53,13 @@ function toInventoryItem(product: InventoryProduct): InventoryItem {
     stockValue,
     alertLevel: getAlertLevel(product),
     updatedAt: product.updatedAt.toISOString(),
-  }
+  };
 }
 
 function buildInventoryWhere(
   query: GetInventoryQuerySchemaInput,
 ): Prisma.ProductWhereInput {
-  const { search, categoryId, lowStock } = query
+  const { search, categoryId, lowStock } = query;
 
   return {
     isActive: true,
@@ -66,18 +67,18 @@ function buildInventoryWhere(
     ...(lowStock && { currentStock: { lte: prisma.product.fields.minStock } }),
     ...(search && {
       OR: [
-        { name: { contains: search, mode: 'insensitive' } },
-        { sku: { contains: search, mode: 'insensitive' } },
-        { barcode: { contains: search, mode: 'insensitive' } },
-        { category: { name: { contains: search, mode: 'insensitive' } } },
+        { name: { contains: search, mode: "insensitive" } },
+        { sku: { contains: search, mode: "insensitive" } },
+        { barcode: { contains: search, mode: "insensitive" } },
+        { category: { name: { contains: search, mode: "insensitive" } } },
       ],
     }),
-  }
+  };
 }
 
 export async function getInventory(query: GetInventoryQuerySchemaInput) {
-  const { page, limit } = query
-  const where = buildInventoryWhere(query)
+  const { page, limit } = query;
+  const where = buildInventoryWhere(query);
 
   const [products, total] = await Promise.all([
     prisma.product.findMany({
@@ -85,19 +86,19 @@ export async function getInventory(query: GetInventoryQuerySchemaInput) {
       select: inventoryProductSelect,
       skip: (page - 1) * limit,
       take: limit,
-      orderBy: [{ currentStock: 'asc' }, { name: 'asc' }],
+      orderBy: [{ currentStock: "asc" }, { name: "asc" }],
     }),
     prisma.product.count({ where }),
-  ])
+  ]);
 
   return {
     data: products.map(toInventoryItem),
     meta: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 },
-  }
+  };
 }
 
 export async function getInventorySummary(): Promise<InventorySummaryData> {
-  const baseWhere: Prisma.ProductWhereInput = { isActive: true }
+  const baseWhere: Prisma.ProductWhereInput = { isActive: true };
 
   const [totals, criticalCount, warningCount, valueRow, byCategoryRows] =
     await Promise.all([
@@ -134,7 +135,7 @@ export async function getInventorySummary(): Promise<InventorySummaryData> {
         GROUP BY c.id, c.name
         ORDER BY value DESC, stock DESC
       `,
-    ])
+    ]);
 
   return {
     totalProducts: totals._count._all,
@@ -148,7 +149,7 @@ export async function getInventorySummary(): Promise<InventorySummaryData> {
       stock: Number(r.stock),
       value: Number(r.value),
     })),
-  }
+  };
 }
 
 export async function adjustInventoryStock(
@@ -156,14 +157,14 @@ export async function adjustInventoryStock(
   input: AdjustStockSchemaInput,
   actorId: string,
 ): Promise<InventoryItem> {
-  const product = await prisma.product.findUnique({ where: { id: productId } })
+  const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product || !product.isActive) {
-    throw new AppError('NOT_FOUND', 'Sản phẩm không tồn tại')
+    throw new AppError("NOT_FOUND", "Sản phẩm không tồn tại");
   }
 
-  const stockAfter = product.currentStock + input.quantity
+  const stockAfter = product.currentStock + input.quantity;
   if (stockAfter < 0) {
-    throw new AppError('INSUFFICIENT_STOCK', 'Tồn kho không đủ để điều chỉnh')
+    throw new AppError("INSUFFICIENT_STOCK", "Tồn kho không đủ để điều chỉnh");
   }
 
   const updated = await prisma.$transaction(async (tx) => {
@@ -171,24 +172,24 @@ export async function adjustInventoryStock(
       where: { id: productId },
       data: { currentStock: stockAfter },
       select: inventoryProductSelect,
-    })
+    });
 
     await tx.stockHistory.create({
       data: {
         productId,
-        type: 'ADJUST',
+        type: "ADJUST",
         quantity: input.quantity,
         stockBefore: product.currentStock,
         stockAfter,
         note: input.note,
         createdById: actorId,
       },
-    })
+    });
 
-    return next
-  })
+    return next;
+  });
 
-  emitStockUpdated([productId])
+  emitStockUpdated([productId]);
 
-  return toInventoryItem(updated)
+  return toInventoryItem(updated);
 }

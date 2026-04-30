@@ -75,7 +75,10 @@ export const GET = handle(
       "Danh mục",
     );
 
-    const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
+    const buffer = XLSX.write(wb, {
+      type: "buffer",
+      bookType: "xlsx",
+    }) as Buffer;
     return excelResponse(
       buffer,
       `statistics-${new Date().toISOString().slice(0, 10)}.xlsx`,

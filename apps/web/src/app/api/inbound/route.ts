@@ -1,8 +1,11 @@
+import { createInboundSchema, getInboundsQuerySchema } from "@wms/validations";
 import {
-  createInboundSchema,
-  getInboundsQuerySchema,
-} from "@wms/validations";
-import { created, handle, ok, parseBody, parseQuery } from "@/server/middleware/handler";
+  created,
+  handle,
+  ok,
+  parseBody,
+  parseQuery,
+} from "@/server/middleware/handler";
 import * as service from "@/server/services/inbound.service";
 
 const READ = ["ADMIN", "WAREHOUSE_STAFF", "ACCOUNTANT"];

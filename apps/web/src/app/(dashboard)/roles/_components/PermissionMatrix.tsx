@@ -122,7 +122,11 @@ export function PermissionMatrix({
                   {module.label}
                 </td>
                 {ACTIONS.map((action) => {
-                  const enabled = isAllowed(permissions, module.key, action.key);
+                  const enabled = isAllowed(
+                    permissions,
+                    module.key,
+                    action.key,
+                  );
                   return (
                     <td key={action.key} className="px-5 py-4 text-center">
                       {editable ? (

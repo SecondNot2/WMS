@@ -113,7 +113,10 @@ export function QuickAddCategoryDialog({
           <textarea
             {...register("description")}
             rows={3}
-            className={cn(inputClass(errors.description?.message), "resize-none")}
+            className={cn(
+              inputClass(errors.description?.message),
+              "resize-none",
+            )}
             placeholder="Nhập mô tả ngắn gọn (tùy chọn)"
           />
         </Field>

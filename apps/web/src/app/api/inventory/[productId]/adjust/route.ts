@@ -6,6 +6,8 @@ export const POST = handle<{ productId: string }>(
   { roles: ["ADMIN"] },
   async (req, { params, user }) => {
     const body = await parseBody(req, adjustStockSchema);
-    return ok(await service.adjustInventoryStock(params.productId, body, user!.id));
+    return ok(
+      await service.adjustInventoryStock(params.productId, body, user!.id),
+    );
   },
 );

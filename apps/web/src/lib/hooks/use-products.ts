@@ -12,10 +12,12 @@ import type {
 export const PRODUCT_KEYS = {
   all: ["products"] as const,
   lists: () => [...PRODUCT_KEYS.all, "list"] as const,
-  list: (params: GetProductsQuery) => [...PRODUCT_KEYS.lists(), params] as const,
+  list: (params: GetProductsQuery) =>
+    [...PRODUCT_KEYS.lists(), params] as const,
   details: () => [...PRODUCT_KEYS.all, "detail"] as const,
   detail: (id: string) => [...PRODUCT_KEYS.details(), id] as const,
-  stockHistory: (id: string) => [...PRODUCT_KEYS.detail(id), "stock-history"] as const,
+  stockHistory: (id: string) =>
+    [...PRODUCT_KEYS.detail(id), "stock-history"] as const,
 };
 
 export function useProducts(params: GetProductsQuery = {}) {

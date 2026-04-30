@@ -12,8 +12,7 @@ export default function RolesPage() {
   const { data: roles } = useRoles();
 
   const totalRoles = roles?.length ?? 0;
-  const totalAssigned =
-    roles?.reduce((sum, r) => sum + r.userCount, 0) ?? 0;
+  const totalAssigned = roles?.reduce((sum, r) => sum + r.userCount, 0) ?? 0;
   const systemRoles =
     roles?.filter((r) => SYSTEM_ROLES.includes(r.name)).length ?? 0;
 

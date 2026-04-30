@@ -145,7 +145,10 @@ export const GET = handle(
       );
     }
 
-    const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
+    const buffer = XLSX.write(wb, {
+      type: "buffer",
+      bookType: "xlsx",
+    }) as Buffer;
     return excelResponse(
       buffer,
       `reports-${query.type}-${new Date().toISOString().slice(0, 10)}.xlsx`,

@@ -153,9 +153,7 @@ export function NotificationBell() {
             className="bg-card-white border border-border-ui rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-100"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-border-ui">
-              <h3 className="text-sm font-bold text-text-primary">
-                Thông báo
-              </h3>
+              <h3 className="text-sm font-bold text-text-primary">Thông báo</h3>
               <span className="text-[11px] text-text-secondary">
                 Tự cập nhật mỗi 60 giây
               </span>
@@ -354,7 +352,9 @@ function TabButton({
         <span
           className={cn(
             "px-1.5 py-0.5 rounded-full text-[9px] font-bold",
-            active ? "bg-accent text-white" : "bg-background-app text-text-secondary",
+            active
+              ? "bg-accent text-white"
+              : "bg-background-app text-text-secondary",
           )}
         >
           {count > 99 ? "99+" : count}

@@ -81,9 +81,7 @@ describe("rolesAllowedFor()", () => {
 describe("formatAllowedRoles()", () => {
   it("formats roles into Vietnamese comma-separated string", () => {
     expect(formatAllowedRoles("user.create")).toBe("Quản trị viên");
-    expect(formatAllowedRoles("product.create")).toBe(
-      "Quản trị viên, Thủ kho",
-    );
+    expect(formatAllowedRoles("product.create")).toBe("Quản trị viên, Thủ kho");
     expect(formatAllowedRoles("report.view")).toBe(
       "Quản trị viên, Thủ kho, Kế toán",
     );

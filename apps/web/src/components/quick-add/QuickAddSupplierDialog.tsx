@@ -4,7 +4,10 @@ import React from "react";
 import { Loader2, Save, Truck } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createSupplierSchema, type CreateSupplierSchemaInput } from "@wms/validations";
+import {
+  createSupplierSchema,
+  type CreateSupplierSchemaInput,
+} from "@wms/validations";
 import { FormDialog } from "@/components/Dialog";
 import { useToast } from "@/components/Toast";
 import { useCreateSupplier } from "@/lib/hooks/use-suppliers";

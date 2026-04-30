@@ -28,9 +28,7 @@ export function SupplierStatsSidebarConnected({
 
   const topSuppliers = React.useMemo(() => {
     const list = activeQuery.data?.data ?? [];
-    return [...list]
-      .sort((a, b) => b.totalAmount - a.totalAmount)
-      .slice(0, 4);
+    return [...list].sort((a, b) => b.totalAmount - a.totalAmount).slice(0, 4);
   }, [activeQuery.data]);
 
   const stats = [
@@ -44,7 +42,8 @@ export function SupplierStatsSidebarConnected({
     {
       label: "Đang hoạt động",
       value: String(totalActive),
-      percentage: total > 0 ? `${((totalActive / total) * 100).toFixed(1)}%` : null,
+      percentage:
+        total > 0 ? `${((totalActive / total) * 100).toFixed(1)}%` : null,
       icon: CheckCircle2,
       bg: "bg-success/10",
       color: "text-success",
@@ -52,7 +51,8 @@ export function SupplierStatsSidebarConnected({
     {
       label: "Tạm dừng",
       value: String(totalInactive),
-      percentage: total > 0 ? `${((totalInactive / total) * 100).toFixed(1)}%` : null,
+      percentage:
+        total > 0 ? `${((totalInactive / total) * 100).toFixed(1)}%` : null,
       icon: Clock,
       bg: "bg-warning/10",
       color: "text-warning",

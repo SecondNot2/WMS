@@ -11,10 +11,9 @@ import type {
 export const inventoryApi = {
   getAll: (params?: GetInventoryQuery) =>
     apiClient
-      .get<ApiSuccessResponse<InventoryItem[]> & { meta: PaginationMeta }>(
-        "/inventory",
-        { params },
-      )
+      .get<
+        ApiSuccessResponse<InventoryItem[]> & { meta: PaginationMeta }
+      >("/inventory", { params })
       .then((r) => r.data),
 
   getSummary: () =>
@@ -24,9 +23,8 @@ export const inventoryApi = {
 
   adjustStock: (productId: string, data: AdjustStockInput) =>
     apiClient
-      .post<ApiSuccessResponse<InventoryItem>>(
-        `/inventory/${productId}/adjust`,
-        data,
-      )
+      .post<
+        ApiSuccessResponse<InventoryItem>
+      >(`/inventory/${productId}/adjust`, data)
       .then((r) => r.data.data),
 };

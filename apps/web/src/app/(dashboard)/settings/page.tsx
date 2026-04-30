@@ -118,7 +118,8 @@ export default function SettingsPage() {
               Chế độ chỉ xem
             </p>
             <p className="text-xs text-text-secondary mt-1">
-              Chỉ Quản trị viên (ADMIN) mới có quyền chỉnh sửa cấu hình hệ thống.
+              Chỉ Quản trị viên (ADMIN) mới có quyền chỉnh sửa cấu hình hệ
+              thống.
             </p>
           </div>
         </div>

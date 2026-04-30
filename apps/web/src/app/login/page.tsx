@@ -211,12 +211,13 @@ export default function LoginPage() {
                 type="submit"
                 disabled={loginMutation.isPending}
                 className={cn(
-                  "w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-white rounded-xl px-4 py-3 text-sm font-bold shadow-lg shadow-accent/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  "w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-white rounded-xl px-4 py-3 text-sm font-bold shadow-lg shadow-accent/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed",
                 )}
               >
                 {loginMutation.isPending ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Đang đăng nhập...
+                    <Loader2 className="w-4 h-4 animate-spin" /> Đang đăng
+                    nhập...
                   </>
                 ) : (
                   <>

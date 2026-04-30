@@ -2,7 +2,13 @@ import {
   createRecipientSchema,
   getRecipientsQuerySchema,
 } from "@wms/validations";
-import { created, handle, ok, parseBody, parseQuery } from "@/server/middleware/handler";
+import {
+  created,
+  handle,
+  ok,
+  parseBody,
+  parseQuery,
+} from "@/server/middleware/handler";
 import * as service from "@/server/services/recipients.service";
 
 const READ = ["ADMIN", "WAREHOUSE_STAFF", "ACCOUNTANT"];

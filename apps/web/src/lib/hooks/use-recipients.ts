@@ -25,7 +25,9 @@ const DEFAULT_LIST_PARAMS: GetRecipientsQuery = { limit: 100 };
  * dropdown trong `OutboundForm`/`OutboundFilters`. Luôn trả về mảng (kể cả
  * khi đang loading) để consumer có thể `.length` an toàn.
  */
-export function useRecipients(params: GetRecipientsQuery = DEFAULT_LIST_PARAMS) {
+export function useRecipients(
+  params: GetRecipientsQuery = DEFAULT_LIST_PARAMS,
+) {
   const query = useQuery({
     queryKey: RECIPIENT_KEYS.list(params),
     queryFn: () => recipientsApi.getAll(params),

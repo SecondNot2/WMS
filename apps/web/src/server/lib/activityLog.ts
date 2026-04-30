@@ -1,14 +1,14 @@
-import { Prisma } from '@prisma/client'
-import { prisma } from './prisma'
-import { logger } from './logger'
+import { Prisma } from "@prisma/client";
+import { prisma } from "./prisma";
+import { logger } from "./logger";
 
 export interface LogActivityInput {
-  userId: string
-  action: string
-  targetType?: string | null
-  targetId?: string | null
-  targetCode?: string | null
-  detail?: string | Record<string, unknown> | null
+  userId: string;
+  action: string;
+  targetType?: string | null;
+  targetId?: string | null;
+  targetCode?: string | null;
+  detail?: string | Record<string, unknown> | null;
 }
 
 /**
@@ -19,7 +19,7 @@ export async function logActivity(
   input: LogActivityInput,
   tx?: Prisma.TransactionClient,
 ): Promise<void> {
-  const client = tx ?? prisma
+  const client = tx ?? prisma;
   try {
     await client.activityLog.create({
       data: {
@@ -29,16 +29,16 @@ export async function logActivity(
         targetId: input.targetId ?? null,
         targetCode: input.targetCode ?? null,
         detail:
-          typeof input.detail === 'string'
+          typeof input.detail === "string"
             ? input.detail
             : input.detail
               ? JSON.stringify(input.detail)
               : null,
       },
-    })
+    });
   } catch (err) {
     logger.warn(
       `[activityLog] failed action=${input.action} target=${input.targetType}:${input.targetId}: ${(err as Error).message}`,
-    )
+    );
   }
 }

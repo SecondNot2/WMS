@@ -1,16 +1,16 @@
-import { Prisma } from '@prisma/client'
-import { prisma } from '../lib/prisma'
-import { AppError } from '../lib/errors'
+import { Prisma } from "@prisma/client";
+import { prisma } from "../lib/prisma";
+import { AppError } from "../lib/errors";
 import type {
   CreateRoleSchemaInput,
   UpdateRoleSchemaInput,
-} from '@wms/validations'
+} from "@wms/validations";
 
 export async function getRoles() {
   const roles = await prisma.role.findMany({
-    orderBy: { createdAt: 'asc' },
+    orderBy: { createdAt: "asc" },
     include: { _count: { select: { users: true } } },
-  })
+  });
 
   return roles.map((r) => ({
     id: r.id,
@@ -19,7 +19,7 @@ export async function getRoles() {
     userCount: r._count.users,
     createdAt: r.createdAt,
     updatedAt: r.updatedAt,
-  }))
+  }));
 }
 
 export async function getRoleById(id: string) {
@@ -29,11 +29,11 @@ export async function getRoleById(id: string) {
       _count: { select: { users: true } },
       users: {
         select: { id: true, name: true, email: true, avatar: true },
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: "asc" },
       },
     },
-  })
-  if (!role) throw new AppError('NOT_FOUND', 'Vai trò không tồn tại')
+  });
+  if (!role) throw new AppError("NOT_FOUND", "Vai trò không tồn tại");
 
   return {
     id: role.id,
@@ -43,28 +43,30 @@ export async function getRoleById(id: string) {
     users: role.users,
     createdAt: role.createdAt,
     updatedAt: role.updatedAt,
-  }
+  };
 }
 
 export async function createRole(input: CreateRoleSchemaInput) {
-  const existing = await prisma.role.findUnique({ where: { name: input.name } })
-  if (existing) throw new AppError('CONFLICT', 'Mã vai trò đã tồn tại')
+  const existing = await prisma.role.findUnique({
+    where: { name: input.name },
+  });
+  if (existing) throw new AppError("CONFLICT", "Mã vai trò đã tồn tại");
 
   return prisma.role.create({
     data: {
       name: input.name,
       permissions: input.permissions as Prisma.InputJsonValue,
     },
-  })
+  });
 }
 
 export async function updateRole(id: string, input: UpdateRoleSchemaInput) {
-  const role = await prisma.role.findUnique({ where: { id } })
-  if (!role) throw new AppError('NOT_FOUND', 'Vai trò không tồn tại')
+  const role = await prisma.role.findUnique({ where: { id } });
+  if (!role) throw new AppError("NOT_FOUND", "Vai trò không tồn tại");
 
   if (input.name && input.name !== role.name) {
-    const dup = await prisma.role.findUnique({ where: { name: input.name } })
-    if (dup) throw new AppError('CONFLICT', 'Mã vai trò đã tồn tại')
+    const dup = await prisma.role.findUnique({ where: { name: input.name } });
+    if (dup) throw new AppError("CONFLICT", "Mã vai trò đã tồn tại");
   }
 
   return prisma.role.update({
@@ -75,22 +77,22 @@ export async function updateRole(id: string, input: UpdateRoleSchemaInput) {
         permissions: input.permissions as Prisma.InputJsonValue,
       }),
     },
-  })
+  });
 }
 
 export async function deleteRole(id: string) {
   const role = await prisma.role.findUnique({
     where: { id },
     include: { _count: { select: { users: true } } },
-  })
-  if (!role) throw new AppError('NOT_FOUND', 'Vai trò không tồn tại')
+  });
+  if (!role) throw new AppError("NOT_FOUND", "Vai trò không tồn tại");
 
   if (role._count.users > 0) {
     throw new AppError(
-      'CONFLICT',
+      "CONFLICT",
       `Vai trò đang được gán cho ${role._count.users} người dùng, không thể xóa`,
-    )
+    );
   }
 
-  await prisma.role.delete({ where: { id } })
+  await prisma.role.delete({ where: { id } });
 }

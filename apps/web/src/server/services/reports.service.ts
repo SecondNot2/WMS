@@ -51,7 +51,11 @@ export async function getStats(
   query: GetReportsStatsQuerySchemaInput,
 ): Promise<ReportStatCard[]> {
   if (query.type === "inventory") {
-    const data = await getInventory({ categoryId: query.categoryId, page: 1, limit: 1 });
+    const data = await getInventory({
+      categoryId: query.categoryId,
+      page: 1,
+      limit: 1,
+    });
     return [
       { label: "Tổng giá trị tồn", value: data.summary.totalValue },
       { label: "SKU hiện có", value: data.summary.skuCount },
@@ -124,7 +128,15 @@ export async function getReceiptIssue(
       ORDER BY bucket ASC
     `,
     prisma.$queryRaw<
-      { id: string; createdAt: Date; type: string; code: string; item: string; qty: number; value: number }[]
+      {
+        id: string;
+        createdAt: Date;
+        type: string;
+        code: string;
+        item: string;
+        qty: number;
+        value: number;
+      }[]
     >`
       SELECT * FROM (
         SELECT gri.id, gr."createdAt", 'NHẬP' AS type, gr.code, p.name AS item,
@@ -189,23 +201,24 @@ export async function getInventory(
     ...(query.categoryId && { categoryId: query.categoryId }),
   };
 
-  const [products, totalProducts, outOfStock, valueRows, chartRows] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      skip,
-      take: query.limit,
-      include: { category: { select: { name: true } } },
-      orderBy: { name: "asc" },
-    }),
-    prisma.product.count({ where }),
-    prisma.product.count({ where: { ...where, currentStock: { lte: 0 } } }),
-    prisma.$queryRaw<{ value: number }[]>`
+  const [products, totalProducts, outOfStock, valueRows, chartRows] =
+    await Promise.all([
+      prisma.product.findMany({
+        where,
+        skip,
+        take: query.limit,
+        include: { category: { select: { name: true } } },
+        orderBy: { name: "asc" },
+      }),
+      prisma.product.count({ where }),
+      prisma.product.count({ where: { ...where, currentStock: { lte: 0 } } }),
+      prisma.$queryRaw<{ value: number }[]>`
       SELECT COALESCE(SUM(p."currentStock" * COALESCE(p."costPrice", 0)), 0)::float AS value
       FROM products p
       WHERE p."isActive" = true
         ${query.categoryId ? Prisma.sql`AND p."categoryId" = ${query.categoryId}` : Prisma.empty}
     `,
-    prisma.$queryRaw<{ name: string; value: number }[]>`
+      prisma.$queryRaw<{ name: string; value: number }[]>`
       SELECT c.name, COALESCE(SUM(p."currentStock" * COALESCE(p."costPrice", 0)), 0)::float AS value
       FROM categories c
       LEFT JOIN products p ON p."categoryId" = c.id AND p."isActive" = true
@@ -215,7 +228,7 @@ export async function getInventory(
       HAVING COALESCE(SUM(p."currentStock" * COALESCE(p."costPrice", 0)), 0) > 0
       ORDER BY value DESC
     `,
-  ]);
+    ]);
 
   const items: InventoryReportItem[] = products.map((p) => {
     const avgPrice = Number(p.costPrice ?? 0);
@@ -236,7 +249,9 @@ export async function getInventory(
       totalValue: Number(valueRows[0]?.value ?? 0),
       skuCount: totalProducts,
       outOfStock,
-      fillRate: totalProducts ? Math.round(((totalProducts - outOfStock) / totalProducts) * 100) : 0,
+      fillRate: totalProducts
+        ? Math.round(((totalProducts - outOfStock) / totalProducts) * 100)
+        : 0,
     },
     chart: chartRows.map((r) => ({ name: r.name, value: Number(r.value) })),
     items,
@@ -276,7 +291,8 @@ export async function getTopProducts(
   const items: TopProductsReportItem[] = rows.map((r, index) => {
     const inboundQty = Number(r.inboundQty);
     const outboundQty = Number(r.outboundQty);
-    const turnoverRate = inboundQty > 0 ? Math.round((outboundQty / inboundQty) * 100) : 0;
+    const turnoverRate =
+      inboundQty > 0 ? Math.round((outboundQty / inboundQty) * 100) : 0;
     return {
       rank: index + 1,
       productId: r.productId,
@@ -292,7 +308,9 @@ export async function getTopProducts(
   });
 
   const averageTurnoverRate = items.length
-    ? Math.round(items.reduce((sum, item) => sum + item.turnoverRate, 0) / items.length)
+    ? Math.round(
+        items.reduce((sum, item) => sum + item.turnoverRate, 0) / items.length,
+      )
     : 0;
 
   return {

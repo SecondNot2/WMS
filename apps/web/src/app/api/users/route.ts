@@ -1,5 +1,11 @@
 import { createUserSchema, getUsersQuerySchema } from "@wms/validations";
-import { created, handle, ok, parseBody, parseQuery } from "@/server/middleware/handler";
+import {
+  created,
+  handle,
+  ok,
+  parseBody,
+  parseQuery,
+} from "@/server/middleware/handler";
 import * as service from "@/server/services/users.service";
 
 export const GET = handle({ roles: ["ADMIN"] }, async (req) => {

@@ -12,10 +12,9 @@ import type {
 export const recipientsApi = {
   getAll: (params?: GetRecipientsQuery) =>
     apiClient
-      .get<ApiSuccessResponse<Recipient[]> & { meta: PaginationMeta }>(
-        "/recipients",
-        { params },
-      )
+      .get<
+        ApiSuccessResponse<Recipient[]> & { meta: PaginationMeta }
+      >("/recipients", { params })
       .then((r) => r.data),
 
   getById: (id: string) =>

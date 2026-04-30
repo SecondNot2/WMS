@@ -137,19 +137,19 @@ export async function getEfficiency(
   const totalIn = Number(inboundQtyAgg._sum.quantity ?? 0);
   const totalOut = Number(outboundQtyAgg._sum.quantity ?? 0);
   const totalAdjust = Math.abs(Number(adjustAgg._sum.quantity ?? 0));
-  const stockAccuracy = totalIn + totalOut === 0
-    ? 100
-    : Math.max(
-        0,
-        Math.round(
-          (1 - totalAdjust / (totalIn + totalOut + totalAdjust)) * 1000,
-        ) / 10,
-      );
+  const stockAccuracy =
+    totalIn + totalOut === 0
+      ? 100
+      : Math.max(
+          0,
+          Math.round(
+            (1 - totalAdjust / (totalIn + totalOut + totalAdjust)) * 1000,
+          ) / 10,
+        );
 
   const avgStock = Number(avgStockAgg._avg.currentStock ?? 0);
-  const turnoverRate = avgStock > 0
-    ? Math.round((totalOut / avgStock) * 10) / 10
-    : 0;
+  const turnoverRate =
+    avgStock > 0 ? Math.round((totalOut / avgStock) * 10) / 10 : 0;
 
   const inboundFulfillmentRate = inTotal
     ? Math.round((inApproved / inTotal) * 1000) / 10

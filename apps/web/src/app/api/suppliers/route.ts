@@ -2,7 +2,13 @@ import {
   createSupplierSchema,
   getSuppliersQuerySchema,
 } from "@wms/validations";
-import { created, handle, ok, parseBody, parseQuery } from "@/server/middleware/handler";
+import {
+  created,
+  handle,
+  ok,
+  parseBody,
+  parseQuery,
+} from "@/server/middleware/handler";
 import * as service from "@/server/services/suppliers.service";
 
 const READ = ["ADMIN", "WAREHOUSE_STAFF", "ACCOUNTANT"];

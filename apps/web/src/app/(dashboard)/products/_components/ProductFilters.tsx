@@ -56,9 +56,7 @@ export function ProductFilters({ value, onChange }: ProductFiltersProps) {
   );
 
   const isDirty =
-    value.search.length > 0 ||
-    value.stock !== "all" ||
-    value.categoryId !== "";
+    value.search.length > 0 || value.stock !== "all" || value.categoryId !== "";
 
   return (
     <div className="flex flex-wrap items-end gap-3 bg-card-white p-4 rounded-xl border border-border-ui shadow-sm">

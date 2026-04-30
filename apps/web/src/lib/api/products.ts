@@ -15,10 +15,9 @@ import type {
 export const productsApi = {
   getAll: (params?: GetProductsQuery) =>
     apiClient
-      .get<ApiSuccessResponse<Product[]> & { meta: PaginationMeta }>(
-        "/products",
-        { params },
-      )
+      .get<
+        ApiSuccessResponse<Product[]> & { meta: PaginationMeta }
+      >("/products", { params })
       .then((r) => r.data),
 
   getById: (id: string) =>
@@ -55,9 +54,13 @@ export const productsApi = {
     const formData = new FormData();
     formData.append("file", file);
     return apiClient
-      .post<ApiSuccessResponse<ImportProductsResult>>("/products/import", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
+      .post<ApiSuccessResponse<ImportProductsResult>>(
+        "/products/import",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      )
       .then((r) => r.data.data);
   },
 };

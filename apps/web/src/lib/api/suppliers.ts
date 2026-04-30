@@ -12,10 +12,9 @@ import type {
 export const suppliersApi = {
   getAll: (params?: GetSuppliersQuery) =>
     apiClient
-      .get<ApiSuccessResponse<Supplier[]> & { meta: PaginationMeta }>(
-        "/suppliers",
-        { params },
-      )
+      .get<
+        ApiSuccessResponse<Supplier[]> & { meta: PaginationMeta }
+      >("/suppliers", { params })
       .then((r) => r.data),
 
   getById: (id: string) =>

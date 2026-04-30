@@ -9,9 +9,8 @@ import type {
 export const activityLogApi = {
   getAll: (params?: GetActivityLogsQuery) =>
     apiClient
-      .get<ApiSuccessResponse<ActivityLog[]> & { meta: PaginationMeta }>(
-        "/activity-log",
-        { params },
-      )
+      .get<
+        ApiSuccessResponse<ActivityLog[]> & { meta: PaginationMeta }
+      >("/activity-log", { params })
       .then((r) => r.data),
 };

@@ -47,7 +47,9 @@ async function broadcast<T>(event: string, payload: T) {
     // Cleanup: remove channel sau khi gửi (serverless mỗi request 1 client mới)
     await client.removeChannel(channel);
   } catch (err) {
-    logger.warn(`[realtime] broadcast failed event=${event}: ${(err as Error).message}`);
+    logger.warn(
+      `[realtime] broadcast failed event=${event}: ${(err as Error).message}`,
+    );
   }
 }
 

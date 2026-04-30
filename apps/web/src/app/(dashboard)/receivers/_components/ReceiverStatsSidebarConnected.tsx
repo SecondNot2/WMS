@@ -27,9 +27,7 @@ export function ReceiverStatsSidebarConnected({
 
   const topReceivers = React.useMemo(() => {
     const list = activeQuery.data?.data ?? [];
-    return [...list]
-      .sort((a, b) => b.totalAmount - a.totalAmount)
-      .slice(0, 4);
+    return [...list].sort((a, b) => b.totalAmount - a.totalAmount).slice(0, 4);
   }, [activeQuery.data]);
 
   const stats = [

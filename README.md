@@ -3,6 +3,8 @@
 [![CI](https://github.com/SecondNot2/WMS/actions/workflows/ci.yml/badge.svg)](https://github.com/SecondNot2/WMS/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/SecondNot2/WMS/actions/workflows/codeql.yml/badge.svg)](https://github.com/SecondNot2/WMS/actions/workflows/codeql.yml)
 [![Vitest](https://img.shields.io/badge/tested%20with-vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?logo=prettier&logoColor=white)](https://github.com/prettier/prettier)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/)

@@ -1,7 +1,4 @@
-import {
-  createProductSchema,
-  getProductsQuerySchema,
-} from "@wms/validations";
+import { createProductSchema, getProductsQuerySchema } from "@wms/validations";
 import {
   created,
   handle,

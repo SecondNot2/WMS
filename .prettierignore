@@ -1,0 +1,21 @@
+# Build outputs
+.next/
+out/
+build/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Generated
+**/prisma/migrations/**
+
+# Legacy
+apps/api.legacy/
+
+# Misc
+.vercel/
+*.log

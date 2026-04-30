@@ -240,7 +240,7 @@ export const ImageUpload = React.forwardRef<
             const res = await removeStorageFileByUrl(value);
             if (!res.ok && res.error) {
               // Best-effort: log warning nhưng không block save
-               
+
               console.warn("Không xóa được file cũ:", res.error);
             }
           }
@@ -290,7 +290,6 @@ export const ImageUpload = React.forwardRef<
           if (oldPath && oldPath !== newPath) {
             const res = await removeStorageFileByUrl(value);
             if (!res.ok && res.error) {
-               
               console.warn("Không xóa được file cũ:", res.error);
             }
           }

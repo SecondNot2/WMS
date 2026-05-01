@@ -20,7 +20,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 [![pnpm](https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
 
-![Dashboard preview](docs/screens/tong_quan.png)
+![Dashboard preview](docs/screens/readme/dashboard.png)
 
 </div>
 
@@ -29,6 +29,7 @@
 ## 📑 Mục lục
 
 - [Quick demo](#-quick-demo)
+- [Screenshots](#-screenshots)
 - [Highlights](#-highlights)
 - [Kiến trúc](#%EF%B8%8F-kiến-trúc)
 - [Tech stack](#-tech-stack)
@@ -53,6 +54,34 @@
 | **🐳 Docker self-host**     | `docker compose --env-file .env.docker up -d` | Docker Desktop                 |
 | **💻 Dev local**            | `pnpm install && pnpm dev`                    | Node 20, pnpm 10, Supabase URL |
 | **📖 Interactive API docs** | Mở `/api-docs` sau khi server chạy            | Trình duyệt                    |
+
+---
+
+## 📸 Screenshots
+
+### 🖥️ Giao diện Dashboard & Thống kê
+
+![Dashboard](docs/screens/readme/dashboard.png)
+_Tổng quan hoạt động và các chỉ số vận hành realtime_
+
+![Thống kê](docs/screens/readme/statistics.png)
+_Phân tích luồng hàng hóa và hiệu suất sản phẩm với biểu đồ trực quan_
+
+### 📦 Quản lý Kho & Nghiệp vụ
+
+<div align="center">
+
+|               Quản lý Sản phẩm                |              Quản lý Nhập kho               |
+| :-------------------------------------------: | :-----------------------------------------: |
+| ![Products](docs/screens/readme/products.png) | ![Inbound](docs/screens/readme/inbound.png) |
+|         _Danh mục hàng hóa & tồn kho_         |      _Quy trình phê duyệt phiếu nhập_       |
+
+|                Theo dõi Tồn kho                 |          Phân quyền & Bảo mật           |
+| :---------------------------------------------: | :-------------------------------------: |
+| ![Inventory](docs/screens/readme/inventory.png) | ![Roles](docs/screens/readme/roles.png) |
+|           _Báo cáo tồn kho chi tiết_            |        _Hệ thống RBAC linh hoạt_        |
+
+</div>
 
 ---
 

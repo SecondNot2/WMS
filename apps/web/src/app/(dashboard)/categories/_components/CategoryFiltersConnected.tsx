@@ -37,50 +37,63 @@ export function CategoryFiltersConnected({
     value.status !== defaultCategoryFiltersValue.status;
 
   return (
-    <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-3 bg-card-white p-3 sm:p-4 rounded-xl border border-border-ui shadow-sm">
-      <div className="relative w-full sm:flex-1 sm:min-w-60">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
-        <input
-          value={value.search}
-          onChange={(event) =>
-            onChange({ ...value, search: event.target.value })
-          }
-          placeholder="Tìm kiếm theo tên, mô tả..."
-          className="w-full pl-9 pr-4 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors"
-        />
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 bg-card-white p-4 rounded-xl border border-border-ui shadow-sm">
+      {/* Cột 1: Tìm kiếm */}
+      <div className="lg:col-span-4">
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+            Tìm kiếm
+          </label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+            <input
+              value={value.search}
+              onChange={(event) =>
+                onChange({ ...value, search: event.target.value })
+              }
+              placeholder="Tìm kiếm theo tên, mô tả..."
+              className="w-full pl-9 pr-4 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors"
+            />
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-1 w-full sm:w-auto sm:min-w-44">
-        <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
-          Trạng thái
-        </label>
-        <Combobox<CategoryStatusFilter>
-          value={value.status}
-          onChange={(next) =>
-            onChange({
-              ...value,
-              status: (next || "active") as CategoryStatusFilter,
-            })
-          }
-          options={statusOptions}
-          searchable={false}
-        />
-      </div>
+      {/* Cột 2: Các fields còn lại */}
+      <div className="lg:col-span-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+              Trạng thái
+            </label>
+            <Combobox<CategoryStatusFilter>
+              value={value.status}
+              onChange={(next) =>
+                onChange({
+                  ...value,
+                  status: (next || "active") as CategoryStatusFilter,
+                })
+              }
+              options={statusOptions}
+              searchable={false}
+            />
+          </div>
 
-      <button
-        type="button"
-        disabled={!isDirty}
-        onClick={() => onChange(defaultCategoryFiltersValue)}
-        className={cn(
-          "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all",
-          isDirty
-            ? "text-accent hover:bg-accent/10"
-            : "text-text-secondary/50 cursor-not-allowed",
-        )}
-      >
-        <RotateCcw className="w-4 h-4" />
-        Xóa lọc
-      </button>
+          <button
+            type="button"
+            disabled={!isDirty}
+            onClick={() => onChange(defaultCategoryFiltersValue)}
+            className={cn(
+              "h-10 flex items-center justify-center gap-2 px-3 text-sm font-medium rounded-lg transition-all border border-transparent",
+              isDirty
+                ? "text-accent hover:bg-accent/10 hover:border-accent/20"
+                : "text-text-secondary/50 cursor-not-allowed",
+            )}
+          >
+            <RotateCcw className="w-4 h-4" />
+            Xóa lọc
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

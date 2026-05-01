@@ -40,12 +40,17 @@ function formatTrend(value: number): string {
 export default function StatisticsPage() {
   const [range, setRange] = React.useState<StatisticsRange>("30d");
   const [categoryId, setCategoryId] = React.useState<string>("");
+  const [search, setSearch] = React.useState("");
   const [exporting, setExporting] = React.useState(false);
   const toast = useToast();
 
   const query = React.useMemo(
-    () => ({ range, ...(categoryId ? { categoryId } : {}) }),
-    [range, categoryId],
+    () => ({
+      range,
+      ...(categoryId ? { categoryId } : {}),
+      ...(search.trim() ? { search: search.trim() } : {}),
+    }),
+    [range, categoryId, search],
   );
 
   const performanceQuery = usePerformance(query);
@@ -103,13 +108,16 @@ export default function StatisticsPage() {
 
       {/* Filter Bar */}
       <StatsFilters
+        search={search}
         range={range}
         categoryId={categoryId}
+        onSearchChange={setSearch}
         onRangeChange={setRange}
         onCategoryChange={setCategoryId}
         onReset={() => {
           setRange("30d");
           setCategoryId("");
+          setSearch("");
         }}
       />
 

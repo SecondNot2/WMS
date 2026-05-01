@@ -306,67 +306,83 @@ export function CategoryDistributionChart({
         </p>
       </div>
 
-      <div className="flex-1 relative min-h-0">
+      <div className="flex-1 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 min-h-0">
         {categoryData.length === 0 ? (
           <EmptyState message="Chưa có dữ liệu tồn kho" />
         ) : (
           <>
-            <ResponsiveContainer
-              width="100%"
-              height="100%"
-              initialDimension={{ width: 1, height: 1 }}
-            >
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius="52%"
-                  outerRadius="72%"
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.color}
-                      stroke="none"
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="relative w-full sm:w-1/2 h-56 sm:h-full min-h-0">
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                initialDimension={{ width: 1, height: 1 }}
+              >
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius="75%"
+                    outerRadius="95%"
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        stroke="none"
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
 
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-4">
-              <span className="text-[9px] text-text-secondary uppercase tracking-widest font-bold">
-                Tổng giá trị
-              </span>
-              <span className="text-lg font-bold text-text-primary">
-                {formatCompact(totalValue)}
-              </span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold mb-0.5">
+                  Tổng
+                </span>
+                <span className="text-2xl font-bold text-text-primary">
+                  {formatCompact(totalValue)}
+                </span>
+              </div>
+            </div>
+
+            <div className="w-full sm:w-1/2 flex flex-col justify-center gap-3">
+              {categoryData.map((item) => {
+                const percentage =
+                  totalValue === 0
+                    ? 0
+                    : Math.round((item.value / totalValue) * 100);
+                return (
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-sm text-text-secondary truncate">
+                        {item.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-sm font-bold text-text-primary">
+                        {formatCompact(item.value)}
+                      </span>
+                      <span className="w-11 text-center py-0.5 rounded-md bg-background-app text-[11px] font-bold text-text-secondary">
+                        {percentage}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </>
         )}
-      </div>
-
-      <div className="grid grid-cols-1 min-[390px]:grid-cols-2 gap-3 mt-4">
-        {categoryData.map((item) => (
-          <div key={item.name} className="flex items-center gap-2">
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: item.color }}
-            />
-            <div className="min-w-0">
-              <p className="text-[10px] text-text-secondary truncate">
-                {item.name}
-              </p>
-              <p className="text-[11px] font-bold text-text-primary">
-                {Math.round((item.value / totalValue) * 100)}%
-              </p>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );

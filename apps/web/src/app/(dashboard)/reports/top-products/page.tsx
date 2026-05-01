@@ -35,6 +35,10 @@ const trendConfig = {
 };
 
 export default function TopProductsReportPage() {
+  const [search, setSearch] = React.useState("");
+  const [from, setFrom] = React.useState("");
+  const [to, setTo] = React.useState("");
+  const [categoryId, setCategoryId] = React.useState("");
   const { data, isLoading, error } = useTopProductsReport({ limit: 10 });
   const [exporting, setExporting] = React.useState(false);
   const toast = useToast();
@@ -126,7 +130,18 @@ export default function TopProductsReportPage() {
         />
       </div>
 
-      <ReportFilters onExport={handleExport} isExporting={exporting} />
+      <ReportFilters
+        search={search}
+        from={from}
+        to={to}
+        categoryId={categoryId}
+        onSearchChange={setSearch}
+        onFromChange={setFrom}
+        onToChange={setTo}
+        onCategoryChange={setCategoryId}
+        onExport={handleExport}
+        isExporting={exporting}
+      />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <div className="xl:col-span-1 bg-card-white rounded-xl border border-border-ui shadow-sm p-4 sm:p-5">

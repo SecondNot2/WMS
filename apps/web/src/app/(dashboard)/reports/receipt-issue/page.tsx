@@ -13,6 +13,10 @@ import { useToast } from "@/components/Toast";
 
 export default function ReceiptIssueReportPage() {
   const [exporting, setExporting] = React.useState(false);
+  const [search, setSearch] = React.useState("");
+  const [from, setFrom] = React.useState("");
+  const [to, setTo] = React.useState("");
+  const [categoryId, setCategoryId] = React.useState("");
   const toast = useToast();
 
   const handleExport = async () => {
@@ -58,7 +62,18 @@ export default function ReceiptIssueReportPage() {
 
       <ReportStats type="receipt-issue" />
 
-      <ReportFilters onExport={handleExport} isExporting={exporting} />
+      <ReportFilters
+        search={search}
+        from={from}
+        to={to}
+        categoryId={categoryId}
+        onSearchChange={setSearch}
+        onFromChange={setFrom}
+        onToChange={setTo}
+        onCategoryChange={setCategoryId}
+        onExport={handleExport}
+        isExporting={exporting}
+      />
 
       <div className="grid grid-cols-1 gap-5">
         <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-4 sm:p-5">

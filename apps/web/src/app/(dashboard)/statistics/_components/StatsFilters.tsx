@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Calendar, ChevronDown, Filter } from "lucide-react";
+import { Calendar, ChevronDown, Filter, Search } from "lucide-react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
 import { useCategories } from "@/lib/hooks/use-categories";
 import type { StatisticsRange } from "@wms/types";
@@ -15,16 +15,20 @@ const rangeOptions: ComboboxOption<StatisticsRange>[] = [
 ];
 
 interface StatsFiltersProps {
+  search: string;
   range: StatisticsRange;
   categoryId: string;
+  onSearchChange: (next: string) => void;
   onRangeChange: (next: StatisticsRange) => void;
   onCategoryChange: (next: string) => void;
   onReset: () => void;
 }
 
 export function StatsFilters({
+  search,
   range,
   categoryId,
+  onSearchChange,
   onRangeChange,
   onCategoryChange,
   onReset,
@@ -64,55 +68,64 @@ export function StatsFilters({
 
       <div
         className={cn(
-          "flex-col sm:flex sm:flex-row sm:items-center sm:justify-between gap-4",
-          expanded ? "flex mt-4" : "hidden sm:flex",
+          "flex-col lg:grid lg:grid-cols-12 gap-4",
+          expanded ? "flex mt-4" : "hidden lg:grid",
         )}
       >
-        <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-3 w-full sm:w-auto">
-          <div className="w-full sm:min-w-44">
-            <Combobox<StatisticsRange>
-              value={range}
-              onChange={(next) =>
-                onRangeChange((next || "30d") as StatisticsRange)
-              }
-              options={rangeOptions}
-              searchable={false}
-              renderTrigger={(opt) => (
-                <span className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-text-secondary" />
-                  <span className="text-text-primary text-xs font-medium">
-                    {opt?.label ?? "30 ngày qua"}
-                  </span>
-                </span>
-              )}
-            />
-          </div>
-
-          <div className="w-full sm:min-w-48">
-            <Combobox<string>
-              value={categoryId}
-              onChange={(next) => onCategoryChange(next)}
-              options={categoryOptions}
-              searchPlaceholder="Tìm danh mục..."
-              renderTrigger={(opt) => (
-                <span className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-text-secondary" />
-                  <span className="text-text-primary text-xs font-medium">
-                    {opt?.label ?? "Tất cả danh mục"}
-                  </span>
-                </span>
-              )}
-            />
+        {/* Cột 1: Tìm kiếm */}
+        <div className="lg:col-span-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+              Tìm kiếm
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+              <input
+                value={search}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Tìm kiếm sản phẩm..."
+                className="w-full pl-9 pr-4 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button
-            onClick={onReset}
-            className="flex-1 sm:flex-none min-h-11 px-4 py-2 text-xs font-bold text-text-secondary hover:text-text-primary transition-colors rounded-lg bg-background-app/70 sm:bg-transparent"
-          >
-            Làm mới
-          </button>
+        {/* Cột 2: Các fields còn lại */}
+        <div className="lg:col-span-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+                Thời gian
+              </label>
+              <Combobox<StatisticsRange>
+                value={range}
+                onChange={(next) =>
+                  onRangeChange((next || "30d") as StatisticsRange)
+                }
+                options={rangeOptions}
+                searchable={false}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+                Danh mục
+              </label>
+              <Combobox<string>
+                value={categoryId}
+                onChange={(next) => onCategoryChange(next)}
+                options={categoryOptions}
+                searchPlaceholder="Tìm danh mục..."
+              />
+            </div>
+
+            <button
+              onClick={onReset}
+              className="h-10 flex items-center justify-center gap-2 px-3 text-xs font-bold text-text-secondary hover:text-accent hover:bg-accent/5 transition-all rounded-lg border border-transparent hover:border-accent/20"
+            >
+              Làm mới
+            </button>
+          </div>
         </div>
       </div>
     </div>

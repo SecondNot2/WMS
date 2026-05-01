@@ -238,50 +238,67 @@ export default function GlobalActivityLogPage() {
       />
 
       {/* Filters */}
-      <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-3 sm:p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_176px_176px_auto] gap-3 sm:items-center">
-          <div className="relative sm:col-span-2 xl:col-span-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
-            <input
-              placeholder="Tìm theo người dùng, nội dung, module..."
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value);
-                setLimit(20);
-              }}
-              className="w-full pl-10 pr-4 py-2 text-sm bg-background-app border border-border-ui rounded-lg outline-none focus:border-accent transition-colors"
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 bg-card-white p-4 rounded-xl border border-border-ui shadow-sm">
+        {/* Cột 1: Tìm kiếm */}
+        <div className="lg:col-span-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+              Tìm kiếm
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+              <input
+                placeholder="Người dùng, nội dung, module..."
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setLimit(20);
+                }}
+                className="w-full pl-10 pr-4 py-2 text-sm bg-background-app/50 border border-border-ui rounded-lg outline-none focus:border-accent transition-colors"
+              />
+            </div>
           </div>
+        </div>
 
-          <div className="min-w-0">
-            <Combobox<string>
-              value={module}
-              onChange={(next) => {
-                setModule(next);
-                setLimit(20);
-              }}
-              options={moduleOptions}
-              clearable={Boolean(module)}
-            />
-          </div>
+        {/* Cột 2: Các fields còn lại */}
+        <div className="lg:col-span-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+                Module
+              </label>
+              <Combobox<string>
+                value={module}
+                onChange={(next) => {
+                  setModule(next);
+                  setLimit(20);
+                }}
+                options={moduleOptions}
+                clearable={Boolean(module)}
+              />
+            </div>
 
-          <div className="min-w-0">
-            <Combobox<string>
-              value={action}
-              onChange={(next) => {
-                setAction(next);
-                setLimit(20);
-              }}
-              options={actionOptions}
-              clearable={Boolean(action)}
-            />
-          </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
+                Hành động
+              </label>
+              <Combobox<string>
+                value={action}
+                onChange={(next) => {
+                  setAction(next);
+                  setLimit(20);
+                }}
+                options={actionOptions}
+                clearable={Boolean(action)}
+              />
+            </div>
 
-          <div className="flex items-center justify-center sm:justify-start gap-2 px-3 py-2 bg-background-app border border-border-ui rounded-lg">
-            <Clock className="w-4 h-4 text-text-secondary" />
-            <span className="text-sm text-text-primary font-medium">
-              7 ngày qua
-            </span>
+            <div className="flex items-center justify-center gap-2 h-10 px-3 bg-background-app/50 border border-border-ui rounded-lg">
+              <Clock className="w-4 h-4 text-text-secondary" />
+              <span className="text-sm text-text-primary font-medium">
+                7 ngày qua
+              </span>
+            </div>
           </div>
         </div>
       </div>

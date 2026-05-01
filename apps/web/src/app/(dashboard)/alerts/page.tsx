@@ -27,7 +27,7 @@ export default function AlertsPage() {
   };
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="p-3 sm:p-5 space-y-4 sm:space-y-5">
       {/* Header */}
       <PageHeader
         title="Trung tâm cảnh báo"

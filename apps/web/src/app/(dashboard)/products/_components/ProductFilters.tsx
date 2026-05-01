@@ -59,8 +59,8 @@ export function ProductFilters({ value, onChange }: ProductFiltersProps) {
     value.search.length > 0 || value.stock !== "all" || value.categoryId !== "";
 
   return (
-    <div className="flex flex-wrap items-end gap-3 bg-card-white p-4 rounded-xl border border-border-ui shadow-sm">
-      <div className="relative flex-1 min-w-60">
+    <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-3 bg-card-white p-3 sm:p-4 rounded-xl border border-border-ui shadow-sm">
+      <div className="relative w-full sm:flex-1 sm:min-w-60">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
         <input
           value={value.search}
@@ -72,7 +72,7 @@ export function ProductFilters({ value, onChange }: ProductFiltersProps) {
         />
       </div>
 
-      <div className="flex flex-col gap-1 min-w-56">
+      <div className="flex flex-col gap-1 w-full sm:w-auto sm:min-w-56">
         <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
           Danh mục
         </label>
@@ -93,7 +93,7 @@ export function ProductFilters({ value, onChange }: ProductFiltersProps) {
         />
       </div>
 
-      <div className="flex flex-col gap-1 min-w-50">
+      <div className="flex flex-col gap-1 w-full sm:w-auto sm:min-w-50">
         <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
           Trạng thái tồn kho
         </label>

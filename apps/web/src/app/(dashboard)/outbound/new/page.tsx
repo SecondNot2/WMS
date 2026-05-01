@@ -7,7 +7,7 @@ import { OutboundForm } from "../_components/OutboundForm";
 
 export default function NewOutboundPage() {
   return (
-    <div className="p-5 w-full space-y-6">
+    <div className="p-3 sm:p-5 w-full space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link
@@ -26,7 +26,7 @@ export default function NewOutboundPage() {
         </div>
       </div>
 
-      <div className="pl-9">
+      <div className="sm:pl-9">
         <OutboundForm />
       </div>
     </div>

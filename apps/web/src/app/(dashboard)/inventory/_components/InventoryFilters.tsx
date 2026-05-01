@@ -39,8 +39,8 @@ export function InventoryFilters({
   );
 
   return (
-    <div className="flex flex-wrap items-center gap-3 bg-card-white p-4 rounded-xl border border-border-ui shadow-sm">
-      <div className="relative flex-1 min-w-60">
+    <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 bg-card-white p-3 sm:p-4 rounded-xl border border-border-ui shadow-sm">
+      <div className="relative w-full sm:flex-1 sm:min-w-60">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
         <input
           value={search}
@@ -50,7 +50,7 @@ export function InventoryFilters({
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="grid grid-cols-1 sm:flex sm:flex-wrap sm:items-center gap-3 w-full sm:w-auto">
         <div className="flex flex-col gap-1">
           <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
             Tình trạng
@@ -82,7 +82,7 @@ export function InventoryFilters({
           </div>
         </div>
 
-        <div className="flex flex-col gap-1 min-w-44">
+        <div className="flex flex-col gap-1 w-full sm:w-auto sm:min-w-44">
           <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider ml-1">
             Danh mục
           </label>
@@ -98,7 +98,7 @@ export function InventoryFilters({
         <button
           type="button"
           onClick={onReset}
-          className="mt-5 flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary hover:text-accent hover:bg-accent/5 rounded-lg transition-all"
+          className="sm:mt-5 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary hover:text-accent hover:bg-accent/5 rounded-lg transition-all"
         >
           <RotateCcw className="w-4 h-4" /> Xóa lọc
         </button>

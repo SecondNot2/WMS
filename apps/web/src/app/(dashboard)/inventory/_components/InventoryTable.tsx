@@ -55,7 +55,7 @@ export function InventoryTable({
 
   return (
     <div className="bg-card-white rounded-xl border border-border-ui shadow-sm flex flex-col overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-200">
           <thead>
             <tr className="bg-background-app/50 border-b border-border-ui">
@@ -247,6 +247,131 @@ export function InventoryTable({
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile card view */}
+      <div className="sm:hidden divide-y divide-border-ui">
+        {isLoading ? (
+          <div className="py-16 text-center text-sm text-text-secondary">
+            Đang tải dữ liệu...
+          </div>
+        ) : isError ? (
+          <div className="py-16 px-4 text-center text-sm text-danger">
+            {getApiErrorMessage(error, "Không thể tải dữ liệu tồn kho")}
+          </div>
+        ) : stock.length > 0 ? (
+          stock.map((row) => {
+            const isLow =
+              row.currentStock <= row.minStock && row.currentStock > 0;
+            const isOut = row.currentStock <= 0;
+            return (
+              <div key={row.productId} className="p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-background-app border border-border-ui flex items-center justify-center shrink-0 text-text-secondary">
+                    <Package className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      href={`/products/${row.productId}`}
+                      className="text-sm font-bold text-text-primary hover:text-accent line-clamp-1"
+                    >
+                      {row.name}
+                    </Link>
+                    <p className="text-[11px] text-text-secondary font-mono">
+                      {row.sku}
+                    </p>
+                  </div>
+                  {isOut ? (
+                    <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 bg-danger/10 text-danger rounded-full text-[11px] font-medium">
+                      <AlertCircle className="w-3 h-3" /> Hết hàng
+                    </span>
+                  ) : isLow ? (
+                    <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 bg-warning/10 text-warning rounded-full text-[11px] font-medium">
+                      <AlertCircle className="w-3 h-3" /> Sắp hết
+                    </span>
+                  ) : (
+                    <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 bg-success/10 text-success rounded-full text-[11px] font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                      An toàn
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-lg bg-background-app p-2">
+                    <p className="text-[10px] text-text-secondary">Tồn kho</p>
+                    <p
+                      className={cn(
+                        "text-sm font-bold",
+                        isOut
+                          ? "text-danger"
+                          : isLow
+                            ? "text-warning"
+                            : "text-text-primary",
+                      )}
+                    >
+                      {row.currentStock}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-background-app p-2">
+                    <p className="text-[10px] text-text-secondary">Ngưỡng</p>
+                    <p className="text-sm font-bold text-text-primary">
+                      {row.minStock}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-background-app p-2">
+                    <p className="text-[10px] text-text-secondary">Giá trị</p>
+                    <p className="text-[11px] font-bold text-text-primary truncate">
+                      {new Intl.NumberFormat("vi-VN").format(
+                        Math.round(row.stockValue),
+                      )}
+                      đ
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-1">
+                  {onAdjust && (
+                    <button
+                      type="button"
+                      onClick={() => onAdjust(row)}
+                      className="p-2 bg-accent/10 text-accent rounded-lg"
+                      title="Điều chỉnh tồn kho"
+                    >
+                      <SlidersHorizontal className="w-4 h-4" />
+                    </button>
+                  )}
+                  <Link
+                    href={`/products/${row.productId}`}
+                    className="p-2 bg-accent/10 text-accent rounded-lg"
+                    title="Lịch sử tồn kho"
+                  >
+                    <History className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    href="/inbound/new"
+                    className="p-2 bg-accent/10 text-accent rounded-lg flex items-center gap-1 text-[11px] font-bold"
+                    title="Lập phiếu nhập"
+                  >
+                    Nhập <ArrowUpRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="py-16 px-4 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 rounded-full bg-background-app flex items-center justify-center mb-4">
+              <Package className="w-8 h-8 text-text-secondary" />
+            </div>
+            <p className="text-sm font-bold text-text-primary mb-1">
+              Không có dữ liệu tồn kho
+            </p>
+            <p className="text-xs text-text-secondary">
+              Thử thay đổi bộ lọc hoặc nhập kho thêm
+            </p>
+          </div>
+        )}
       </div>
 
       <Pagination

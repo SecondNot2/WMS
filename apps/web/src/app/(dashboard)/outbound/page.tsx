@@ -58,7 +58,7 @@ export default function OutboundPage() {
   };
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="p-3 sm:p-5 space-y-4 sm:space-y-5">
       {/* Header */}
       <PageHeader
         title="Quản lý xuất kho"
@@ -76,7 +76,9 @@ export default function OutboundPage() {
               ) : (
                 <Download className="w-4 h-4" />
               )}
-              {exporting ? "Đang xuất..." : "Xuất báo cáo"}
+              <span className="hidden xs:inline">
+                {exporting ? "Đang xuất..." : "Xuất báo cáo"}
+              </span>
             </button>
             <Can action="issue.create">
               <Link

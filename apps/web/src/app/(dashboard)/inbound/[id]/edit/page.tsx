@@ -15,7 +15,7 @@ export default function EditInboundPage() {
   const { data: receipt, isLoading, isError, error } = useInbound(id);
 
   return (
-    <div className="p-5 w-full space-y-6">
+    <div className="p-3 sm:p-5 w-full space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link
@@ -34,7 +34,7 @@ export default function EditInboundPage() {
         </div>
       </div>
 
-      <div className="pl-9">
+      <div className="sm:pl-9">
         {isLoading ? (
           <div className="flex items-center justify-center py-20 text-text-secondary">
             <Loader2 className="w-6 h-6 animate-spin mr-3" />

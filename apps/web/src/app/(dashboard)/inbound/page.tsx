@@ -13,6 +13,7 @@ import { inboundApi } from "@/lib/api/inbound";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { useToast } from "@/components/Toast";
 import { Can } from "@/components/Can";
+import { PageHeader } from "@/components/PageHeader";
 
 const DEFAULT_FILTERS: InboundFilterValues = {
   search: "",
@@ -57,41 +58,39 @@ export default function InboundPage() {
   };
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="p-3 sm:p-5 space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-text-primary">
-            Quản lý nhập kho
-          </h1>
-          <p className="text-xs text-text-secondary mt-1">
-            Theo dõi và phê duyệt các phiếu nhập kho hàng hóa
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleExport}
-            disabled={exporting}
-            className="flex items-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
-          >
-            {exporting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Download className="w-4 h-4" />
-            )}
-            {exporting ? "Đang xuất..." : "Xuất báo cáo"}
-          </button>
-          <Can action="receipt.create">
-            <Link
-              href="/inbound/new"
-              className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
+      <PageHeader
+        title="Quản lý nhập kho"
+        description="Theo dõi và phê duyệt các phiếu nhập kho hàng hóa"
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={exporting}
+              className="flex items-center justify-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
             >
-              <Plus className="w-4 h-4" /> Lập phiếu nhập
-            </Link>
-          </Can>
-        </div>
-      </div>
+              {exporting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              <span className="hidden xs:inline">
+                {exporting ? "Đang xuất..." : "Xuất báo cáo"}
+              </span>
+            </button>
+            <Can action="receipt.create">
+              <Link
+                href="/inbound/new"
+                className="flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
+              >
+                <Plus className="w-4 h-4" /> Lập phiếu nhập
+              </Link>
+            </Can>
+          </>
+        }
+      />
 
       <InboundStats />
 

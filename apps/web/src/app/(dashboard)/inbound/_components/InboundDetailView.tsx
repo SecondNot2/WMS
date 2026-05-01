@@ -152,7 +152,7 @@ export function InboundDetailView({ id }: InboundDetailViewProps) {
   return (
     <div className="space-y-6">
       {/* Status Hero Card */}
-      <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span
             className={cn(
@@ -180,9 +180,9 @@ export function InboundDetailView({ id }: InboundDetailViewProps) {
                 type="button"
                 onClick={() => setConfirmType("approve")}
                 disabled={isPending}
-                className="flex items-center gap-2 bg-success hover:bg-success/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                className="flex items-center justify-center gap-2 bg-success hover:bg-success/90 text-white text-sm font-medium px-3 sm:px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50 flex-1 sm:flex-initial"
               >
-                <CheckCircle2 className="w-4 h-4" /> Duyệt phiếu
+                <CheckCircle2 className="w-4 h-4" /> Duyệt
               </button>
             </Can>
             <Can action="receipt.reject">
@@ -190,20 +190,21 @@ export function InboundDetailView({ id }: InboundDetailViewProps) {
                 type="button"
                 onClick={() => setConfirmType("reject")}
                 disabled={isPending}
-                className="flex items-center gap-2 bg-danger hover:bg-danger/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                className="flex items-center justify-center gap-2 bg-danger hover:bg-danger/90 text-white text-sm font-medium px-3 sm:px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50 flex-1 sm:flex-initial"
               >
                 <XCircle className="w-4 h-4" /> Từ chối
               </button>
             </Can>
-            <div className="w-px h-8 bg-border-ui mx-1" />
+            <div className="hidden sm:block w-px h-8 bg-border-ui mx-1" />
             <Can action="receipt.update">
               <button
                 type="button"
                 onClick={() => router.push(`/inbound/${id}/edit`)}
                 disabled={isPending}
-                className="flex items-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                className="flex items-center justify-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-3 sm:px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
               >
-                <Pencil className="w-4 h-4" /> Sửa
+                <Pencil className="w-4 h-4" />
+                <span className="hidden sm:inline">Sửa</span>
               </button>
             </Can>
             <Can action="receipt.delete">
@@ -211,9 +212,10 @@ export function InboundDetailView({ id }: InboundDetailViewProps) {
                 type="button"
                 onClick={() => setConfirmType("delete")}
                 disabled={isPending}
-                className="flex items-center gap-2 bg-card-white border border-danger/20 text-danger hover:bg-danger/5 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                className="flex items-center justify-center gap-2 bg-card-white border border-danger/20 text-danger hover:bg-danger/5 text-sm font-medium px-3 sm:px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50"
               >
-                <Trash2 className="w-4 h-4" /> Xóa
+                <Trash2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Xóa</span>
               </button>
             </Can>
           </div>
@@ -306,7 +308,8 @@ export function InboundDetailView({ id }: InboundDetailViewProps) {
                 {receipt.items.length} SẢN PHẨM
               </span>
             </div>
-            <div className="overflow-x-auto">
+            {/* Desktop table */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-background-app/50 border-b border-border-ui">
                   <tr>
@@ -399,6 +402,70 @@ export function InboundDetailView({ id }: InboundDetailViewProps) {
                   </tr>
                 </tfoot>
               </table>
+            </div>
+
+            {/* Mobile card view for items */}
+            <div className="sm:hidden divide-y divide-border-ui">
+              {receipt.items.map((item) => (
+                <div key={item.id} className="p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-text-primary truncate">
+                        {item.product.name}
+                      </p>
+                      <p className="text-[11px] text-text-secondary font-mono">
+                        {item.product.sku}
+                      </p>
+                    </div>
+                    <p className="text-sm font-bold text-accent whitespace-nowrap">
+                      {formatNumber(item.totalPrice)} đ
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-lg bg-background-app p-1.5">
+                      <p className="text-[10px] text-text-secondary">SL</p>
+                      <p className="text-xs font-bold text-text-primary">
+                        {item.quantity} {item.product.unit}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-background-app p-1.5">
+                      <p className="text-[10px] text-text-secondary">Đơn giá</p>
+                      <p className="text-xs font-bold text-text-primary">
+                        {formatNumber(item.unitPrice)}đ
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-background-app p-1.5">
+                      <p className="text-[10px] text-text-secondary">Thuế</p>
+                      <p className="text-xs font-bold text-text-primary">
+                        {item.taxRate}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className="p-4 space-y-2 bg-background-app/30">
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-secondary">Tạm tính:</span>
+                  <span className="font-medium text-text-primary">
+                    {formatNumber(receipt.subtotalAmount)} đ
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-secondary">Tổng VAT:</span>
+                  <span className="font-medium text-text-primary">
+                    {formatNumber(receipt.taxTotalAmount)} đ
+                  </span>
+                </div>
+                <hr className="border-border-ui" />
+                <div className="flex justify-between">
+                  <span className="text-sm font-bold text-text-primary">
+                    Tổng cộng:
+                  </span>
+                  <span className="text-lg font-bold text-accent">
+                    {formatCurrency(receipt.totalAmount)}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

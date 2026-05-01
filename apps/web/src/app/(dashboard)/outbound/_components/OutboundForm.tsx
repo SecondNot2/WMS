@@ -170,7 +170,7 @@ export function OutboundForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pb-20">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-6 md:p-8 space-y-8">
+          <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
             <div className="space-y-6">
               <h3 className="text-base font-bold text-text-primary flex items-center gap-2">
                 <Building className="w-5 h-5 text-accent" />
@@ -264,7 +264,8 @@ export function OutboundForm({
                 </button>
               </div>
 
-              <div className="-mx-6 md:-mx-8">
+              {/* Desktop table */}
+              <div className="-mx-4 sm:-mx-6 md:-mx-8 hidden sm:block">
                 <table className="w-full text-left table-fixed">
                   <thead className="bg-background-app/50 border-b border-border-ui">
                     <tr>
@@ -456,13 +457,171 @@ export function OutboundForm({
                     })}
                   </tbody>
                 </table>
-                {errors.items?.root && (
-                  <div className="p-4 bg-danger/5 border-t border-danger/20 flex items-center gap-2 text-danger text-sm">
-                    <AlertCircle className="w-4 h-4" />{" "}
-                    {errors.items.root.message}
-                  </div>
-                )}
               </div>
+
+              {/* Mobile card view for items */}
+              <div className="sm:hidden space-y-3 -mx-4">
+                {fields.map((field, index) => {
+                  const productId = watchItems?.[index]?.productId;
+                  const selectedProduct = productId
+                    ? productMap.get(productId)
+                    : undefined;
+                  const quantity = watchItems?.[index]?.quantity || 0;
+                  const isOverStock =
+                    selectedProduct && quantity > selectedProduct.currentStock;
+                  const lineTotal =
+                    quantity *
+                    (watchItems?.[index]?.unitPrice || 0) *
+                    (1 + (watchItems?.[index]?.taxRate || 0) / 100);
+                  return (
+                    <div
+                      key={field.id}
+                      className="p-4 bg-background-app/30 border-y border-border-ui space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-text-secondary">
+                          #{index + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => remove(index)}
+                          disabled={fields.length === 1}
+                          className="p-1.5 text-danger disabled:opacity-30"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <Controller
+                        control={control}
+                        name={`items.${index}.productId` as const}
+                        render={({ field: ctrl }) => (
+                          <ProductCombobox
+                            value={ctrl.value}
+                            onChange={(id) => {
+                              ctrl.onChange(id);
+                              const p = productMap.get(id);
+                              if (!p) return;
+                              const currentPrice =
+                                watchItems?.[index]?.unitPrice ?? 0;
+                              if (currentPrice === 0 && p.salePrice != null) {
+                                setValue(
+                                  `items.${index}.unitPrice`,
+                                  Number(p.salePrice),
+                                  { shouldValidate: true },
+                                );
+                              }
+                              const currentTax =
+                                watchItems?.[index]?.taxRate ?? 0;
+                              if (currentTax === 0 && p.taxRate != null) {
+                                setValue(
+                                  `items.${index}.taxRate`,
+                                  Number(p.taxRate),
+                                  { shouldValidate: true },
+                                );
+                              }
+                            }}
+                            hasError={Boolean(errors.items?.[index]?.productId)}
+                            excludeIds={(watchItems ?? [])
+                              .map((it, i) =>
+                                i !== index ? it?.productId : null,
+                              )
+                              .filter((id): id is string => Boolean(id))}
+                            placeholder="Tìm sản phẩm..."
+                            onCreateNew={(search) =>
+                              setProductQuickAdd({
+                                open: true,
+                                name: search,
+                                rowIndex: index,
+                              })
+                            }
+                          />
+                        )}
+                      />
+                      {selectedProduct && (
+                        <p
+                          className={cn(
+                            "text-[11px] font-medium flex items-center gap-1.5",
+                            isOverStock ? "text-danger" : "text-text-secondary",
+                          )}
+                        >
+                          {isOverStock ? (
+                            <AlertCircle className="w-3 h-3" />
+                          ) : (
+                            <Info className="w-3 h-3" />
+                          )}
+                          Tồn: {selectedProduct.currentStock}{" "}
+                          {selectedProduct.unit}
+                        </p>
+                      )}
+                      {errors.items?.[index]?.productId && (
+                        <p className="text-[10px] text-danger">
+                          {errors.items[index]?.productId?.message}
+                        </p>
+                      )}
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className="text-[10px] font-bold text-text-secondary uppercase">
+                            Số lượng
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            {...register(`items.${index}.quantity` as const, {
+                              valueAsNumber: true,
+                            })}
+                            className={cn(
+                              "w-full px-2 py-2 text-sm bg-card-white border rounded-lg outline-none focus:border-accent text-center",
+                              isOverStock
+                                ? "border-danger text-danger"
+                                : "border-border-ui",
+                            )}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-text-secondary uppercase">
+                            Đơn giá
+                          </label>
+                          <input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            {...register(`items.${index}.unitPrice` as const, {
+                              valueAsNumber: true,
+                            })}
+                            className="w-full px-2 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent text-right font-medium"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-text-secondary uppercase">
+                            Thuế %
+                          </label>
+                          <input
+                            type="number"
+                            min={0}
+                            max={100}
+                            step="0.01"
+                            {...register(`items.${index}.taxRate` as const, {
+                              valueAsNumber: true,
+                            })}
+                            className="w-full px-2 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent text-center"
+                          />
+                        </div>
+                      </div>
+                      <div className="text-right text-sm font-bold text-text-primary">
+                        Thành tiền:{" "}
+                        {new Intl.NumberFormat("vi-VN").format(lineTotal)} đ
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {errors.items?.root && (
+                <div className="p-4 bg-danger/5 border-t border-danger/20 flex items-center gap-2 text-danger text-sm">
+                  <AlertCircle className="w-4 h-4" />{" "}
+                  {errors.items.root.message}
+                </div>
+              )}
             </div>
           </div>
         </div>

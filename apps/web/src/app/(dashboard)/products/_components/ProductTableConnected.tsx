@@ -118,7 +118,7 @@ export function ProductTableConnected({
   return (
     <div className="relative">
       <div className="bg-card-white rounded-xl border border-border-ui shadow-sm flex flex-col overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-250">
             <thead>
               <tr className="bg-background-app/50 border-b border-border-ui">
@@ -318,6 +318,141 @@ export function ProductTableConnected({
           </table>
         </div>
 
+        {/* Mobile card view */}
+        <div className="sm:hidden divide-y divide-border-ui">
+          {products.length > 0 ? (
+            products.map((product) => {
+              const isSelected = selectedIds.includes(product.id);
+              const status = getStatus(product);
+              return (
+                <div
+                  key={product.id}
+                  className={cn("p-4 space-y-3", isSelected && "bg-accent/5")}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <input
+                        type="checkbox"
+                        className="rounded border-border-ui accent-accent mt-1 shrink-0"
+                        checked={isSelected}
+                        onChange={() => toggleSelect(product.id)}
+                      />
+                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-border-ui bg-background-app flex items-center justify-center shrink-0">
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Package className="w-5 h-5 text-text-secondary" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <Link
+                          href={`/products/${product.id}`}
+                          className="text-sm font-bold text-text-primary hover:text-accent line-clamp-1"
+                        >
+                          {product.name}
+                        </Link>
+                        <p className="text-[11px] text-text-secondary font-mono">
+                          {product.sku}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className={cn(
+                        "shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-medium flex items-center w-fit",
+                        statusStyles[status],
+                      )}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5" />
+                      {statusLabels[status]}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-lg bg-background-app p-2">
+                      <p className="text-[10px] text-text-secondary">Tồn kho</p>
+                      <p
+                        className={cn(
+                          "text-sm font-bold",
+                          product.currentStock <= product.minStock
+                            ? "text-danger"
+                            : "text-success",
+                        )}
+                      >
+                        {product.currentStock}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-background-app p-2">
+                      <p className="text-[10px] text-text-secondary">Ngưỡng</p>
+                      <p className="text-sm font-bold text-text-primary">
+                        {product.minStock}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-background-app p-2">
+                      <p className="text-[10px] text-text-secondary">
+                        Danh mục
+                      </p>
+                      <p className="text-[11px] font-bold text-accent truncate">
+                        {product.category.name}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-1">
+                    <Link
+                      href={`/products/${product.id}`}
+                      className="p-2 bg-accent/10 text-accent rounded-lg"
+                      title="Xem chi tiết"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Link>
+                    <Link
+                      href={`/products/${product.id}/edit`}
+                      className="p-2 bg-warning/10 text-warning rounded-lg"
+                      title="Chỉnh sửa"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Link>
+                    <button
+                      onClick={() =>
+                        setDeleteTarget({
+                          id: product.id,
+                          name: product.name,
+                        })
+                      }
+                      className="p-2 bg-danger/10 text-danger rounded-lg"
+                      title="Xóa"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="py-16 px-4 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 rounded-full bg-background-app flex items-center justify-center mb-4">
+                <Package className="w-8 h-8 text-text-secondary" />
+              </div>
+              <p className="text-sm font-bold text-text-primary mb-1">
+                Không tìm thấy sản phẩm nào
+              </p>
+              <p className="text-xs text-text-secondary mb-6">
+                Thử thay đổi bộ lọc hoặc thêm sản phẩm mới
+              </p>
+              <Link
+                href="/products/new"
+                className="w-full px-6 py-2 bg-accent text-white text-sm font-bold rounded-lg hover:bg-accent/90 transition-colors text-center"
+              >
+                Thêm sản phẩm mới
+              </Link>
+            </div>
+          )}
+        </div>
+
         <Pagination
           currentPage={meta?.page ?? currentPage}
           totalPages={meta?.totalPages ?? 1}
@@ -332,24 +467,26 @@ export function ProductTableConnected({
       </div>
 
       {selectedIds.length > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-primary text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-6 animate-in fade-in slide-in-from-bottom-8 duration-300 z-50 border border-white/10">
-          <div className="flex items-center gap-3 border-r border-white/20 pr-6">
+        <div className="fixed bottom-4 sm:bottom-8 left-2 right-2 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto bg-primary text-white px-4 sm:px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 sm:gap-6 animate-in fade-in slide-in-from-bottom-8 duration-300 z-50 border border-white/10">
+          <div className="flex items-center gap-2 sm:gap-3 border-r border-white/20 pr-3 sm:pr-6">
             <div className="w-6 h-6 bg-accent rounded-full flex items-center justify-center text-[10px] font-bold">
               {selectedIds.length}
             </div>
             <span className="text-xs font-semibold">Đã chọn</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1 sm:flex-initial">
             <button className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/10 rounded-lg text-xs font-medium transition-colors">
-              <Printer className="w-3.5 h-3.5" /> In mã vạch
+              <Printer className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">In mã vạch</span>
             </button>
             <button className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/10 rounded-lg text-xs font-medium transition-colors">
-              <Copy className="w-3.5 h-3.5" /> Sao chép
+              <Copy className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sao chép</span>
             </button>
           </div>
           <button
             onClick={() => setSelectedIds([])}
-            className="p-1 hover:bg-white/10 rounded-full transition-colors ml-4"
+            className="p-1 hover:bg-white/10 rounded-full transition-colors"
           >
             <XCircle className="w-5 h-5 text-white/50 hover:text-white" />
           </button>

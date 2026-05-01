@@ -20,10 +20,14 @@ export const PRODUCT_KEYS = {
     [...PRODUCT_KEYS.detail(id), "stock-history"] as const,
 };
 
-export function useProducts(params: GetProductsQuery = {}) {
+export function useProducts(
+  params: GetProductsQuery = {},
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: PRODUCT_KEYS.list(params),
     queryFn: () => productsApi.getAll(params),
+    enabled: options?.enabled ?? true,
   });
 }
 

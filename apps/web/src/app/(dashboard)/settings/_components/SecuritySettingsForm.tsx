@@ -100,7 +100,9 @@ export function SecuritySettingsForm({
             <input
               type="number"
               min={1}
-              {...register("accessTokenMinutes", { valueAsNumber: true })}
+              {...register("accessTokenMinutes", {
+                setValueAs: (v) => (v === "" ? 0 : Number(v)),
+              })}
               className={cn(
                 inputClassName,
                 errors.accessTokenMinutes
@@ -120,7 +122,9 @@ export function SecuritySettingsForm({
             <input
               type="number"
               min={1}
-              {...register("refreshTokenDays", { valueAsNumber: true })}
+              {...register("refreshTokenDays", {
+                setValueAs: (v) => (v === "" ? 0 : Number(v)),
+              })}
               className={cn(
                 inputClassName,
                 errors.refreshTokenDays ? "border-danger" : "border-border-ui",
@@ -138,7 +142,9 @@ export function SecuritySettingsForm({
             <input
               type="number"
               min={1}
-              {...register("maxFailedLogin", { valueAsNumber: true })}
+              {...register("maxFailedLogin", {
+                setValueAs: (v) => (v === "" ? 0 : Number(v)),
+              })}
               className={cn(
                 inputClassName,
                 errors.maxFailedLogin ? "border-danger" : "border-border-ui",

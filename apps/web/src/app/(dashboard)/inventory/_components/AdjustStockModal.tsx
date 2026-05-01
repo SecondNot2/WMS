@@ -61,13 +61,12 @@ export function AdjustStockModal({
   }, [searchTerm]);
 
   const showPicker = !selected;
+  const shouldSearch = showPicker && debouncedSearch.length > 0;
   const { data: searchResult, isFetching: isSearching } = useProducts(
-    showPicker && debouncedSearch.length > 0
-      ? { search: debouncedSearch, page: 1, limit: 8 }
-      : { page: 1, limit: 0 },
+    { search: debouncedSearch, page: 1, limit: 8 },
+    { enabled: shouldSearch },
   );
-  const searchProducts =
-    showPicker && debouncedSearch.length > 0 ? (searchResult?.data ?? []) : [];
+  const searchProducts = shouldSearch ? (searchResult?.data ?? []) : [];
 
   if (!isOpen) return null;
 
@@ -224,11 +223,14 @@ export function AdjustStockModal({
                 Tồn kho mới <span className="text-danger">*</span>
               </label>
               <input
-                type="number"
-                min={0}
-                step={1}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={newStockText}
-                onChange={(e) => setNewStockText(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "" || /^\d+$/.test(v)) setNewStockText(v);
+                }}
                 disabled={!selected}
                 className="w-full px-4 py-3 bg-card-white border border-accent rounded-xl text-lg font-black text-accent outline-none focus:ring-2 ring-accent/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="0"

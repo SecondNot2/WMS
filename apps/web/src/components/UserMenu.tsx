@@ -74,6 +74,7 @@ export function UserMenu({
             <img
               src={avatar}
               alt={displayName}
+              loading="lazy"
               className="w-full h-full object-cover"
             />
           </div>
@@ -97,6 +98,7 @@ export function UserMenu({
             <img
               src={avatar}
               alt={displayName}
+              loading="lazy"
               className="w-full h-full object-cover"
             />
           </div>
@@ -125,6 +127,7 @@ export function UserMenu({
           <img
             src={avatar}
             alt={displayName}
+            loading="lazy"
             className="w-full h-full object-cover"
           />
         </button>

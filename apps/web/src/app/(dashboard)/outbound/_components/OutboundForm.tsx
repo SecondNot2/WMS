@@ -391,7 +391,8 @@ export function OutboundForm({
                               type="number"
                               min={1}
                               {...register(`items.${index}.quantity` as const, {
-                                valueAsNumber: true,
+                                setValueAs: (v: string) =>
+                                  v === "" ? 0 : Number(v),
                               })}
                               className={cn(
                                 "w-full px-2 py-2 text-sm bg-card-white border rounded-lg outline-none focus:border-accent transition-all text-center",
@@ -408,7 +409,10 @@ export function OutboundForm({
                               step="0.01"
                               {...register(
                                 `items.${index}.unitPrice` as const,
-                                { valueAsNumber: true },
+                                {
+                                  setValueAs: (v: string) =>
+                                    v === "" ? 0 : Number(v),
+                                },
                               )}
                               className="w-full px-2 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-right font-medium"
                             />
@@ -429,7 +433,8 @@ export function OutboundForm({
                               max={100}
                               step="0.01"
                               {...register(`items.${index}.taxRate` as const, {
-                                valueAsNumber: true,
+                                setValueAs: (v: string) =>
+                                  v === "" ? 0 : Number(v),
                               })}
                               className="w-full px-2 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent transition-all text-center"
                             />
@@ -567,7 +572,8 @@ export function OutboundForm({
                             type="number"
                             min={1}
                             {...register(`items.${index}.quantity` as const, {
-                              valueAsNumber: true,
+                              setValueAs: (v: string) =>
+                                v === "" ? 0 : Number(v),
                             })}
                             className={cn(
                               "w-full px-2 py-2 text-sm bg-card-white border rounded-lg outline-none focus:border-accent text-center",
@@ -586,7 +592,8 @@ export function OutboundForm({
                             min={0}
                             step="0.01"
                             {...register(`items.${index}.unitPrice` as const, {
-                              valueAsNumber: true,
+                              setValueAs: (v: string) =>
+                                v === "" ? 0 : Number(v),
                             })}
                             className="w-full px-2 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent text-right font-medium"
                           />
@@ -601,7 +608,8 @@ export function OutboundForm({
                             max={100}
                             step="0.01"
                             {...register(`items.${index}.taxRate` as const, {
-                              valueAsNumber: true,
+                              setValueAs: (v: string) =>
+                                v === "" ? 0 : Number(v),
                             })}
                             className="w-full px-2 py-2 text-sm bg-card-white border border-border-ui rounded-lg outline-none focus:border-accent text-center"
                           />

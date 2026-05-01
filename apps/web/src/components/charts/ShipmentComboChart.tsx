@@ -76,7 +76,11 @@ export function ShipmentComboChart() {
             Không có dữ liệu trong khoảng đã chọn
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            initialDimension={{ width: 1, height: 1 }}
+          >
             <ComposedChart
               data={data}
               margin={{ top: 10, right: 8, bottom: 0, left: -24 }}

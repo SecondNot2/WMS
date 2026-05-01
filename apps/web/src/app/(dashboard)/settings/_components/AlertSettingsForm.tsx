@@ -126,7 +126,9 @@ export function AlertSettingsForm({
             <input
               type="number"
               min={0}
-              {...register("lowStockPercent", { valueAsNumber: true })}
+              {...register("lowStockPercent", {
+                setValueAs: (v) => (v === "" ? 0 : Number(v)),
+              })}
               className={cn(
                 inputClassName,
                 errors.lowStockPercent ? "border-danger" : "border-border-ui",
@@ -146,7 +148,9 @@ export function AlertSettingsForm({
             <input
               type="number"
               min={0}
-              {...register("pendingHours", { valueAsNumber: true })}
+              {...register("pendingHours", {
+                setValueAs: (v) => (v === "" ? 0 : Number(v)),
+              })}
               className={cn(
                 inputClassName,
                 errors.pendingHours ? "border-danger" : "border-border-ui",

@@ -29,7 +29,7 @@ export function Topbar() {
         <button
           type="button"
           onClick={toggleMobileSidebar}
-          className="p-2 hover:bg-background-app rounded-lg transition-colors text-text-secondary"
+          className="p-2 hover:bg-background-app rounded-lg transition-colors text-text-secondary md:hidden"
           aria-label="Mở menu"
         >
           <Menu className="w-5 h-5" />

@@ -3,6 +3,7 @@
 import React from "react";
 import {
   BarChart3,
+  ChevronLeft,
   Download,
   Loader2,
   Package,
@@ -11,6 +12,7 @@ import {
   Zap,
 } from "lucide-react";
 import { StatsCard } from "@/components/StatsCard";
+import Link from "next/link";
 import { ReportFilters } from "../_components/ReportFilters";
 import { useTopProductsReport } from "@/lib/hooks/use-reports";
 import { cn } from "@/lib/utils";
@@ -66,14 +68,22 @@ export default function TopProductsReportPage() {
   return (
     <div className="p-4 sm:p-5 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-text-primary">
-            Báo cáo hiệu suất sản phẩm
-          </h1>
-          <p className="text-xs text-text-secondary mt-1">
-            Xếp hạng sản phẩm theo tốc độ luân chuyển nhập/xuất và tồn kho cuối
-            kỳ
-          </p>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/reports"
+            className="p-2 hover:bg-background-app rounded-full transition-colors text-text-secondary"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Link>
+          <div>
+            <h1 className="text-xl font-bold text-text-primary">
+              Báo cáo hiệu suất sản phẩm
+            </h1>
+            <p className="text-xs text-text-secondary mt-1">
+              Xếp hạng sản phẩm theo tốc độ luân chuyển nhập/xuất và tồn kho
+              cuối kỳ
+            </p>
+          </div>
         </div>
         <button
           onClick={handleExport}

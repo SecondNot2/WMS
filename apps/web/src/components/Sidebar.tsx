@@ -246,7 +246,11 @@ export function Sidebar() {
               )}
               <nav className="space-y-1">
                 {group.items.map((item) => {
-                  const isActive = pathname === item.href;
+                  const isActive =
+                    item.href === "/"
+                      ? pathname === "/"
+                      : pathname === item.href ||
+                        pathname.startsWith(item.href + "/");
                   return (
                     <Link
                       key={item.name}

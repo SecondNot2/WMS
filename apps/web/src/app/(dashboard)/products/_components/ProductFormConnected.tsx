@@ -272,21 +272,27 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
               <Field label="Giá vốn" error={errors.costPrice?.message}>
                 <input
                   type="number"
-                  {...register("costPrice", { valueAsNumber: true })}
+                  {...register("costPrice", {
+                    setValueAs: (v: string) => (v === "" ? null : Number(v)),
+                  })}
                   className={inputClass(errors.costPrice?.message)}
                 />
               </Field>
               <Field label="Giá bán" error={errors.salePrice?.message}>
                 <input
                   type="number"
-                  {...register("salePrice", { valueAsNumber: true })}
+                  {...register("salePrice", {
+                    setValueAs: (v: string) => (v === "" ? null : Number(v)),
+                  })}
                   className={inputClass(errors.salePrice?.message)}
                 />
               </Field>
               <Field label="Thuế suất (%)" error={errors.taxRate?.message}>
                 <input
                   type="number"
-                  {...register("taxRate", { valueAsNumber: true })}
+                  {...register("taxRate", {
+                    setValueAs: (v: string) => (v === "" ? null : Number(v)),
+                  })}
                   className={inputClass(errors.taxRate?.message)}
                 />
               </Field>
@@ -298,7 +304,9 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
                 <input
                   type="number"
                   min={0}
-                  {...register("minStock", { valueAsNumber: true })}
+                  {...register("minStock", {
+                    setValueAs: (v: string) => (v === "" ? 0 : Number(v)),
+                  })}
                   className={inputClass(errors.minStock?.message)}
                 />
               </Field>
@@ -311,7 +319,9 @@ export function ProductFormConnected({ productId }: ProductFormConnectedProps) {
                     type="number"
                     min={0}
                     step={1}
-                    {...register("initialStock", { valueAsNumber: true })}
+                    {...register("initialStock", {
+                      setValueAs: (v: string) => (v === "" ? 0 : Number(v)),
+                    })}
                     className={inputClass(errors.initialStock?.message)}
                     placeholder="0"
                   />

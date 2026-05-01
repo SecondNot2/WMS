@@ -18,6 +18,8 @@ const routeMap: Record<string, string> = {
   alerts: "Cảnh báo",
   statistics: "Thống kê",
   reports: "Báo cáo",
+  "receipt-issue": "Biến động Nhập - Xuất",
+  "top-products": "Hiệu suất sản phẩm",
   suppliers: "Nhà cung cấp",
   receivers: "Đơn vị nhận hàng",
   users: "Người dùng",

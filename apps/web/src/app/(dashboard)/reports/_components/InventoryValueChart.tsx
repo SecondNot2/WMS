@@ -34,7 +34,11 @@ export function InventoryValueChart() {
 
   return (
     <div className="w-full h-80 sm:h-87.5">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        initialDimension={{ width: 1, height: 1 }}
+      >
         <PieChart>
           <Pie
             data={chartData}

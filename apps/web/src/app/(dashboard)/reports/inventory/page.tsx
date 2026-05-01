@@ -5,7 +5,8 @@ import { ReportStats } from "../_components/ReportStats";
 import { ReportFilters } from "../_components/ReportFilters";
 import { InventoryValueChart } from "../_components/InventoryValueChart";
 import { ReportTable } from "../_components/ReportTable";
-import { PieChart as PieIcon } from "lucide-react";
+import { PieChart as PieIcon, ChevronLeft } from "lucide-react";
+import Link from "next/link";
 import { reportsApi } from "@/lib/api/reports";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { useToast } from "@/components/Toast";
@@ -38,13 +39,21 @@ export default function InventoryReportPage() {
   return (
     <div className="p-4 sm:p-5 space-y-5">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-text-primary">
-          Báo cáo tồn kho Snapshot
-        </h1>
-        <p className="text-xs text-text-secondary mt-1">
-          Thống kê giá trị và số lượng tồn kho tại thời điểm báo cáo
-        </p>
+      <div className="flex items-center gap-3">
+        <Link
+          href="/reports"
+          className="p-2 hover:bg-background-app rounded-full transition-colors text-text-secondary"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </Link>
+        <div>
+          <h1 className="text-xl font-bold text-text-primary">
+            Báo cáo tồn kho Snapshot
+          </h1>
+          <p className="text-xs text-text-secondary mt-1">
+            Thống kê giá trị và số lượng tồn kho tại thời điểm báo cáo
+          </p>
+        </div>
       </div>
 
       <ReportStats type="inventory" />

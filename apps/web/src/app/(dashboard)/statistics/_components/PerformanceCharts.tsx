@@ -108,7 +108,11 @@ export function FlowAnalysisChart({ data, isLoading }: FlowAnalysisChartProps) {
         {flowData.length === 0 ? (
           <EmptyState message="Chưa có dữ liệu nhập/xuất trong khoảng thời gian này" />
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            initialDimension={{ width: 1, height: 1 }}
+          >
             <AreaChart
               data={flowData}
               margin={{ top: 10, right: 8, left: -24, bottom: 0 }}
@@ -219,7 +223,11 @@ export function TopProductsChart({ data, isLoading }: TopProductsChartProps) {
         {topProductsData.length === 0 ? (
           <EmptyState message="Chưa có sản phẩm biến động" />
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            initialDimension={{ width: 1, height: 1 }}
+          >
             <BarChart
               data={topProductsData}
               layout="vertical"
@@ -303,7 +311,11 @@ export function CategoryDistributionChart({
           <EmptyState message="Chưa có dữ liệu tồn kho" />
         ) : (
           <>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              initialDimension={{ width: 1, height: 1 }}
+            >
               <PieChart>
                 <Pie
                   data={categoryData}

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  --font-inter: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --color-primary: #1a3a5c;
   --color-accent: #2d7dd2;
   --color-success: #22c55e;

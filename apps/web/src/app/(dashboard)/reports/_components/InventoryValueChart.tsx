@@ -20,12 +20,12 @@ export function InventoryValueChart() {
 
   if (!isMounted || isLoading)
     return (
-      <div className="h-87.5 w-full bg-background-app animate-pulse rounded-xl" />
+      <div className="h-80 sm:h-87.5 w-full bg-background-app animate-pulse rounded-xl" />
     );
 
   if (error)
     return (
-      <div className="h-87.5 w-full text-sm text-danger bg-danger/10 border border-danger/20 rounded-xl p-4">
+      <div className="h-80 sm:h-87.5 w-full text-sm text-danger bg-danger/10 border border-danger/20 rounded-xl p-4">
         Không thể tải biểu đồ tồn kho
       </div>
     );
@@ -33,15 +33,15 @@ export function InventoryValueChart() {
   const chartData = data?.chart ?? [];
 
   return (
-    <div className="w-full h-87.5">
+    <div className="w-full h-80 sm:h-87.5">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={chartData}
             cx="50%"
             cy="50%"
-            innerRadius={60}
-            outerRadius={100}
+            innerRadius="52%"
+            outerRadius="72%"
             paddingAngle={5}
             dataKey="value"
           >
@@ -62,7 +62,13 @@ export function InventoryValueChart() {
             }
             contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0" }}
           />
-          <Legend verticalAlign="bottom" height={36} iconType="circle" />
+          <Legend
+            verticalAlign="bottom"
+            height={36}
+            iconType="circle"
+            iconSize={8}
+            wrapperStyle={{ fontSize: "11px" }}
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>

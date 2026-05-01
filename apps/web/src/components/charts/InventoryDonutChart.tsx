@@ -77,17 +77,17 @@ export function InventoryDonutChart() {
         Tồn kho theo danh mục
       </h3>
 
-      <div className="flex flex-row items-center justify-center space-x-2 flex-1 min-h-40">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-2 flex-1 min-h-40">
         {/* Chart area */}
-        <div className="w-60 h-60 relative shrink-0">
+        <div className="w-48 h-48 sm:w-60 sm:h-60 relative shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={80}
-                outerRadius={105}
+                innerRadius="62%"
+                outerRadius="82%"
                 paddingAngle={3}
                 dataKey="value"
               >
@@ -119,7 +119,7 @@ export function InventoryDonutChart() {
         </div>
 
         {/* Legend area */}
-        <div className="flex-1 max-w-40 space-y-5">
+        <div className="w-full sm:flex-1 sm:max-w-40 space-y-3 sm:space-y-5">
           {data.map((item) => (
             <div
               key={item.name}

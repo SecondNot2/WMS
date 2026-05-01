@@ -23,18 +23,18 @@ export function ReceiptIssueChart() {
 
   if (!isMounted || isLoading)
     return (
-      <div className="h-87.5 w-full bg-background-app animate-pulse rounded-xl" />
+      <div className="h-80 sm:h-87.5 w-full bg-background-app animate-pulse rounded-xl" />
     );
 
   if (error)
     return (
-      <div className="h-87.5 w-full text-sm text-danger bg-danger/10 border border-danger/20 rounded-xl p-4">
+      <div className="h-80 sm:h-87.5 w-full text-sm text-danger bg-danger/10 border border-danger/20 rounded-xl p-4">
         Không thể tải biểu đồ nhập xuất
       </div>
     );
 
   return (
-    <div className="w-full h-87.5">
+    <div className="w-full h-80 sm:h-87.5">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={(data?.chart ?? []).map((item) => ({
@@ -42,7 +42,7 @@ export function ReceiptIssueChart() {
             receipt: item.inbound,
             issue: item.outbound,
           }))}
-          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+          margin={{ top: 10, right: 8, left: -24, bottom: 0 }}
         >
           <defs>
             <linearGradient id="colorReceipt" x1="0" y1="0" x2="0" y2="1">
@@ -65,6 +65,8 @@ export function ReceiptIssueChart() {
             tickLine={false}
             tick={{ fontSize: 11, fill: "#64748b", fontWeight: 500 }}
             dy={10}
+            interval="preserveStartEnd"
+            minTickGap={16}
           />
           <YAxis
             axisLine={false}
@@ -81,9 +83,11 @@ export function ReceiptIssueChart() {
           />
           <Legend
             verticalAlign="top"
-            align="right"
+            align="center"
             height={36}
             iconType="circle"
+            iconSize={8}
+            wrapperStyle={{ fontSize: "11px" }}
           />
           <Area
             name="Nhập kho"

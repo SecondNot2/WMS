@@ -43,7 +43,7 @@ const reportModules = [
 
 export default function ReportsPage() {
   return (
-    <div className="p-5 space-y-5">
+    <div className="p-4 sm:p-5 space-y-5">
       {/* Header */}
       <div>
         <h1 className="text-xl font-bold text-text-primary">
@@ -54,13 +54,13 @@ export default function ReportsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {reportModules.map((report) => (
           <Link
             key={report.title}
             href={report.href}
             className={cn(
-              "group relative flex flex-col p-6 bg-card-white rounded-2xl border border-border-ui shadow-sm transition-all duration-300",
+              "group relative flex flex-col p-5 sm:p-6 bg-card-white rounded-2xl border border-border-ui shadow-sm transition-all duration-300",
               "hover:shadow-xl hover:border-accent hover:-translate-y-1 cursor-pointer",
             )}
           >
@@ -95,7 +95,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Quick Tips / Info */}
-      <div className="bg-accent/5 border border-accent/20 rounded-2xl p-6 flex gap-4 items-start">
+      <div className="bg-accent/5 border border-accent/20 rounded-2xl p-4 sm:p-6 flex gap-4 items-start">
         <div className="p-2 bg-card-white rounded-lg shadow-sm border border-accent/10">
           <FileText className="w-5 h-5 text-accent" />
         </div>

@@ -48,6 +48,7 @@ export function NotificationBell() {
   const [position, setPosition] = React.useState<{
     top: number;
     right: number;
+    width: number;
   } | null>(null);
 
   // ── Data sources với polling ──
@@ -85,9 +86,13 @@ export function NotificationBell() {
   const computePos = React.useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
+    const width = Math.min(380, window.innerWidth - 16);
+    const preferredRight = window.innerWidth - rect.right;
+    const maxRight = window.innerWidth - width - 8;
     setPosition({
       top: rect.bottom + 6,
-      right: window.innerWidth - rect.right,
+      right: Math.max(8, Math.min(preferredRight, maxRight)),
+      width,
     });
   }, []);
 
@@ -147,8 +152,7 @@ export function NotificationBell() {
               top: position.top,
               right: position.right,
               zIndex: 70,
-              width: 380,
-              maxWidth: "calc(100vw - 16px)",
+              width: position.width,
             }}
             className="bg-card-white border border-border-ui rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-100"
           >

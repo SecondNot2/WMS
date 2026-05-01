@@ -64,7 +64,7 @@ export default function TopProductsReportPage() {
   };
 
   return (
-    <div className="p-5 space-y-5">
+    <div className="p-4 sm:p-5 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-text-primary">
@@ -78,7 +78,7 @@ export default function TopProductsReportPage() {
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20 disabled:opacity-60"
+          className="flex min-h-11 w-full sm:w-auto items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20 disabled:opacity-60"
         >
           {exporting ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -119,7 +119,7 @@ export default function TopProductsReportPage() {
       <ReportFilters onExport={handleExport} isExporting={exporting} />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        <div className="xl:col-span-1 bg-card-white rounded-xl border border-border-ui shadow-sm p-5">
+        <div className="xl:col-span-1 bg-card-white rounded-xl border border-border-ui shadow-sm p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-5">
             <BarChart3 className="w-5 h-5 text-accent" />
             <h3 className="text-sm font-semibold text-text-primary">
@@ -162,12 +162,12 @@ export default function TopProductsReportPage() {
         </div>
 
         <div className="xl:col-span-2 bg-card-white rounded-xl border border-border-ui shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-border-ui">
+          <div className="p-4 sm:p-5 border-b border-border-ui">
             <h3 className="text-sm font-semibold text-text-primary">
               Bảng xếp hạng chi tiết
             </h3>
           </div>
-          <div className="overflow-x-auto">
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left min-w-220">
               <thead className="bg-background-app/50 border-b border-border-ui">
                 <tr>
@@ -237,6 +237,61 @@ export default function TopProductsReportPage() {
                 })}
               </tbody>
             </table>
+          </div>
+
+          <div className="sm:hidden divide-y divide-border-ui">
+            {topProducts.map((product) => {
+              const TrendIcon = trendConfig[product.trend].icon;
+              return (
+                <div key={product.sku} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="w-7 h-7 rounded-full bg-accent/10 text-accent text-xs font-black flex items-center justify-center shrink-0">
+                          {product.rank}
+                        </span>
+                        <p className="text-sm font-bold text-text-primary truncate">
+                          {product.name}
+                        </p>
+                      </div>
+                      <p className="mt-1 text-[11px] text-text-secondary font-mono truncate">
+                        {product.sku} · {product.category}
+                      </p>
+                    </div>
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0",
+                        trendConfig[product.trend].className,
+                      )}
+                    >
+                      <TrendIcon className="w-3 h-3" />
+                      {trendConfig[product.trend].label}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-lg bg-success/10 px-2 py-2">
+                      <p className="text-[10px] text-text-secondary">Nhập</p>
+                      <p className="text-sm font-bold text-success">
+                        {product.inboundQty}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-danger/10 px-2 py-2">
+                      <p className="text-[10px] text-text-secondary">Xuất</p>
+                      <p className="text-sm font-bold text-danger">
+                        {product.outboundQty}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-background-app px-2 py-2">
+                      <p className="text-[10px] text-text-secondary">Tồn</p>
+                      <p className="text-sm font-bold text-text-primary">
+                        {product.stock}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

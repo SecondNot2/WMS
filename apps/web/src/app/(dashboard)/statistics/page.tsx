@@ -75,7 +75,7 @@ export default function StatisticsPage() {
   const summary = performanceQuery.data?.summary;
   const isLoadingPerf = performanceQuery.isLoading;
   return (
-    <div className="p-5 space-y-5">
+    <div className="p-4 sm:p-5 space-y-5">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -90,7 +90,7 @@ export default function StatisticsPage() {
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="flex items-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-60"
+          className="flex min-h-11 w-full sm:w-auto items-center justify-center gap-2 bg-card-white border border-border-ui text-text-primary hover:bg-background-app text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-60"
         >
           {exporting ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -187,14 +187,14 @@ export default function StatisticsPage() {
           />
 
           <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-5">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between gap-3 mb-5">
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-accent" />
                 <h3 className="text-sm font-semibold text-text-primary">
                   Tình trạng lưu kho (Aging)
                 </h3>
               </div>
-              <button className="text-[10px] font-bold text-accent hover:underline">
+              <button className="min-h-9 rounded-lg px-2 text-[10px] font-bold text-accent hover:bg-accent/10">
                 Chi tiết
               </button>
             </div>

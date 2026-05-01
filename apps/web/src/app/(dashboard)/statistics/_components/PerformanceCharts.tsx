@@ -50,7 +50,7 @@ function ChartSkeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "bg-card-white p-5 rounded-xl border border-border-ui shadow-sm h-87.5 animate-pulse",
+        "bg-card-white p-4 sm:p-5 rounded-xl border border-border-ui shadow-sm h-80 sm:h-87.5 animate-pulse",
         className,
       )}
     />
@@ -78,8 +78,8 @@ export function FlowAnalysisChart({ data, isLoading }: FlowAnalysisChartProps) {
     outbound: p.outbound,
   }));
   return (
-    <div className="bg-card-white p-5 rounded-xl border border-border-ui shadow-sm h-87.5 flex flex-col">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-card-white p-4 sm:p-5 rounded-xl border border-border-ui shadow-sm h-80 sm:h-87.5 flex flex-col">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-6">
         <div>
           <h3 className="text-sm font-semibold text-text-primary">
             Phân tích luồng hàng hóa
@@ -88,7 +88,7 @@ export function FlowAnalysisChart({ data, isLoading }: FlowAnalysisChartProps) {
             So sánh sản lượng nhập và xuất kho theo thời gian
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-accent" />
             <span className="text-[10px] font-medium text-text-secondary">
@@ -111,7 +111,7 @@ export function FlowAnalysisChart({ data, isLoading }: FlowAnalysisChartProps) {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={flowData}
-              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              margin={{ top: 10, right: 8, left: -24, bottom: 0 }}
             >
               <defs>
                 <linearGradient id="colorInbound" x1="0" y1="0" x2="0" y2="1">
@@ -150,6 +150,8 @@ export function FlowAnalysisChart({ data, isLoading }: FlowAnalysisChartProps) {
                 tickLine={false}
                 tick={{ fontSize: 10, fill: "var(--color-text-secondary)" }}
                 dy={10}
+                interval="preserveStartEnd"
+                minTickGap={16}
               />
               <YAxis
                 axisLine={false}
@@ -203,8 +205,8 @@ export function TopProductsChart({ data, isLoading }: TopProductsChartProps) {
     }))
     .sort((a, b) => b.value - a.value);
   return (
-    <div className="bg-card-white p-5 rounded-xl border border-border-ui shadow-sm h-87.5 flex flex-col">
-      <div className="mb-6">
+    <div className="bg-card-white p-4 sm:p-5 rounded-xl border border-border-ui shadow-sm h-80 sm:h-87.5 flex flex-col">
+      <div className="mb-5 sm:mb-6">
         <h3 className="text-sm font-semibold text-text-primary">
           Top sản phẩm biến động mạnh
         </h3>
@@ -221,7 +223,7 @@ export function TopProductsChart({ data, isLoading }: TopProductsChartProps) {
             <BarChart
               data={topProductsData}
               layout="vertical"
-              margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+              margin={{ top: 5, right: 12, left: 4, bottom: 5 }}
               barSize={12}
             >
               <CartesianGrid
@@ -240,7 +242,12 @@ export function TopProductsChart({ data, isLoading }: TopProductsChartProps) {
                   fill: "var(--color-text-primary)",
                   fontWeight: 500,
                 }}
-                width={100}
+                width={78}
+                tickFormatter={(value) =>
+                  String(value).length > 12
+                    ? `${String(value).slice(0, 12)}…`
+                    : String(value)
+                }
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.02)" }}
@@ -281,8 +288,8 @@ export function CategoryDistributionChart({
   const totalValue = categoryData.reduce((acc, curr) => acc + curr.value, 0);
 
   return (
-    <div className="bg-card-white p-5 rounded-xl border border-border-ui shadow-sm h-87.5 flex flex-col">
-      <div className="mb-6">
+    <div className="bg-card-white p-4 sm:p-5 rounded-xl border border-border-ui shadow-sm h-80 sm:h-87.5 flex flex-col">
+      <div className="mb-5 sm:mb-6">
         <h3 className="text-sm font-semibold text-text-primary">
           Giá trị tồn kho theo danh mục
         </h3>
@@ -302,8 +309,8 @@ export function CategoryDistributionChart({
                   data={categoryData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={65}
-                  outerRadius={90}
+                  innerRadius="52%"
+                  outerRadius="72%"
                   paddingAngle={5}
                   dataKey="value"
                 >
@@ -331,7 +338,7 @@ export function CategoryDistributionChart({
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mt-4">
+      <div className="grid grid-cols-1 min-[390px]:grid-cols-2 gap-3 mt-4">
         {categoryData.map((item) => (
           <div key={item.name} className="flex items-center gap-2">
             <span

@@ -41,12 +41,12 @@ export function ShipmentComboChart() {
   const totalOutbound = performance?.summary.totalOutbound;
 
   return (
-    <div className="bg-card-white p-4 rounded-xl border border-border-ui shadow-sm h-full flex flex-col">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-card-white p-4 rounded-xl border border-border-ui shadow-sm h-full min-h-92 sm:min-h-80 flex flex-col">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h3 className="text-sm font-semibold text-text-primary">
           Biểu đồ nhập / xuất kho
         </h3>
-        <div className="min-w-32">
+        <div className="w-full sm:w-auto sm:min-w-32">
           <Combobox<StatisticsRange>
             value={range}
             onChange={(next) => setRange((next as StatisticsRange) || "7d")}
@@ -61,7 +61,7 @@ export function ShipmentComboChart() {
         </div>
       </div>
 
-      <div className="h-36 flex-1 relative">
+      <div className="h-56 sm:h-44 xl:h-36 shrink-0 relative">
         {isLoading ? (
           <div className="absolute inset-0 flex items-center justify-center text-text-secondary">
             <Loader2 className="w-5 h-5 animate-spin mr-2" />
@@ -79,7 +79,7 @@ export function ShipmentComboChart() {
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={data}
-              margin={{ top: 10, right: 10, bottom: 0, left: -20 }}
+              margin={{ top: 10, right: 8, bottom: 0, left: -24 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -92,6 +92,8 @@ export function ShipmentComboChart() {
                 tickLine={false}
                 tick={{ fontSize: 10, fill: "#64748b" }}
                 dy={8}
+                interval="preserveStartEnd"
+                minTickGap={14}
               />
               <YAxis
                 axisLine={false}
@@ -121,14 +123,14 @@ export function ShipmentComboChart() {
               <Bar
                 name="Nhập kho"
                 dataKey="inbound"
-                barSize={24}
+                barSize={18}
                 fill="#2d7dd2"
                 radius={[3, 3, 0, 0]}
               />
               <Bar
                 name="Xuất kho"
                 dataKey="outbound"
-                barSize={24}
+                barSize={18}
                 fill="#f59e0b"
                 radius={[3, 3, 0, 0]}
               />
@@ -137,8 +139,8 @@ export function ShipmentComboChart() {
         )}
       </div>
 
-      <div className="mt-4 pt-4 border-t border-border-ui flex items-center justify-center space-x-8">
-        <div className="flex items-center space-x-2">
+      <div className="mt-4 pt-4 border-t border-border-ui grid grid-cols-1 min-[390px]:grid-cols-2 gap-3">
+        <div className="flex items-center justify-center min-[390px]:justify-start space-x-2">
           <span className="w-2.5 h-2.5 rounded-full bg-accent border border-accent" />
           <span className="text-[11px] text-text-secondary">
             Nhập kho:{" "}
@@ -150,7 +152,7 @@ export function ShipmentComboChart() {
           </span>
           {totalInbound && <TrendBadge value={totalInbound.trend} />}
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-center min-[390px]:justify-start space-x-2">
           <span className="w-2.5 h-2.5 rounded-full bg-warning border border-warning" />
           <span className="text-[11px] text-text-secondary">
             Xuất kho:{" "}

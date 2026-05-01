@@ -20,7 +20,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 [![pnpm](https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
 
-![Dashboard preview](docs/screens/readme/dashboard.png)
+![Dashboard preview](apps/web/public/images/readme/dashboard.png)
 
 </div>
 
@@ -61,25 +61,25 @@
 
 ### 🖥️ Giao diện Dashboard & Thống kê
 
-![Dashboard](docs/screens/readme/dashboard.png)
+![Dashboard](apps/web/public/images/readme/dashboard.png)
 _Tổng quan hoạt động và các chỉ số vận hành realtime_
 
-![Thống kê](docs/screens/readme/statistics.png)
+![Thống kê](apps/web/public/images/readme/statistics.png)
 _Phân tích luồng hàng hóa và hiệu suất sản phẩm với biểu đồ trực quan_
 
 ### 📦 Quản lý Kho & Nghiệp vụ
 
 <div align="center">
 
-|               Quản lý Sản phẩm                |              Quản lý Nhập kho               |
-| :-------------------------------------------: | :-----------------------------------------: |
-| ![Products](docs/screens/readme/products.png) | ![Inbound](docs/screens/readme/inbound.png) |
-|         _Danh mục hàng hóa & tồn kho_         |      _Quy trình phê duyệt phiếu nhập_       |
+|                    Quản lý Sản phẩm                     |                   Quản lý Nhập kho                    |
+| :-----------------------------------------------------: | :---------------------------------------------------: |
+| ![Products](apps/web/public/images/readme/products.png) | ![Inbound](apps/web/public/images/readme/inbound.png) |
+|              _Danh mục hàng hóa & tồn kho_              |           _Quy trình phê duyệt phiếu nhập_            |
 
-|                Theo dõi Tồn kho                 |          Phân quyền & Bảo mật           |
-| :---------------------------------------------: | :-------------------------------------: |
-| ![Inventory](docs/screens/readme/inventory.png) | ![Roles](docs/screens/readme/roles.png) |
-|           _Báo cáo tồn kho chi tiết_            |        _Hệ thống RBAC linh hoạt_        |
+|                     Theo dõi Tồn kho                      |               Phân quyền & Bảo mật                |
+| :-------------------------------------------------------: | :-----------------------------------------------: |
+| ![Inventory](apps/web/public/images/readme/inventory.png) | ![Roles](apps/web/public/images/readme/roles.png) |
+|                _Báo cáo tồn kho chi tiết_                 |             _Hệ thống RBAC linh hoạt_             |
 
 </div>
 

@@ -89,7 +89,7 @@ export function ReceiverTableConnected({
   return (
     <div className="relative">
       <div className="bg-card-white rounded-xl border border-border-ui shadow-sm flex flex-col overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-220">
             <thead>
               <tr className="bg-background-app/50 border-b border-border-ui">
@@ -185,7 +185,7 @@ export function ReceiverTableConnected({
                       {formatDate(receiver.updatedAt)}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1 sm:opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                         <Link
                           href={`/receivers/${receiver.id}`}
                           className="p-1.5 hover:bg-accent/10 text-accent rounded-md transition-colors"
@@ -241,6 +241,118 @@ export function ReceiverTableConnected({
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="sm:hidden divide-y divide-border-ui">
+          {recipients.length > 0 ? (
+            recipients.map((receiver) => (
+              <div key={receiver.id} className="p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-11 h-11 rounded-lg bg-warning/10 text-warning flex items-center justify-center shrink-0">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      href={`/receivers/${receiver.id}`}
+                      className="text-sm font-bold text-text-primary hover:text-accent transition-colors line-clamp-2"
+                    >
+                      {receiver.name}
+                    </Link>
+                    <p className="text-[11px] text-text-secondary line-clamp-2">
+                      {receiver.address || "Chưa có địa chỉ"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded-lg bg-background-app p-2">
+                    <p className="text-text-secondary">Phiếu xuất</p>
+                    <p className="font-bold text-text-primary">
+                      {receiver.outboundCount}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-background-app p-2">
+                    <p className="text-text-secondary">Giá trị xuất</p>
+                    <p className="font-bold text-text-primary">
+                      {formatCurrency(receiver.totalAmount)}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-background-app p-2 col-span-2">
+                    <p className="text-text-secondary">Trạng thái</p>
+                    <span
+                      className={cn(
+                        "mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium flex items-center w-fit",
+                        receiver.isActive
+                          ? "bg-success/10 text-success"
+                          : "bg-warning/10 text-warning",
+                      )}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5" />
+                      {receiver.isActive ? "Hoạt động" : "Tạm dừng"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-[11px] text-text-secondary">
+                  <p className="truncate">
+                    Điện thoại: {receiver.phone || "—"}
+                  </p>
+                  <p className="truncate">Email: {receiver.email || "—"}</p>
+                  <p>Cập nhật: {formatDate(receiver.updatedAt)}</p>
+                </div>
+
+                <div className="flex items-center justify-end gap-1">
+                  <Link
+                    href={`/receivers/${receiver.id}`}
+                    className="p-2 bg-accent/10 text-accent rounded-lg"
+                    title="Xem chi tiết"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    href={`/receivers/${receiver.id}/edit`}
+                    className="p-2 bg-warning/10 text-warning rounded-lg"
+                    title="Chỉnh sửa"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setDeleteTarget({
+                        id: receiver.id,
+                        name: receiver.name,
+                      })
+                    }
+                    className="p-2 bg-danger/10 text-danger rounded-lg"
+                    title="Xóa"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="px-4 py-12">
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="w-14 h-14 rounded-full bg-background-app flex items-center justify-center mb-4">
+                  <Building2 className="w-7 h-7 text-text-secondary" />
+                </div>
+                <p className="text-sm font-bold text-text-primary mb-1">
+                  Không tìm thấy đơn vị nhận nào
+                </p>
+                <p className="text-xs text-text-secondary mb-5">
+                  Thử thay đổi bộ lọc hoặc thêm đơn vị nhận mới
+                </p>
+                <Link
+                  href="/receivers/new"
+                  className="w-full px-4 py-2 bg-accent text-white text-sm font-bold rounded-lg hover:bg-accent/90 transition-colors"
+                >
+                  Thêm đơn vị nhận
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
 
         <Pagination

@@ -11,6 +11,7 @@ import {
 import { ReceiverStatsSidebarConnected } from "./_components/ReceiverStatsSidebarConnected";
 import { ReceiverTableConnected } from "./_components/ReceiverTableConnected";
 import { Can } from "@/components/Can";
+import { PageHeader } from "@/components/PageHeader";
 import type { GetRecipientsQuery } from "@wms/types";
 
 function toQueryFilters(
@@ -45,26 +46,20 @@ export default function ReceiversPage() {
 
   return (
     <div className="p-5 space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-text-primary">
-            Đơn vị nhận hàng
-          </h1>
-          <p className="text-xs text-text-secondary mt-1">
-            Quản lý các chi nhánh, kho trung chuyển và đối tác nhận hàng
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
+      <PageHeader
+        title="Đơn vị nhận hàng"
+        description="Quản lý các chi nhánh, kho trung chuyển và đối tác nhận hàng"
+        actions={
           <Can action="recipient.create">
             <Link
               href="/receivers/new"
-              className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
+              className="flex w-full sm:w-auto items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-accent/20"
             >
               <Plus className="w-4 h-4" /> Thêm đơn vị
             </Link>
           </Can>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
         <div className="xl:col-span-9 space-y-5">

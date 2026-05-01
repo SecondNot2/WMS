@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Warehouse,
 } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/Toast";
 import { ConfirmDialog } from "@/components/Dialog";
@@ -92,23 +93,19 @@ export default function SettingsPage() {
   const hasAnyDirty = Object.values(dirtyMap).some(Boolean);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-text-primary">
-            Cài đặt hệ thống
-          </h1>
-          <p className="text-xs text-text-secondary mt-1">
-            Cấu hình thông tin kho, cảnh báo, bảo mật và tích hợp dữ liệu
-          </p>
-        </div>
-        {hasAnyDirty && (
-          <span className="inline-flex items-center gap-2 text-xs font-medium text-warning bg-warning/10 border border-warning/20 px-3 py-1.5 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-warning" />
-            Có thay đổi chưa lưu
-          </span>
-        )}
-      </div>
+    <div className="p-5 sm:p-6 space-y-6">
+      <PageHeader
+        title="Cài đặt hệ thống"
+        description="Cấu hình thông tin kho, cảnh báo, bảo mật và tích hợp dữ liệu"
+        actions={
+          hasAnyDirty && (
+            <span className="inline-flex items-center gap-2 text-xs font-medium text-warning bg-warning/10 border border-warning/20 px-3 py-1.5 rounded-full">
+              <span className="w-2 h-2 rounded-full bg-warning" />
+              Có thay đổi chưa lưu
+            </span>
+          )
+        }
+      />
 
       {!canEdit && (
         <div className="flex items-start gap-3 rounded-xl border border-warning/20 bg-warning/5 p-4">
@@ -126,8 +123,8 @@ export default function SettingsPage() {
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        <aside className="xl:col-span-3 bg-card-white rounded-xl border border-border-ui shadow-sm p-4 h-fit">
-          <nav className="space-y-1.5">
+        <aside className="xl:col-span-3 bg-card-white rounded-xl border border-border-ui shadow-sm p-2 sm:p-4 h-fit overflow-hidden">
+          <nav className="flex xl:block gap-2 xl:space-y-1.5 xl:gap-0 overflow-x-auto">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
               const isDirty = dirtyMap[tab.id];
@@ -136,7 +133,7 @@ export default function SettingsPage() {
                   key={tab.id}
                   onClick={() => requestSwitchTab(tab.id)}
                   className={cn(
-                    "w-full flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-semibold transition-colors",
+                    "min-w-max xl:w-full flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-semibold transition-colors",
                     isActive
                       ? "bg-accent text-white shadow-sm"
                       : "text-text-secondary hover:bg-background-app hover:text-text-primary",
@@ -227,11 +224,11 @@ export default function SettingsPage() {
               )}
 
               {canEdit && (
-                <div className="bg-card-white rounded-xl border border-border-ui shadow-sm px-6 py-5 flex items-center justify-end gap-3">
+                <div className="bg-card-white rounded-xl border border-border-ui shadow-sm px-4 sm:px-6 py-5 flex items-center justify-end gap-3">
                   <button
                     onClick={() => setResetOpen(true)}
                     disabled={resetMutation.isPending}
-                    className="flex items-center gap-2 px-4 py-2 border border-border-ui rounded-lg text-sm font-medium text-text-primary hover:bg-background-app transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 border border-border-ui rounded-lg text-sm font-medium text-text-primary hover:bg-background-app transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {resetMutation.isPending ? (
                       <Loader2 className="w-4 h-4 animate-spin" />

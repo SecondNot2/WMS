@@ -116,7 +116,7 @@ export function RoleForm({ initialData }: RoleFormProps) {
         <button
           type="submit"
           disabled={isPending}
-          className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg text-sm font-bold shadow-lg shadow-accent/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg text-sm font-bold shadow-lg shadow-accent/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isPending ? (
             <Loader2 className="w-4 h-4 animate-spin" />

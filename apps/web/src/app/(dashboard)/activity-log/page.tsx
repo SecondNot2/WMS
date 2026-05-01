@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Combobox, type ComboboxOption } from "@/components/ui/Combobox";
+import { PageHeader } from "@/components/PageHeader";
 import { getApiErrorMessage } from "@/lib/api/client";
 import { useActivityLogs } from "@/lib/hooks/use-activity-log";
 import { cn } from "@/lib/utils";
@@ -231,20 +232,15 @@ export default function GlobalActivityLogPage() {
 
   return (
     <div className="p-5 space-y-5">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-text-primary">
-          Nhật ký hoạt động hệ thống
-        </h1>
-        <p className="text-xs text-text-secondary mt-1">
-          Lưu trữ toàn bộ lịch sử thao tác của người dùng trên toàn hệ thống WMS
-        </p>
-      </div>
+      <PageHeader
+        title="Nhật ký hoạt động hệ thống"
+        description="Lưu trữ toàn bộ lịch sử thao tác của người dùng trên toàn hệ thống WMS"
+      />
 
       {/* Filters */}
-      <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="relative flex-1 min-w-60">
+      <div className="bg-card-white rounded-xl border border-border-ui shadow-sm p-3 sm:p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_176px_176px_auto] gap-3 sm:items-center">
+          <div className="relative sm:col-span-2 xl:col-span-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
             <input
               placeholder="Tìm theo người dùng, nội dung, module..."
@@ -257,7 +253,7 @@ export default function GlobalActivityLogPage() {
             />
           </div>
 
-          <div className="min-w-44">
+          <div className="min-w-0">
             <Combobox<string>
               value={module}
               onChange={(next) => {
@@ -269,7 +265,7 @@ export default function GlobalActivityLogPage() {
             />
           </div>
 
-          <div className="min-w-44">
+          <div className="min-w-0">
             <Combobox<string>
               value={action}
               onChange={(next) => {
@@ -281,7 +277,7 @@ export default function GlobalActivityLogPage() {
             />
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-2 bg-background-app border border-border-ui rounded-lg">
+          <div className="flex items-center justify-center sm:justify-start gap-2 px-3 py-2 bg-background-app border border-border-ui rounded-lg">
             <Clock className="w-4 h-4 text-text-secondary" />
             <span className="text-sm text-text-primary font-medium">
               7 ngày qua
@@ -330,14 +326,14 @@ export default function GlobalActivityLogPage() {
               return (
                 <div
                   key={log.id}
-                  className="p-5 hover:bg-background-app/20 transition-colors flex items-start gap-4"
+                  className="p-4 sm:p-5 hover:bg-background-app/20 transition-colors flex items-start gap-3 sm:gap-4"
                 >
-                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 text-accent" />
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                   </div>
 
                   <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-3">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-sm font-bold text-text-primary truncate">
                           {log.user.name}
@@ -354,16 +350,16 @@ export default function GlobalActivityLogPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                       <span
                         className={cn(
-                          "px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-tight shrink-0",
+                          "px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-tight shrink-0 w-fit",
                           actionStyles[kind],
                         )}
                       >
                         {getActionLabel(log.action)}
                       </span>
-                      <p className="text-sm text-text-primary font-medium truncate">
+                      <p className="text-sm text-text-primary font-medium line-clamp-3 sm:truncate">
                         {getDetail(log)}
                       </p>
                     </div>

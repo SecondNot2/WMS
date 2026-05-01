@@ -86,16 +86,16 @@ function DialogShell({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm animate-in fade-in"
       onClick={() => !loading && onClose()}
     >
       <div
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
-        className="bg-card-white rounded-xl shadow-2xl w-full max-w-md border border-border-ui overflow-hidden"
+        className="bg-card-white rounded-t-2xl sm:rounded-xl shadow-2xl w-full max-w-md border border-border-ui overflow-hidden max-h-[92dvh]"
       >
-        <div className="flex items-start gap-4 p-6">
+        <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-6">
           <div
             className={cn(
               "shrink-0 p-2.5 rounded-full",
@@ -129,12 +129,12 @@ function DialogShell({
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 px-6 py-4 bg-background-app/40 border-t border-border-ui">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-4 sm:px-6 py-4 bg-background-app/40 border-t border-border-ui">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-text-secondary hover:bg-background-app rounded-lg transition-colors disabled:opacity-50"
+            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-sm font-medium text-text-secondary hover:bg-background-app rounded-lg transition-colors disabled:opacity-50"
           >
             {cancelLabel}
           </button>
@@ -143,7 +143,7 @@ function DialogShell({
             onClick={onConfirm}
             disabled={loading}
             className={cn(
-              "px-4 py-2 text-sm font-bold rounded-lg shadow-sm transition-colors flex items-center gap-2 disabled:opacity-60",
+              "w-full sm:w-auto px-4 py-2.5 sm:py-2 text-sm font-bold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-60",
               cfg.confirmCls,
             )}
           >
@@ -343,7 +343,7 @@ export function FormDialog({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm animate-in fade-in"
       onClick={() => !loading && onClose()}
     >
       <div
@@ -351,11 +351,11 @@ export function FormDialog({
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          "bg-card-white rounded-xl shadow-2xl w-full border border-border-ui overflow-hidden flex flex-col max-h-[90vh]",
+          "bg-card-white rounded-t-2xl sm:rounded-xl shadow-2xl w-full border border-border-ui overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[90vh]",
           SIZE_CLS[size],
         )}
       >
-        <div className="flex items-start justify-between gap-3 px-6 py-4 border-b border-border-ui">
+        <div className="flex items-start justify-between gap-3 px-4 sm:px-6 py-4 border-b border-border-ui">
           <div className="flex items-start gap-3 min-w-0">
             {icon && (
               <span className="shrink-0 mt-0.5 text-accent">{icon}</span>
@@ -382,10 +382,10 @@ export function FormDialog({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">{children}</div>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</div>
 
         {footer && (
-          <div className="flex justify-end gap-2 px-6 py-3 bg-background-app/40 border-t border-border-ui">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-4 sm:px-6 py-3 bg-background-app/40 border-t border-border-ui">
             {footer}
           </div>
         )}

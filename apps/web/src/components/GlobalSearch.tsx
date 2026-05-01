@@ -217,6 +217,14 @@ export function GlobalSearch() {
   // Compute popup position
   const computePos = React.useCallback(() => {
     if (!triggerRef.current) return;
+    if (window.innerWidth < 768) {
+      setPosition({
+        top: 72,
+        left: 12,
+        width: window.innerWidth - 24,
+      });
+      return;
+    }
     const rect = triggerRef.current.getBoundingClientRect();
     setPosition({
       top: rect.bottom + 6,
@@ -227,11 +235,12 @@ export function GlobalSearch() {
 
   React.useEffect(() => {
     if (!open) return;
-    computePos();
+    const raf = window.requestAnimationFrame(computePos);
     const h = () => computePos();
     window.addEventListener("resize", h);
     window.addEventListener("scroll", h, true);
     return () => {
+      window.cancelAnimationFrame(raf);
       window.removeEventListener("resize", h);
       window.removeEventListener("scroll", h, true);
     };
@@ -298,18 +307,19 @@ export function GlobalSearch() {
   let runningIndex = -1;
 
   return (
-    <div className="relative hidden md:block">
+    <div className="relative">
       <button
         ref={triggerRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "pl-10 pr-3 py-2 bg-background-app border-transparent rounded-full text-xs flex items-center w-64 text-left text-text-secondary hover:bg-card-white hover:border-accent/30 border transition-all",
+          "pl-9 pr-3 py-2 bg-background-app border-transparent rounded-full text-xs flex items-center w-10 md:w-64 text-left text-text-secondary hover:bg-card-white hover:border-accent/30 border transition-all",
           open && "bg-card-white border-accent/40",
         )}
+        aria-label="Tìm kiếm"
       >
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-        <span className="truncate flex-1">Tìm kiếm...</span>
+        <span className="truncate flex-1 hidden md:inline">Tìm kiếm...</span>
         <kbd className="ml-2 hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-border-ui bg-card-white text-[9px] font-mono text-text-secondary">
           ⌘K
         </kbd>

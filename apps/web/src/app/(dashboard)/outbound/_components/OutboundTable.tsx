@@ -92,7 +92,7 @@ export function OutboundTable({ filters }: OutboundTableProps) {
 
   return (
     <div className="bg-card-white rounded-xl border border-border-ui shadow-sm flex flex-col overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-200">
           <thead>
             <tr className="bg-background-app/50 border-b border-border-ui">
@@ -249,6 +249,127 @@ export function OutboundTable({ filters }: OutboundTableProps) {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="sm:hidden divide-y divide-border-ui">
+        {isLoading ? (
+          <div className="py-16 flex flex-col items-center justify-center text-center text-text-secondary">
+            <Loader2 className="w-6 h-6 animate-spin mb-3" />
+            <p className="text-xs">Đang tải dữ liệu...</p>
+          </div>
+        ) : isError ? (
+          <div className="py-16 px-4 flex flex-col items-center justify-center text-center text-danger">
+            <p className="text-sm font-bold mb-1">Không thể tải dữ liệu</p>
+            <p className="text-xs">{getApiErrorMessage(error)}</p>
+          </div>
+        ) : issues.length > 0 ? (
+          issues.map((issue) => {
+            const status = STATUS_STYLES[issue.status];
+            return (
+              <div key={issue.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <Link
+                      href={`/outbound/${issue.id}`}
+                      className="text-sm font-bold text-accent hover:underline"
+                    >
+                      {issue.code}
+                    </Link>
+                    <p className="mt-1 text-xs font-medium text-text-primary truncate">
+                      {issue.recipient.name}
+                    </p>
+                    <p className="mt-1 text-[11px] text-text-secondary line-clamp-2">
+                      {issue.purpose ?? "—"}
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      "shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-medium flex items-center w-fit",
+                      status.cls,
+                    )}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5" />
+                    {status.label}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-lg bg-background-app p-2">
+                    <p className="text-[10px] text-text-secondary">Tổng tiền</p>
+                    <p className="text-xs font-bold text-text-primary truncate">
+                      {formatCurrency(issue.totalAmount)}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-background-app p-2">
+                    <p className="text-[10px] text-text-secondary">Số SP</p>
+                    <p className="text-sm font-bold text-text-primary">
+                      {issue.itemCount}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-background-app p-2">
+                    <p className="text-[10px] text-text-secondary">Ngày lập</p>
+                    <p className="text-[11px] font-bold text-text-primary">
+                      {formatDateTime(issue.createdAt)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-1">
+                  <Link
+                    href={`/outbound/${issue.id}`}
+                    className="p-2 bg-accent/10 text-accent rounded-lg"
+                    title="Xem chi tiết"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Link>
+                  {issue.status === "PENDING" && (
+                    <>
+                      <Link
+                        href={`/outbound/${issue.id}/edit`}
+                        className="p-2 bg-warning/10 text-warning rounded-lg"
+                        title="Chỉnh sửa"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPendingDelete({
+                            id: issue.id,
+                            code: issue.code,
+                          })
+                        }
+                        disabled={deleteMutation.isPending}
+                        className="p-2 bg-danger/10 text-danger rounded-lg disabled:opacity-50"
+                        title="Xóa"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="py-16 px-4 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 rounded-full bg-background-app flex items-center justify-center mb-4">
+              <FileText className="w-8 h-8 text-text-secondary" />
+            </div>
+            <p className="text-sm font-bold text-text-primary mb-1">
+              Chưa có phiếu xuất kho nào
+            </p>
+            <p className="text-xs text-text-secondary mb-6">
+              Thử thay đổi bộ lọc hoặc lập phiếu mới
+            </p>
+            <Link
+              href="/outbound/new"
+              className="w-full px-6 py-2 bg-accent text-white text-sm font-bold rounded-lg hover:bg-accent/90 transition-colors"
+            >
+              Lập phiếu xuất kho
+            </Link>
+          </div>
+        )}
       </div>
 
       {meta && meta.total > 0 && (

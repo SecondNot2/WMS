@@ -29,6 +29,11 @@ export function DashboardTable<T extends Record<string, unknown>>({
   footerHref,
   footerLabel = "Xem tất cả",
 }: DashboardTableProps<T>) {
+  const renderCell = (col: Column<T>, row: T) =>
+    col.render
+      ? col.render(row[col.accessor], row)
+      : (row[col.accessor] as React.ReactNode);
+
   return (
     <div className="bg-card-white rounded-xl border border-border-ui shadow-sm overflow-hidden h-full flex flex-col">
       {title && (
@@ -36,7 +41,7 @@ export function DashboardTable<T extends Record<string, unknown>>({
           <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
         </div>
       )}
-      <div className="overflow-x-auto flex-1">
+      <div className="hidden sm:block overflow-x-auto flex-1">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-background-app/50">
@@ -62,9 +67,7 @@ export function DashboardTable<T extends Record<string, unknown>>({
                       key={colIdx}
                       className="px-4 py-3 text-[12px] text-text-primary border-b border-border-ui"
                     >
-                      {col.render
-                        ? col.render(row[col.accessor], row)
-                        : (row[col.accessor] as React.ReactNode)}
+                      {renderCell(col, row)}
                     </td>
                   ))}
                 </tr>
@@ -82,8 +85,34 @@ export function DashboardTable<T extends Record<string, unknown>>({
           </tbody>
         </table>
       </div>
+      <div className="sm:hidden flex-1 divide-y divide-border-ui">
+        {data.length > 0 ? (
+          data.map((row, rowIdx) => (
+            <div key={rowIdx} className="p-4 space-y-3">
+              <div className="text-sm font-semibold text-text-primary">
+                {renderCell(columns[0], row)}
+              </div>
+              {columns.slice(1).map((col, colIdx) => (
+                <div
+                  key={colIdx}
+                  className="flex items-start justify-between gap-4 text-xs"
+                >
+                  <span className="text-text-secondary">{col.header}</span>
+                  <span className="text-right text-text-primary font-medium">
+                    {renderCell(col, row)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))
+        ) : (
+          <div className="px-4 py-10 text-center text-xs text-text-secondary">
+            {emptyMessage}
+          </div>
+        )}
+      </div>
       {showFooter && (
-        <div className="p-3 border-t border-border-ui flex justify-end">
+        <div className="p-3 border-t border-border-ui flex justify-center sm:justify-end">
           {footerHref ? (
             <Link
               href={footerHref}

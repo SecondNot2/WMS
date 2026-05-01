@@ -99,7 +99,7 @@ export function UserTable({ search, roleId, isActive }: UserTableProps) {
   return (
     <div className="relative">
       <div className="bg-card-white rounded-xl border border-border-ui shadow-sm flex flex-col overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-220">
             <thead>
               <tr className="bg-background-app/50 border-b border-border-ui">
@@ -269,6 +269,146 @@ export function UserTable({ search, roleId, isActive }: UserTableProps) {
               })}
             </tbody>
           </table>
+        </div>
+
+        <div className="sm:hidden divide-y divide-border-ui">
+          {isLoading ? (
+            <div className="px-4 py-10 text-center text-sm text-text-secondary">
+              Đang tải...
+            </div>
+          ) : isError ? (
+            <div className="px-4 py-10 text-center text-sm">
+              <p className="text-danger font-medium">
+                {getApiErrorMessage(error, "Không thể tải người dùng")}
+              </p>
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="mt-2 text-accent hover:underline text-xs"
+              >
+                Thử lại
+              </button>
+            </div>
+          ) : users.length === 0 ? (
+            <div className="px-4 py-10 text-center text-sm text-text-secondary">
+              Không có người dùng nào
+            </div>
+          ) : (
+            users.map((user) => {
+              const isMe = user.id === meId;
+              return (
+                <div key={user.id} className="p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <img
+                      src={avatarUrl(user)}
+                      alt={user.name}
+                      className="w-11 h-11 rounded-full border border-border-ui bg-background-app"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        href={`/users/${user.id}`}
+                        className="text-sm font-bold text-text-primary hover:text-accent transition-colors"
+                      >
+                        {user.name}
+                        {isMe && (
+                          <span className="ml-2 text-[10px] text-accent font-bold">
+                            (Bạn)
+                          </span>
+                        )}
+                      </Link>
+                      <p className="text-[11px] text-text-secondary truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="space-y-1">
+                      <p className="text-text-secondary">Vai trò</p>
+                      <span
+                        className={cn(
+                          "px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex w-fit",
+                          ROLE_STYLES[user.role.name] ??
+                            "bg-background-app text-text-secondary",
+                        )}
+                      >
+                        {ROLE_LABELS[user.role.name] ?? user.role.name}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-text-secondary">Trạng thái</p>
+                      <span
+                        className={cn(
+                          "px-2.5 py-0.5 rounded-full text-[11px] font-medium flex items-center w-fit",
+                          user.isActive
+                            ? "bg-success/10 text-success"
+                            : "bg-danger/10 text-danger",
+                        )}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5" />
+                        {user.isActive ? "Đang hoạt động" : "Đã khóa"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] text-text-secondary">
+                      Ngày tạo: {formatDate(user.createdAt)}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Link
+                        href={`/users/${user.id}`}
+                        className="p-2 bg-accent/10 text-accent rounded-lg"
+                        title="Xem chi tiết"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Link>
+                      <Link
+                        href={`/users/${user.id}/edit`}
+                        className="p-2 bg-warning/10 text-warning rounded-lg"
+                        title="Chỉnh sửa"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Link>
+                      <button
+                        type="button"
+                        disabled={isMe}
+                        onClick={() => setToggleTarget(user)}
+                        className={cn(
+                          "p-2 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed",
+                          user.isActive
+                            ? "bg-danger/10 text-danger"
+                            : "bg-success/10 text-success",
+                        )}
+                        title={
+                          isMe
+                            ? "Không thể tự khóa tài khoản"
+                            : user.isActive
+                              ? "Khóa tài khoản"
+                              : "Mở khóa tài khoản"
+                        }
+                      >
+                        {user.isActive ? (
+                          <Lock className="w-4 h-4" />
+                        ) : (
+                          <Unlock className="w-4 h-4" />
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isMe}
+                        onClick={() => setDeleteTarget(user)}
+                        className="p-2 bg-danger/10 text-danger rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                        title={isMe ? "Không thể xóa chính mình" : "Xóa"}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
 
         {meta && meta.total > 0 && (

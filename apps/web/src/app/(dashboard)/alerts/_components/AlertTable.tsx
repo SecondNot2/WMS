@@ -72,7 +72,7 @@ export function AlertTable({ search, level, categoryId }: AlertTableProps) {
 
   return (
     <div className="bg-card-white rounded-xl border border-border-ui shadow-sm flex flex-col overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-200">
           <thead>
             <tr className="bg-background-app/50 border-b border-border-ui">
@@ -183,6 +183,72 @@ export function AlertTable({ search, level, categoryId }: AlertTableProps) {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="sm:hidden divide-y divide-border-ui">
+        {isLoading ? (
+          <div className="py-16 text-center text-sm text-text-secondary">
+            Đang tải dữ liệu...
+          </div>
+        ) : isError ? (
+          <div className="py-16 px-4 text-center text-sm text-danger">
+            {getApiErrorMessage(error, "Không thể tải danh sách cảnh báo")}
+          </div>
+        ) : alerts.length > 0 ? (
+          alerts.map((alert) => (
+            <div key={alert.productId} className="p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-2 rounded-lg bg-background-app text-accent">
+                  <Package className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm leading-relaxed font-bold text-text-primary">
+                    {buildMessage(
+                      alert.name,
+                      alert.currentStock,
+                      alert.minStock,
+                    )}
+                  </p>
+                  <p className="mt-1 text-[11px] font-mono font-bold text-text-secondary uppercase wrap-break-word">
+                    SKU: {alert.sku} · Danh mục: {alert.category.name}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <span
+                  className={cn(
+                    "px-2.5 py-0.5 rounded-full text-[11px] font-medium flex items-center w-fit",
+                    SEVERITY_STYLES[alert.level],
+                  )}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5" />
+                  {SEVERITY_LABELS[alert.level]}
+                </span>
+                <span className="text-[11px] text-text-secondary">
+                  {formatDateTime(alert.lastUpdated)}
+                </span>
+              </div>
+
+              <Link
+                href={`/products/${alert.productId}`}
+                className="flex items-center justify-center gap-1.5 w-full px-3 py-2 rounded-lg bg-accent/10 text-accent text-xs font-bold"
+              >
+                Xử lý <ExternalLink className="w-3 h-3" />
+              </Link>
+            </div>
+          ))
+        ) : (
+          <div className="py-16 px-4 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 rounded-full bg-background-app flex items-center justify-center mb-4">
+              <Bell className="w-8 h-8 text-text-secondary" />
+            </div>
+            <p className="text-sm font-bold text-text-primary mb-1">
+              Không có cảnh báo nào
+            </p>
+            <p className="text-xs text-text-secondary">Tồn kho đang ổn định</p>
+          </div>
+        )}
       </div>
 
       <Pagination

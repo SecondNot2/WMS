@@ -44,7 +44,7 @@ export function RoleTable() {
 
   return (
     <div className="bg-card-white rounded-xl border border-border-ui shadow-sm overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-left min-w-200">
           <thead className="bg-background-app/50 border-b border-border-ui">
             <tr>
@@ -184,6 +184,114 @@ export function RoleTable() {
             })}
           </tbody>
         </table>
+      </div>
+
+      <div className="sm:hidden divide-y divide-border-ui">
+        {isLoading && (
+          <div className="px-5 py-10 text-center text-sm text-text-secondary">
+            Đang tải...
+          </div>
+        )}
+        {!isLoading && isError && (
+          <div className="px-5 py-10 text-center text-sm">
+            <p className="text-danger font-medium">
+              {getApiErrorMessage(error, "Không thể tải vai trò")}
+            </p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-2 text-accent hover:underline text-xs"
+            >
+              Thử lại
+            </button>
+          </div>
+        )}
+        {!isLoading && !isError && (roles?.length ?? 0) === 0 && (
+          <div className="px-5 py-10 text-center text-sm text-text-secondary">
+            Chưa có vai trò nào
+          </div>
+        )}
+        {roles?.map((role) => {
+          const hasUsers = role.userCount > 0;
+          const label = ROLE_LABELS[role.name] ?? role.name;
+          const description =
+            ROLE_DESCRIPTIONS[role.name] ?? "Vai trò tùy chỉnh";
+          return (
+            <div key={role.id} className="p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-info/10 text-info flex items-center justify-center">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/roles/${role.id}`}
+                    className="text-sm font-bold text-text-primary hover:text-accent transition-colors"
+                  >
+                    {label}
+                  </Link>
+                  <p className="text-[11px] text-text-secondary font-mono truncate">
+                    {role.name}
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-xs text-text-secondary leading-relaxed">
+                {description}
+              </p>
+
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg bg-background-app p-2">
+                  <p className="text-[10px] text-text-secondary">Người dùng</p>
+                  <p className="text-sm font-bold text-text-primary">
+                    {role.userCount}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-accent/10 p-2">
+                  <p className="text-[10px] text-accent">Quyền</p>
+                  <p className="text-sm font-bold text-accent">
+                    {countPermissions(role.permissions)}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-background-app p-2">
+                  <p className="text-[10px] text-text-secondary">Ngày tạo</p>
+                  <p className="text-xs font-bold text-text-primary">
+                    {formatDate(role.createdAt)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-1">
+                <Link
+                  href={`/roles/${role.id}`}
+                  className="p-2 bg-accent/10 text-accent rounded-lg"
+                  title="Xem chi tiết"
+                >
+                  <Eye className="w-4 h-4" />
+                </Link>
+                <Link
+                  href={`/roles/${role.id}/edit`}
+                  className="p-2 bg-warning/10 text-warning rounded-lg"
+                  title="Chỉnh sửa"
+                >
+                  <Pencil className="w-4 h-4" />
+                </Link>
+                <button
+                  type="button"
+                  disabled={hasUsers}
+                  onClick={() => setDeleteTarget(role)}
+                  className="p-2 bg-danger/10 text-danger rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                  title={
+                    hasUsers
+                      ? `Đang có ${role.userCount} người dùng — không thể xóa`
+                      : "Xóa vai trò"
+                  }
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <ConfirmDialog

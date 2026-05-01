@@ -20,6 +20,7 @@ import {
   ChevronRight,
   PanelLeftClose,
   PanelLeftOpen,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -150,7 +151,12 @@ const menuGroups: MenuGroup[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { sidebarCollapsed, toggleSidebar } = useLayoutStore();
+  const {
+    sidebarCollapsed,
+    mobileSidebarOpen,
+    toggleSidebar,
+    closeMobileSidebar,
+  } = useLayoutStore();
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? null;
   const { data: settings } = useSettings();
@@ -171,100 +177,145 @@ export function Sidebar() {
   );
 
   return (
-    <aside
-      className={cn(
-        "fixed left-0 top-0 h-screen bg-primary text-white/70 flex flex-col z-50 transition-all duration-300",
-        sidebarCollapsed ? "w-18" : "w-60",
+    <>
+      {mobileSidebarOpen && (
+        <button
+          type="button"
+          aria-label="Đóng menu"
+          onClick={closeMobileSidebar}
+          className="fixed inset-0 z-45 bg-black/40 backdrop-blur-[1px] md:hidden"
+        />
       )}
-    >
-      <div className="h-16 flex items-center px-4 border-b border-white/10 justify-between">
-        {!sidebarCollapsed && (
-          <div className="flex items-center">
-            <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center mr-3">
+      <aside
+        className={cn(
+          "fixed left-0 top-0 h-screen bg-primary text-white/70 flex flex-col z-50 transition-all duration-300",
+          "w-72 max-w-[82vw] -translate-x-full md:translate-x-0",
+          mobileSidebarOpen && "translate-x-0",
+          sidebarCollapsed ? "md:w-18" : "md:w-60",
+        )}
+      >
+        <div className="h-16 flex items-center px-4 border-b border-white/10 justify-between">
+          <div className="flex items-center min-w-0 md:hidden">
+            <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center mr-3 shrink-0">
               <Box className="text-white w-5 h-5" />
             </div>
             <span className="text-white font-bold text-sm tracking-wider uppercase truncate">
-              WMS System
+              {brandName}
             </span>
           </div>
-        )}
-        {sidebarCollapsed && (
-          <div className="w-full flex justify-center">
-            <Box className="text-accent w-6 h-6" />
-          </div>
-        )}
-        {!sidebarCollapsed && (
           <button
-            onClick={toggleSidebar}
-            className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-white/60 hover:text-white"
+            type="button"
+            onClick={closeMobileSidebar}
+            className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-white/60 hover:text-white md:hidden"
+            aria-label="Đóng menu"
           >
-            <PanelLeftClose className="w-5 h-5" />
+            <X className="w-5 h-5" />
           </button>
-        )}
-      </div>
+          {!sidebarCollapsed && (
+            <div className="hidden md:flex items-center min-w-0">
+              <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center mr-3">
+                <Box className="text-white w-5 h-5" />
+              </div>
+              <span className="text-white font-bold text-sm tracking-wider uppercase truncate">
+                {brandName}
+              </span>
+            </div>
+          )}
+          {sidebarCollapsed && (
+            <div className="w-full hidden md:flex justify-center">
+              <Box className="text-accent w-6 h-6" />
+            </div>
+          )}
+          {!sidebarCollapsed && (
+            <button
+              onClick={toggleSidebar}
+              className="hidden md:block p-1.5 hover:bg-white/10 rounded-md transition-colors text-white/60 hover:text-white"
+            >
+              <PanelLeftClose className="w-5 h-5" />
+            </button>
+          )}
+        </div>
 
-      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 scrollbar-hide">
-        {visibleGroups.map((group) => (
-          <div key={group.label}>
-            {!sidebarCollapsed && (
-              <h3 className="px-3 text-[10px] font-semibold text-white/50 tracking-[1.5px] mb-2 uppercase">
-                {group.label}
-              </h3>
-            )}
-            <nav className="space-y-1">
-              {group.items.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center rounded-lg text-sm font-medium transition-all group cursor-pointer",
-                      sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2",
-                      isActive
-                        ? "bg-accent text-white"
-                        : "hover:bg-white/5 hover:text-white",
-                    )}
-                    title={sidebarCollapsed ? item.name : ""}
-                  >
-                    <item.icon
+        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 scrollbar-hide">
+          {visibleGroups.map((group) => (
+            <div key={group.label}>
+              {(!sidebarCollapsed || mobileSidebarOpen) && (
+                <h3 className="px-3 text-[10px] font-semibold text-white/50 tracking-[1.5px] mb-2 uppercase">
+                  {group.label}
+                </h3>
+              )}
+              <nav className="space-y-1">
+                {group.items.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={closeMobileSidebar}
                       className={cn(
-                        "w-4.5 h-4.5 transition-colors",
-                        !sidebarCollapsed && "mr-3",
+                        "flex items-center rounded-lg text-sm font-medium transition-all group cursor-pointer",
+                        sidebarCollapsed
+                          ? "px-3 py-2 md:justify-center md:p-2.5"
+                          : "px-3 py-2",
                         isActive
-                          ? "text-white"
-                          : "text-white/60 group-hover:text-white",
+                          ? "bg-accent text-white"
+                          : "hover:bg-white/5 hover:text-white",
                       )}
-                    />
-                    {!sidebarCollapsed && (
-                      <span className="flex-1 truncate">{item.name}</span>
-                    )}
-                    {isActive && !sidebarCollapsed && (
-                      <ChevronRight className="w-4 h-4 opacity-50" />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        ))}
-      </div>
+                      title={sidebarCollapsed ? item.name : undefined}
+                    >
+                      <item.icon
+                        className={cn(
+                          "w-4.5 h-4.5 transition-colors",
+                          sidebarCollapsed ? "mr-3 md:mr-0" : "mr-3",
+                          isActive
+                            ? "text-white"
+                            : "text-white/60 group-hover:text-white",
+                        )}
+                      />
+                      <span
+                        className={cn(
+                          "flex-1 truncate",
+                          sidebarCollapsed && "md:hidden",
+                        )}
+                      >
+                        {item.name}
+                      </span>
+                      {isActive && (
+                        <ChevronRight
+                          className={cn(
+                            "w-4 h-4 opacity-50",
+                            sidebarCollapsed && "md:hidden",
+                          )}
+                        />
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          ))}
+        </div>
 
-      <div className="p-3 border-t border-white/10 bg-primary/50">
-        <UserMenu
-          user={user}
-          variant={sidebarCollapsed ? "sidebar-collapsed" : "sidebar-expanded"}
-          placement="top-right"
-        />
-        {sidebarCollapsed && (
-          <button
-            onClick={toggleSidebar}
-            className="w-full mt-3 flex justify-center p-2 hover:bg-white/10 rounded-md transition-colors text-white/60"
-          >
-            <PanelLeftOpen className="w-5 h-5" />
-          </button>
-        )}
-      </div>
-    </aside>
+        <div className="p-3 border-t border-white/10 bg-primary/50">
+          <UserMenu
+            user={user}
+            variant={
+              sidebarCollapsed && !mobileSidebarOpen
+                ? "sidebar-collapsed"
+                : "sidebar-expanded"
+            }
+            placement="top-right"
+          />
+          {sidebarCollapsed && (
+            <button
+              onClick={toggleSidebar}
+              className="w-full mt-3 hidden md:flex justify-center p-2 hover:bg-white/10 rounded-md transition-colors text-white/60"
+            >
+              <PanelLeftOpen className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+      </aside>
+    </>
   );
 }

@@ -1,7 +1,10 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import bgImage from "@/assets/images/login-bg.png";
+import pageBg from "@/assets/images/page-bg.png";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -17,6 +20,10 @@ import {
   Warehouse,
   Loader2,
   AlertCircle,
+  Globe,
+  BarChart3,
+  User,
+  UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { authApi } from "@/lib/api/auth";
@@ -56,152 +63,196 @@ export default function LoginPage() {
     : null;
 
   return (
-    <main className="min-h-screen bg-background-app flex items-center justify-center p-6">
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 bg-card-white rounded-3xl border border-border-ui shadow-2xl overflow-hidden">
-        <section className="hidden lg:flex flex-col justify-between bg-primary p-10 text-white min-h-175">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center shadow-lg shadow-accent/20">
-                <Boxes className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-lg font-black tracking-wider uppercase">
-                  WMS System
-                </p>
-                <p className="text-xs text-white/60">
-                  Warehouse Management Platform
-                </p>
-              </div>
-            </div>
+    <main className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans relative overflow-hidden">
+      {/* Global Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src={pageBg}
+          alt="Page Background"
+          fill
+          className="object-cover"
+          priority
+        />
+      </div>
 
-            <div className="mt-20 space-y-5">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-bold text-white/80">
-                <ShieldCheck className="w-3.5 h-3.5" /> Bảo mật vận hành kho
-              </span>
-              <h1 className="text-4xl font-black leading-tight">
-                Quản lý kho logistics cửa khẩu theo thời gian thực
-              </h1>
-              <p className="text-sm text-white/70 leading-relaxed max-w-md">
-                Theo dõi tồn kho, lập phiếu nhập xuất, kiểm soát phê duyệt và
-                báo cáo vận hành trong một giao diện thống nhất.
-              </p>
-            </div>
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 bg-white rounded-[2rem] shadow-[0_20px_70px_rgba(0,0,0,0.1)] overflow-hidden relative z-10 border border-white/20">
+        {/* Left Side: Visual & Info */}
+        <section className="hidden lg:flex flex-col relative overflow-hidden h-[540px]">
+          {/* Background Image - Isometric Warehouse */}
+          <div className="absolute inset-0">
+            <Image
+              src={bgImage}
+              alt="Isometric Smart Warehouse"
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
+          {/* Blue Gradient Overlay - Matching screenshot */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#003d99]/90 via-[#004dc0]/70 to-transparent" />
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-2xl bg-white/10 border border-white/10 p-4">
-              <p className="text-2xl font-black">1.2K</p>
-              <p className="text-xs text-white/60 mt-1">SKU theo dõi</p>
-            </div>
-            <div className="rounded-2xl bg-white/10 border border-white/10 p-4">
-              <p className="text-2xl font-black">24/7</p>
-              <p className="text-xs text-white/60 mt-1">Realtime</p>
-            </div>
-            <div className="rounded-2xl bg-white/10 border border-white/10 p-4">
-              <p className="text-2xl font-black">3</p>
-              <p className="text-xs text-white/60 mt-1">Vai trò</p>
+          <div className="relative z-20 p-12 h-full flex flex-col justify-between text-white">
+            <div>
+              {/* Logo Section */}
+              <div className="flex items-center gap-3 mb-12">
+                <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-xl flex items-center justify-center border border-white/20">
+                  <Boxes className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black tracking-tight leading-none uppercase">
+                    WMS <span className="text-[#3399ff]">Smart</span>
+                  </h3>
+                  <p className="text-[10px] text-white/50 uppercase tracking-[0.2em] mt-1 font-bold">
+                    Logistics 8H Platform
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {/* Shield Badge */}
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-xs font-bold text-white/90">
+                  <ShieldCheck className="w-4 h-4 text-[#3399ff]" />
+                  Bảo mật & Hiệu quả
+                </div>
+
+                {/* Main Heading */}
+                <h1 className="text-[42px] font-black leading-[1.1] tracking-tight">
+                  Quản lý kho <br />
+                  <span className="text-[#3399ff]">Thông minh.</span>
+                </h1>
+
+                {/* Description */}
+                <p className="text-sm text-white/90 leading-relaxed max-w-[320px] font-medium">
+                  Hệ thống tối ưu hóa vận hành, kiểm soát tồn kho realtime và
+                  báo cáo thông minh.
+                </p>
+
+                {/* Features List */}
+                <div className="pt-8 space-y-4">
+                  <div className="flex items-center gap-4 group/item cursor-default transition-transform hover:translate-x-1">
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 shadow-lg group-hover/item:bg-[#3399ff]/20 transition-colors">
+                      <Boxes className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold text-white/90">
+                      Nhập xuất hàng tự động
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 group/item cursor-default transition-transform hover:translate-x-1">
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 shadow-lg group-hover/item:bg-[#3399ff]/20 transition-colors">
+                      <BarChart3 className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold text-white/90">
+                      Thống kê trực quan 24/7
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 group/item cursor-default transition-transform hover:translate-x-1">
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10 shadow-lg group-hover/item:bg-[#3399ff]/20 transition-colors">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold text-white/90">
+                      Phân quyền người dùng
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="p-6 sm:p-10 lg:p-12 flex flex-col justify-center">
+        {/* Right Side: Login Form */}
+        <section className="p-8 lg:p-10 flex flex-col justify-center bg-white relative">
           <div className="max-w-md w-full mx-auto">
-            <div className="lg:hidden flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center text-white">
-                <Boxes className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-base font-black text-text-primary tracking-wider uppercase">
-                  WMS System
-                </p>
-                <p className="text-xs text-text-secondary">
-                  Warehouse Management Platform
-                </p>
-              </div>
+            {/* User Icon Circle */}
+            <div className="w-14 h-14 rounded-full bg-[#f0f6ff] flex items-center justify-center mb-5 shadow-inner">
+              <UserRound className="w-7 h-7 text-[#0061f2]" />
             </div>
 
             <div className="mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center mb-4">
-                <Warehouse className="w-6 h-6" />
-              </div>
-              <h2 className="text-3xl font-black text-text-primary">
+              <h2 className="text-[28px] font-black text-slate-900 tracking-tight leading-none">
                 Đăng nhập
               </h2>
-              <p className="text-sm text-text-secondary mt-2">
-                Sử dụng tài khoản được cấp để truy cập hệ thống quản lý kho.
+              <p className="text-slate-500 mt-2.5 text-sm font-medium">
+                Hệ thống quản lý kho Logistics 8H
               </p>
             </div>
 
             {apiError && (
-              <div className="mb-5 flex items-start gap-2 rounded-xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm text-danger">
-                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>{apiError}</span>
+              <div className="mb-6 flex items-start gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-600">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span className="font-bold">{apiError}</span>
               </div>
             )}
 
-            <form className="space-y-5" onSubmit={onSubmit} noValidate>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+            <form className="space-y-6" onSubmit={onSubmit} noValidate>
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">
                   Email
                 </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#0061f2] transition-colors">
+                    <Mail className="w-full h-full" />
+                  </div>
                   <input
                     type="email"
                     autoComplete="email"
+                    placeholder="admin@wms.com"
+                    autoFocus
                     {...register("email")}
-                    className="w-full pl-9 pr-4 py-3 text-sm bg-background-app/50 border border-border-ui rounded-xl outline-none focus:border-accent transition-colors"
+                    className="w-full pl-12 pr-4 py-3.5 text-sm bg-slate-50/50 border border-slate-200 rounded-2xl outline-none focus:border-[#0061f2] focus:bg-white focus:ring-4 focus:ring-[#0061f2]/10 transition-all font-medium placeholder:text-slate-400"
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-xs text-danger mt-1">
+                  <p className="text-xs text-red-500 font-bold mt-1.5 ml-1">
                     {errors.email.message}
                   </p>
                 )}
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">
                   Mật khẩu
                 </label>
-                <div className="relative">
-                  <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#0061f2] transition-colors">
+                    <LockKeyhole className="w-full h-full" />
+                  </div>
                   <input
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
+                    placeholder="••••••••"
                     {...register("password")}
-                    className="w-full pl-9 pr-11 py-3 text-sm bg-background-app/50 border border-border-ui rounded-xl outline-none focus:border-accent transition-colors"
+                    className="w-full pl-12 pr-12 py-3.5 text-sm bg-slate-50/50 border border-slate-200 rounded-2xl outline-none focus:border-[#0061f2] focus:bg-white focus:ring-4 focus:ring-[#0061f2]/10 transition-all font-medium placeholder:text-slate-400"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-accent transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#0061f2] transition-colors p-1"
                   >
                     {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
+                      <EyeOff className="w-5 h-5" />
                     ) : (
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-5 h-5" />
                     )}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-xs text-danger mt-1">
+                  <p className="text-xs text-red-500 font-bold mt-1.5 ml-1">
                     {errors.password.message}
                   </p>
                 )}
               </div>
 
-              <div className="flex items-center justify-between gap-4">
-                <label className="flex items-center gap-2 text-xs font-medium text-text-secondary">
+              <div className="flex items-center justify-between gap-4 py-1">
+                <label className="flex items-center gap-2.5 text-sm font-bold text-slate-500 cursor-pointer">
                   <input
                     type="checkbox"
-                    className="rounded border-border-ui accent-accent"
+                    className="w-4 h-4 rounded border-slate-300 text-[#0061f2] focus:ring-[#0061f2]"
                   />{" "}
                   Ghi nhớ đăng nhập
                 </label>
                 <button
                   type="button"
-                  className="text-xs font-bold text-accent hover:underline"
+                  className="text-sm font-bold text-[#0061f2] hover:underline"
                 >
                   Quên mật khẩu?
                 </button>
@@ -211,33 +262,62 @@ export default function LoginPage() {
                 type="submit"
                 disabled={loginMutation.isPending}
                 className={cn(
-                  "w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-white rounded-xl px-4 py-3 text-sm font-bold shadow-lg shadow-accent/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed",
+                  "w-full flex items-center justify-center gap-3 bg-[#0061f2] hover:bg-[#0052ce] text-white rounded-2xl px-4 py-3.5 text-sm font-black shadow-xl shadow-[#0061f2]/20 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-70 disabled:hover:scale-100",
                 )}
               >
                 {loginMutation.isPending ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Đang đăng
-                    nhập...
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Đang xác thực...</span>
                   </>
                 ) : (
                   <>
-                    Đăng nhập hệ thống <ArrowRight className="w-4 h-4" />
+                    <span>Đăng nhập hệ thống</span>
+                    <ArrowRight className="w-5 h-5" />
                   </>
                 )}
               </button>
             </form>
 
-            <div className="mt-8 rounded-xl border border-warning/20 bg-warning/5 p-4">
-              <p className="text-xs font-bold text-text-primary">
-                Tài khoản mẫu
+            {/* Demo Credentials Box */}
+            <div className="mt-8 p-5 rounded-2xl border border-slate-100 bg-slate-50/50">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">
+                Demo Credentials
               </p>
-              <p className="text-xs text-text-secondary mt-1">
-                Admin: admin@wms.com / Admin@123 · Thủ kho: staff@wms.com /
-                Staff@123
-              </p>
+              <div className="space-y-1 text-[11px] font-bold text-slate-600">
+                <p>
+                  <span className="text-slate-400">Admin:</span> admin@wms.com /
+                  Admin@123
+                </p>
+                <p>
+                  <span className="text-slate-400">Staff:</span> staff@wms.com /
+                  Staff@123
+                </p>
+              </div>
             </div>
           </div>
         </section>
+      </div>
+
+      {/* Footer Info - Outside Card */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-6 z-20 hidden sm:flex">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          © 2026 WMS Smart Logistics
+        </p>
+        <div className="w-1 h-1 rounded-full bg-slate-300" />
+        <div className="flex items-center gap-1.5">
+          <Globe className="w-3 h-3 text-slate-400" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            v1.0.0
+          </span>
+        </div>
+        <div className="w-1 h-1 rounded-full bg-slate-300" />
+        <a
+          href="#"
+          className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-[#0061f2]"
+        >
+          Hỗ trợ kỹ thuật
+        </a>
       </div>
     </main>
   );

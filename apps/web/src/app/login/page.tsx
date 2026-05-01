@@ -41,7 +41,7 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "admin@wms.com", password: "" },
+    defaultValues: { email: "reviewer@wms.com", password: "" },
   });
 
   const loginMutation = useMutation({
@@ -195,7 +195,7 @@ export default function LoginPage() {
                   <input
                     type="email"
                     autoComplete="email"
-                    placeholder="admin@wms.com"
+                    placeholder="reviewer@wms.com"
                     autoFocus
                     {...register("email")}
                     className="w-full pl-12 pr-4 py-3.5 text-sm bg-slate-50/50 border border-slate-200 rounded-2xl outline-none focus:border-[#0061f2] focus:bg-white focus:ring-4 focus:ring-[#0061f2]/10 transition-all font-medium placeholder:text-slate-400"
@@ -282,16 +282,12 @@ export default function LoginPage() {
             {/* Demo Credentials Box */}
             <div className="mt-8 p-5 rounded-2xl border border-slate-100 bg-slate-50/50">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">
-                Demo Credentials
+                Reviewer Access
               </p>
               <div className="space-y-1 text-[11px] font-bold text-slate-600">
                 <p>
-                  <span className="text-slate-400">Admin:</span> admin@wms.com /
-                  Admin@123
-                </p>
-                <p>
-                  <span className="text-slate-400">Staff:</span> staff@wms.com /
-                  Staff@123
+                  <span className="text-slate-400">Account:</span>{" "}
+                  reviewer@wms.com / Reviewer@wms
                 </p>
               </div>
             </div>

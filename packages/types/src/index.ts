@@ -1,7 +1,7 @@
 // Shared TypeScript types for WMS (frontend + backend).
 // TODO: Bổ sung interfaces khi build từng module (User, Product, GoodsReceipt...).
 
-export type Role = "ADMIN" | "WAREHOUSE_STAFF" | "ACCOUNTANT";
+export type Role = "ADMIN" | "WAREHOUSE_STAFF" | "ACCOUNTANT" | (string & {});
 
 export interface PaginationMeta {
   page: number;
@@ -33,6 +33,7 @@ export interface AuthUser {
   email: string;
   avatar?: string | null;
   role: Role;
+  permissions: RolePermissions;
 }
 
 export interface LoginResponse {

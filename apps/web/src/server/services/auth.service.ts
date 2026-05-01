@@ -6,6 +6,7 @@ import {
   signRefreshToken,
   verifyRefreshToken,
 } from "../lib/jwt";
+import type { Prisma } from "@prisma/client";
 import type { AuthUser, LoginResponse, RefreshResponse } from "@wms/types";
 import type {
   ChangePasswordInput,
@@ -21,7 +22,7 @@ function toAuthUser(user: {
   name: string;
   email: string;
   avatar: string | null;
-  role: { name: string };
+  role: { name: string; permissions: Prisma.JsonValue };
 }): AuthUser {
   return {
     id: user.id,
@@ -29,6 +30,7 @@ function toAuthUser(user: {
     email: user.email,
     avatar: user.avatar,
     role: user.role.name as AuthUser["role"],
+    permissions: (user.role.permissions ?? {}) as AuthUser["permissions"],
   };
 }
 

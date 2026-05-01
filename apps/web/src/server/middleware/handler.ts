@@ -15,6 +15,11 @@ import { Prisma } from "@prisma/client";
 import { AppError } from "../lib/errors";
 import { verifyAccessToken } from "../lib/jwt";
 import { logger } from "../lib/logger";
+import { prisma } from "../lib/prisma";
+import {
+  hasStoredPermission,
+  type PermissionAction,
+} from "@/lib/permission-core";
 
 export interface AuthUser {
   id: string;
@@ -33,6 +38,22 @@ interface HandleOptions {
   /** Bắt buộc phải đăng nhập nhưng không check role cụ thể. */
   authenticated?: boolean;
 }
+
+const MODULE_BY_SEGMENT: Record<string, string> = {
+  products: "product",
+  categories: "category",
+  inbound: "receipt",
+  outbound: "issue",
+  inventory: "stock",
+  alerts: "stock",
+  suppliers: "supplier",
+  recipients: "recipient",
+  reports: "report",
+  statistics: "report",
+  users: "user",
+  roles: "role",
+  "activity-log": "activityLog",
+};
 
 type Handler<P> = (
   req: NextRequest,
@@ -66,7 +87,8 @@ export function handle<
         if (
           options.roles &&
           options.roles.length > 0 &&
-          !options.roles.includes(user.role)
+          !options.roles.includes(user.role) &&
+          !(await canAccessByStoredPermission(user.id, req))
         ) {
           throw new AppError(
             "FORBIDDEN",
@@ -101,6 +123,53 @@ export function authenticate(req: NextRequest): AuthUser {
   const token = header.slice("Bearer ".length).trim();
   const payload = verifyAccessToken(token);
   return { id: payload.sub, role: payload.role };
+}
+
+function permissionActionFromRequest(
+  req: NextRequest,
+): PermissionAction | null {
+  const segments = req.nextUrl.pathname.split("/").filter(Boolean);
+  const apiIndex = segments.indexOf("api");
+  const resource = segments[apiIndex + 1];
+  if (!resource) return null;
+  const permissionResource = MODULE_BY_SEGMENT[resource];
+  if (!permissionResource) return null;
+  const subPath = segments.slice(apiIndex + 2);
+  let action: string;
+  if (subPath.includes("approve") || subPath.includes("reject")) {
+    action = "approve";
+  } else if (
+    subPath.includes("export") ||
+    req.nextUrl.searchParams.has("export")
+  ) {
+    action = "export";
+  } else if (req.method === "GET") {
+    action = "view";
+  } else if (req.method === "DELETE") {
+    action = "delete";
+  } else {
+    action = "create";
+  }
+  if (req.method === "PATCH" || req.method === "PUT") action = "update";
+  const key = `${permissionResource}.${action}`;
+  return key as PermissionAction;
+}
+
+async function canAccessByStoredPermission(
+  userId: string,
+  req: NextRequest,
+): Promise<boolean> {
+  const action = permissionActionFromRequest(req);
+  if (!action) return false;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isActive: true, role: { select: { permissions: true } } },
+  });
+  if (!user?.isActive) return false;
+  return hasStoredPermission(
+    (user.role.permissions ?? {}) as Record<string, string[]>,
+    action,
+  );
 }
 
 /**

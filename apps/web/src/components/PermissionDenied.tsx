@@ -9,6 +9,7 @@ import {
   ROLE_LABELS,
   type PermissionAction,
 } from "@/lib/permissions";
+import { useAuthStore } from "@/lib/store";
 
 interface PermissionDeniedProps {
   /** Action mà user thiếu quyền — dùng để show role được phép */
@@ -42,7 +43,7 @@ export function PermissionDenied({
   backLabel = "Quay lại Dashboard",
 }: PermissionDeniedProps) {
   const role = useCurrentRole();
-  const roleLabel = role ? ROLE_LABELS[role] : "—";
+  const roleLabel = role ? (ROLE_LABELS[role] ?? role) : "—";
 
   const defaultDesc = action
     ? `Tài khoản của bạn (vai trò ${roleLabel}) không được phép xem nội dung này. Chỉ ${formatAllowedRoles(action)} mới có quyền truy cập. Vui lòng liên hệ Quản trị viên nếu bạn cần quyền này.`
@@ -86,8 +87,8 @@ interface PageGuardProps {
  * thay cho redirect im lặng.
  */
 export function PageGuard({ action, children, fallback }: PageGuardProps) {
-  const role = useCurrentRole();
-  if (!can(role, action)) {
+  const user = useAuthStore((s) => s.user);
+  if (!can(user, action)) {
     return <>{fallback ?? <PermissionDenied action={action} />}</>;
   }
   return <>{children}</>;

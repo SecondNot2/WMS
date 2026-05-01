@@ -28,7 +28,7 @@ const baseUser = {
   avatar: null,
   isActive: true,
   password: "", // filled per test
-  role: { name: "ADMIN" },
+  role: { name: "ADMIN", permissions: { "*": ["*"] } },
 };
 
 beforeEach(() => {
@@ -49,6 +49,7 @@ describe("auth.service / login", () => {
       email: user.email,
       avatar: null,
       role: "ADMIN",
+      permissions: { "*": ["*"] },
     });
     expect(result.accessToken).toBeTypeOf("string");
     expect(result.refreshToken).toBeTypeOf("string");

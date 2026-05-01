@@ -158,7 +158,6 @@ export function Sidebar() {
     closeMobileSidebar,
   } = useLayoutStore();
   const user = useAuthStore((s) => s.user);
-  const role = user?.role ?? null;
   const { data: settings } = useSettings();
   const brandName = settings?.values.general.systemName ?? "WMS System";
 
@@ -169,11 +168,11 @@ export function Sidebar() {
         .map((group) => ({
           ...group,
           items: group.items.filter(
-            (item) => !item.permission || can(role, item.permission),
+            (item) => !item.permission || can(user, item.permission),
           ),
         }))
         .filter((group) => group.items.length > 0),
-    [role],
+    [user],
   );
 
   return (
